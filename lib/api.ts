@@ -83,3 +83,40 @@ export const prontuariosApi = {
 
   get: (id: string) => request<import('@/types').Prontuario>(`/api/v1/prontuarios/${id}`),
 }
+
+// ── IA — Transcrição, Resumo, Embeddings ──────────────────────────────────────
+
+export const iaApi = {
+  transcrever: async (audioFile: File, prontuarioId?: string): Promise<{ transcricao: string; idioma: string; prontuario_id?: string }> => {
+    const token = getToken()
+    const form = new FormData()
+    form.append('audio', audioFile)
+    if (prontuarioId) form.append('prontuario_id', prontuarioId)
+    const res = await fetch(`${API_URL}/api/v1/ia/transcrever`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Erro na transcrição' }))
+      throw new ApiError(res.status, err.detail || 'Erro na transcrição')
+    }
+    return res.json()
+  },
+
+  gerarResumo: (prontuarioId: string) =>
+    request<{ prontuario_id: string; resumo_ia: string; modelo: string }>(
+      `/api/v1/ia/prontuarios/${prontuarioId}/resumo`, { method: 'POST' }
+    ),
+
+  gerarEmbedding: (prontuarioId: string) =>
+    request<{ prontuario_id: string; dims: number; status: string }>(
+      `/api/v1/ia/prontuarios/${prontuarioId}/embeddings`, { method: 'POST' }
+    ),
+
+  buscaSemantica: (query: string, pacienteId?: string, limite = 5) =>
+    request<{ resultados: Record<string, unknown>[]; total: number }>(
+      '/api/v1/ia/busca-semantica',
+      { method: 'POST', body: JSON.stringify({ query, paciente_id: pacienteId, limite }) }
+    ),
+}
