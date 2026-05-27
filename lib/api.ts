@@ -5,7 +5,7 @@ class ApiError extends Error {
     super(message)
     this.name = 'ApiError'
   }
-}
+}h
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null
@@ -82,6 +82,9 @@ export const prontuariosApi = {
     request<import('@/types').Prontuario>('/api/v1/prontuarios/', { method: 'POST', body: JSON.stringify(data) }),
 
   get: (id: string) => request<import('@/types').Prontuario>(`/api/v1/prontuarios/${id}`),
+
+    update: (id: string, data: Partial<import('@/types').Prontuario>) =>
+          request<import('@/types').Prontuario>(`/api/v1/prontuarios/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 }
 
 // ── IA — Transcrição, Resumo, Embeddings ──────────────────────────────────────
