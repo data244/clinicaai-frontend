@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { pacientesApi, prontuariosApi, iaApi } from '@/lib/api'
 import { Paciente, Prontuario } from '@/types'
@@ -215,24 +215,40 @@ export default function PacienteDetailPage() {
   const [editingPaciente, setEditingPaciente] = useState(false)
   const [editingProntuario, setEditingProntuario] = useState<Prontuario | null>(null)
   const [saving, setSaving] = useState(false)
+  const [copiloMessages, setCopiloMessages] = useState<{ role: 'user'|'assistant'; content: string; fontes?: any[] }[]>([])
   const [copiloQuestion, setCopiloQuestion] = useState('')
-  const [copiloResponse, setCopiloResponse] = useState<string | null>(null)
-  const [copiloFontes, setCopiloFontes] = useState<any[]>([])
   const [copiloLoading, setCopiloLoading] = useState(false)
+  const copiloEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { loadData() }, [id])
 
+  useEffect(() => {
+    if (id && typeof window !== 'undefined') {
+      const saved = window.localStorage.getItem('copiloto_' + id)
+      if (saved) { try { setCopiloMessages(JSON.parse(saved)) } catch {} }
+    }
+  }, [id])
+
+  useEffect(() => {
+    copiloEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [copiloMessages])
+
   async function askCopiloto() {
     if (!copiloQuestion.trim() || copiloLoading) return
+    const pergunta = copiloQuestion.trim()
+    const newMessages = [...copiloMessages, { role: 'user' as const, content: pergunta }]
+    setCopiloMessages(newMessages)
+    setCopiloQuestion('')
     setCopiloLoading(true)
-    setCopiloResponse(null)
-    setCopiloFontes([])
     try {
-      const res = await iaApi.copiloto(copiloQuestion, id as string)
-      setCopiloResponse(res.resposta)
-      setCopiloFontes(res.fontes || [])
+      const historico = copiloMessages.map(m => ({ role: m.role, content: m.content }))
+      const res = await iaApi.copiloto(pergunta, id as string, historico)
+      const updated = [...newMessages, { role: 'assistant' as const, content: res.resposta, fontes: res.fontes || [] }]
+      setCopiloMessages(updated)
+      if (typeof window !== 'undefined') window.localStorage.setItem('copiloto_' + id, JSON.stringify(updated))
     } catch (e: any) {
-      setCopiloResponse('Erro ao consultar o copiloto: ' + (e.message || 'tente novamente'))
+      const updated = [...newMessages, { role: 'assistant' as const, content: 'Erro: ' + (e.message || 'tente novamente'), fontes: [] }]
+      setCopiloMessages(updated)
     } finally {
       setCopiloLoading(false)
     }
@@ -393,47 +409,82 @@ export default function PacienteDetailPage() {
           </div>
         </div>
       </div>
-    {/* Copiloto Clinico */}
-    <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-lg">🤖</span>
-        <h2 className="text-base font-semibold text-gray-800">Copiloto Clínico</h2>
-        <span className="text-xs text-gray-400 ml-1">Pergunte sobre o histórico do paciente</span>
+    {/* Copiloto Clínico */}
+    <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
+      <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-50">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">🤖</span>
+          <h2 className="text-base font-semibold text-gray-800">Copiloto Clínico</h2>
+          <span className="text-xs text-gray-400 ml-1">Pergunte sobre o histórico do paciente</span>
+        </div>
+        {copiloMessages.length > 0 && (
+          <button
+            onClick={() => { setCopiloMessages([]); if (typeof window !== 'undefined') window.localStorage.removeItem('copiloto_' + id) }}
+            className="text-xs text-gray-400 hover:text-red-500 transition-colors px-2 py-1 rounded"
+          >
+            Nova conversa
+          </button>
+        )}
       </div>
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={copiloQuestion}
-          onChange={e => setCopiloQuestion(e.target.value)}
-          onKeyDown={async e => { if (e.key === 'Enter' && !copiloLoading) await askCopiloto() }}
-          placeholder="Ex: Como o paciente descreveu sua relação com o trabalho?"
-          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300"
-        />
-        <button
-          onClick={askCopiloto}
-          disabled={copiloLoading || !copiloQuestion.trim()}
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {copiloLoading ? '...' : 'Perguntar'}
-        </button>
-      </div>
-      {copiloResponse && (
-        <div className="mt-4 p-4 bg-primary-50 rounded-xl">
-          <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{copiloResponse}</p>
-          {copiloFontes.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-primary-100">
-              <p className="text-xs text-gray-400 font-medium mb-1">Baseado em {copiloFontes.length} registro(s)</p>
-              <div className="flex flex-wrap gap-1">
-                {copiloFontes.map((f: any, i: number) => (
-                  <span key={i} className="text-xs bg-white border border-primary-200 text-primary-700 px-2 py-0.5 rounded-full">
-                    {f.data_atendimento ? new Date(f.data_atendimento).toLocaleDateString('pt-BR') : 'Registro ' + (i+1)}
-                  </span>
-                ))}
+      {copiloMessages.length > 0 && (
+        <div className="px-6 py-4 space-y-4 max-h-96 overflow-y-auto">
+          {copiloMessages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-800'}`}>
+                <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                {msg.role === 'assistant' && msg.fontes && msg.fontes.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-gray-200">
+                    <p className="text-xs text-gray-400 mb-1">Baseado em {msg.fontes.length} registro(s)</p>
+                    <div className="flex flex-wrap gap-1">
+                      {msg.fontes.map((f: any, fi: number) => (
+                        <span key={fi} className="text-xs bg-white border border-gray-200 text-gray-500 px-2 py-0.5 rounded-full">
+                          {f.data_atendimento ? new Date(f.data_atendimento).toLocaleDateString('pt-BR') : 'Registro ' + (fi+1)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {copiloLoading && (
+            <div className="flex justify-start">
+              <div className="bg-gray-100 rounded-2xl px-4 py-3 flex gap-1">
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'0ms'}} />
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'150ms'}} />
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'300ms'}} />
               </div>
             </div>
           )}
+          <div ref={copiloEndRef} />
         </div>
       )}
+      {copiloMessages.length === 0 && (
+        <div className="px-6 py-8 text-center">
+          <p className="text-sm text-gray-400">Faça uma pergunta sobre o histórico do paciente</p>
+          <p className="text-xs text-gray-300 mt-1">Ex: Como evoluiu a queixa principal?</p>
+        </div>
+      )}
+      <div className="px-6 pb-5 pt-4 border-t border-gray-50">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={copiloQuestion}
+            onChange={e => setCopiloQuestion(e.target.value)}
+            onKeyDown={async e => { if (e.key === 'Enter' && !copiloLoading) await askCopiloto() }}
+            placeholder="Pergunte sobre o histórico clínico..."
+            disabled={copiloLoading}
+            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-60"
+          />
+          <button
+            onClick={askCopiloto}
+            disabled={copiloLoading || !copiloQuestion.trim()}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {copiloLoading ? '...' : 'Enviar'}
+          </button>
+        </div>
+      </div>
     </div>
     </>
   )
