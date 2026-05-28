@@ -9,7 +9,6 @@ import {
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import ReactMarkdown from 'react-markdown'
 
 // ── Types ────────────────────────────────────────────────────────────────────────────────
 
@@ -150,15 +149,15 @@ function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?:
 
   nodes.push({ id:'patient', label: sh(paciente?.split(' ')[0]||'Paciente',11), fullLabel: paciente||'Paciente', category:'patient', x:cx, y:cy, r:32 })
 
-  const groups: Array<{ key:NodeCategory; label:string; items:any[]; build:(item:any,pos:{x:number,y:number})=>CMapNode }> = [
+  const groups: Array<{ key:NodeCategory; label:string; items:unknown[]; build:(item:unknown,pos:{x:number,y:number})=>CMapNode }> = [
     { key:'padrao', label:'Padrões', items: analise.padroes?.slice(0,6)||[],
-      build:(p:Padrao,pos)=>({ id:'padrao_'+p.tema, label:sh(p.tema), fullLabel:p.tema, category:'padrao', x:pos.x, y:pos.y, r:Math.max(12,Math.min(20,8+p.frequencia*1.8)), frequencia:p.frequencia, detail:p.observacao, sessoes:p.sessoes, evolucao:p.evolucao }) },
+      build:(p,pos)=>{ const item = p as Padrao; return { id:'padrao_'+item.tema, label:sh(item.tema), fullLabel:item.tema, category:'padrao', x:pos.x, y:pos.y, r:Math.max(12,Math.min(20,8+item.frequencia*1.8)), frequencia:item.frequencia, detail:item.observacao, sessoes:item.sessoes, evolucao:item.evolucao } } },
     { key:'pessoa', label:'Pessoas', items: analise.pessoas_citadas?.slice(0,6)||[],
-      build:(p:Pessoa,pos)=>({ id:'pessoa_'+p.nome_papel, label:sh(p.nome_papel), fullLabel:p.nome_papel, category:'pessoa', x:pos.x, y:pos.y, r:Math.max(12,Math.min(20,8+p.frequencia*1.8)), frequencia:p.frequencia, detail:p.contexto, sessoes:p.sessoes }) },
+      build:(p,pos)=>{ const item = p as Pessoa; return { id:'pessoa_'+item.nome_papel, label:sh(item.nome_papel), fullLabel:item.nome_papel, category:'pessoa', x:pos.x, y:pos.y, r:Math.max(12,Math.min(20,8+item.frequencia*1.8)), frequencia:item.frequencia, detail:item.contexto, sessoes:item.sessoes } } },
     { key:'emocao', label:'Emoções', items: analise.emocoes_dominantes?.slice(0,5)||[],
-      build:(e:Emocao,pos)=>({ id:'emocao_'+e.emocao, label:sh(e.emocao), fullLabel:e.emocao, category:'emocao', x:pos.x, y:pos.y, r:Math.max(12,Math.min(19,8+e.frequencia*1.8)), frequencia:e.frequencia, intensidade:e.intensidade }) },
+      build:(e,pos)=>{ const item = e as Emocao; return { id:'emocao_'+item.emocao, label:sh(item.emocao), fullLabel:item.emocao, category:'emocao', x:pos.x, y:pos.y, r:Math.max(12,Math.min(19,8+item.frequencia*1.8)), frequencia:item.frequencia, intensidade:item.intensidade } } },
     { key:'indicador', label:'Indicadores', items: analise.indicadores_progresso?.slice(0,5)||[],
-      build:(ind:Indicador,pos)=>({ id:'indicador_'+ind.indicador, label:sh(ind.indicador), fullLabel:ind.indicador, category:'indicador', x:pos.x, y:pos.y, r:13, detail:ind.indicador, tendencia:ind.tendencia }) },
+      build:(ind,pos)=>{ const item = ind as Indicador; return { id:'indicador_'+item.indicador, label:sh(item.indicador), fullLabel:item.indicador, category:'indicador', x:pos.x, y:pos.y, r:13, detail:item.indicador, tendencia:item.tendencia } } },
   ]
 
   for (const g of groups) {
@@ -291,7 +290,7 @@ function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?:
 
 export default function MapaLongitudinalPage() {
   const { id } = useParams<{ id: string }>()
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   const [aba, setAba] = useState<'analise' | 'timeline' | 'perguntas' | 'conceitos'>('analise')
@@ -309,8 +308,8 @@ export default function MapaLongitudinalPage() {
     try {
       const res = await iaApi.analiseLongitudinal(id as string)
       setData(res)
-    } catch (e: any) {
-      setErro(e?.message || 'Erro ao carregar análise')
+    } catch (e: unknown) {
+      setErro(e instanceof Error ? e.message : 'Erro ao carregar análise')
     } finally {
       setLoading(false)
     }
@@ -325,10 +324,10 @@ export default function MapaLongitudinalPage() {
     setMapaLoading(true)
     try {
       const historico = mapaMsg.map(m => ({ role: m.role, content: m.content }))
-      const res = await (await import('@/lib/api')).iaApi.copiloto(pergunta, id as string, historico)
+      const res = await (await import('@/lib/api')).iaApi.coPiloto(pergunta, id as string, historico)
       setMapaMsg([...newMessages, { role: 'assistant' as const, content: res.resposta }])
-    } catch (e: any) {
-      setMapaMsg([...newMessages, { role: 'assistant' as const, content: 'Erro: ' + (e.message || 'tente novamente') }])
+    } catch (e: unknown) {
+      setMapaMsg([...newMessages, { role: 'assistant' as const, content: 'Erro: ' + (e instanceof Error ? e.message : 'tente novamente') }])
     } finally {
       setMapaLoading(false)
     }
@@ -353,8 +352,8 @@ export default function MapaLongitudinalPage() {
     </div>
   )
 
-  const analise: Analise | null = data?.analise
-  const prontuarios: Prontuario[] = data?.prontuarios || []
+  const analise = data?.analise as Analise | null
+  const prontuarios = (data?.prontuarios as Prontuario[]) || []
 
   return (
     <div className={aba === 'conceitos' ? 'max-w-5xl mx-auto p-6' : 'max-w-4xl mx-auto p-6'}>
@@ -368,14 +367,14 @@ export default function MapaLongitudinalPage() {
             <Activity className="w-5 h-5 text-indigo-500" />
             <h1 className="text-xl font-bold text-gray-900">Mapa Longitudinal</h1>
           </div>
-          {data?.paciente && <p className="text-sm text-gray-500 ml-7">{data.paciente}</p>}
+          {data?.paciente && <p className="text-sm text-gray-500 ml-7">{data.paciente as string}</p>}
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 my-5">
         <div className="bg-indigo-50 rounded-xl p-3 text-center">
-          <p className="text-2xl font-bold text-indigo-700">{data?.total_sessoes ?? 0}</p>
+          <p className="text-2xl font-bold text-indigo-700">{(data?.total_sessoes as number) ?? 0}</p>
           <p className="text-xs text-indigo-600 mt-0.5">Sessões</p>
         </div>
         <div className="bg-gray-50 rounded-xl p-3 text-center">
@@ -480,7 +479,7 @@ export default function MapaLongitudinalPage() {
                         <div key={i} className="flex items-center gap-2">
                           <div className="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
                             <div className="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full"
-                              style={{ width: `${Math.min(100,(e.frequencia/(data.total_sessoes||1))*100)}%` }} />
+                              style={{ width: `${Math.min(100,(e.frequencia/((data?.total_sessoes as number)||1))*100)}%` }} />
                           </div>
                           <span className="text-xs text-gray-700 w-24 truncate">{e.emocao}</span>
                           <span className="text-xs text-gray-400 w-4">{e.frequencia}x</span>
@@ -547,16 +546,7 @@ export default function MapaLongitudinalPage() {
               {mapaMsg.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-800'}`}>
-                    {msg.role === 'user' ? (
-                      <p className="text-sm">{msg.content}</p>
-                    ) : (
-                      <ReactMarkdown components={{
-                        p: ({...props}) => <p className="text-sm leading-relaxed mb-2 last:mb-0" {...props} />,
-                        strong: ({...props}) => <strong className="font-semibold" {...props} />,
-                        ul: ({...props}) => <ul className="text-sm list-disc ml-4 mb-2 space-y-0.5" {...props} />,
-                        li: ({...props}) => <li className="text-sm" {...props} />,
-                      }}>{msg.content}</ReactMarkdown>
-                    )}
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                   </div>
                 </div>
               ))}
@@ -594,7 +584,7 @@ export default function MapaLongitudinalPage() {
 
       {/* ── ABA: CONCEITOS ── */}
       {aba === 'conceitos' && (
-        <ConceptMap analise={analise} paciente={data?.paciente} />
+        <ConceptMap analise={analise} paciente={data?.paciente as string | undefined} />
       )}
     </div>
   )
