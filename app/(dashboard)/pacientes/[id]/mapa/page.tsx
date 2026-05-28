@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
 
 // ── Types ────────────────────────────────────────────────────────────────────────────────
 
@@ -546,7 +547,7 @@ export default function MapaLongitudinalPage() {
               {mapaMsg.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-800'}`}>
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                    {msg.role === 'user' ? <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p> : <ReactMarkdown>{msg.content}</ReactMarkdown>}
                   </div>
                 </div>
               ))}
