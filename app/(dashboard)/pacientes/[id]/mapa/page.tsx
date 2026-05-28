@@ -5,13 +5,13 @@ import { useParams } from 'next/navigation'
 import { iaApi } from '@/lib/api'
 import {
   ArrowLeft, Activity, Calendar, FileText, Brain, ChevronDown, ChevronUp,
-  Users, TrendingUp, AlertTriangle, MessageSquare, BarChart2, Send
+  Users, TrendingUp, AlertTriangle, MessageSquare, BarChart2, Send, Network
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────────────────────────────
 
 interface Padrao { tema: string; frequencia: number; sessoes: number[]; evolucao: string; observacao: string }
 interface Pessoa { nome_papel: string; frequencia: number; sessoes: number[]; contexto: string }
@@ -27,7 +27,7 @@ interface Prontuario {
   prescricao?: string; observacoes?: string; resumo_ia?: string
 }
 
-// ── Sub-components ─────────────────────────────────────────────────────────────
+// ── Badges ────────────────────────────────────────────────────────────────────────────────
 
 const EvolucaoBadge = ({ e }: { e: string }) => {
   const map: Record<string, string> = {
@@ -46,6 +46,8 @@ const TendenciaBadge = ({ t }: { t: string }) => {
   const v = map[t] || map.neutra
   return <span className={`text-sm font-bold ${v.cls}`}>{v.icon}</span>
 }
+
+// ── TimelineCard ────────────────────────────────────────────────────────────────────────────
 
 function TimelineCard({ p, index }: { p: Prontuario; index: number }) {
   const [open, setOpen] = useState(false)
@@ -88,16 +90,212 @@ function TimelineCard({ p, index }: { p: Prontuario; index: number }) {
   )
 }
 
-// ── Main Page ──────────────────────────────────────────────────────────────────
+// ── Concept Map ────────────────────────────────────────────────────────────────────────────────
+
+const NODE_COLORS = {
+  patient:   { bg: '#6366f1', light: '#e0e7ff', text: '#4338ca', border: '#818cf8' },
+  padrao:    { bg: '#f97316', light: '#fff7ed', text: '#c2410c', border: '#fb923c' },
+  pessoa:    { bg: '#a855f7', light: '#faf5ff', text: '#7e22ce', border: '#c084fc' },
+  emocao:    { bg: '#3b82f6', light: '#eff6ff', text: '#1d4ed8', border: '#60a5fa' },
+  indicador: { bg: '#22c55e', light: '#f0fdf4', text: '#15803d', border: '#4ade80' },
+} as const
+
+type NodeCategory = keyof typeof NODE_COLORS
+
+interface CMapNode {
+  id: string; label: string; fullLabel: string; category: NodeCategory
+  x: number; y: number; r: number
+  frequencia?: number; detail?: string; sessoes?: number[]
+  evolucao?: string; intensidade?: string; tendencia?: string
+  isCategory?: boolean
+}
+
+function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?: string }) {
+  const [selected, setSelected] = useState<CMapNode | null>(null)
+  const [hoverId, setHoverId] = useState<string | null>(null)
+
+  if (!analise) {
+    return (
+      <div className="text-center py-16 text-gray-400">
+        <Network className="w-10 h-10 mx-auto mb-2 opacity-30" />
+        <p className="text-sm">Nenhuma análise disponível para gerar o mapa de conceitos.</p>
+      </div>
+    )
+  }
+
+  const W = 680, H = 460
+  const cx = W / 2, cy = H / 2
+  const sh = (s: string, n = 13) => s.length > n ? s.slice(0, n - 1) + '…' : s
+
+  function itemPositions(catX: number, catY: number, count: number, dist = 90) {
+    if (count === 0) return []
+    const dir = Math.atan2(catY - cy, catX - cx)
+    const spread = count <= 1 ? 0 : Math.min(1.3, (count - 1) * 0.4)
+    return Array.from({ length: count }, (_, i) => {
+      const t = count === 1 ? 0 : (i / (count - 1) - 0.5) * 2
+      const angle = dir + t * (spread / 2)
+      return { x: catX + Math.cos(angle) * dist, y: catY + Math.sin(angle) * dist }
+    })
+  }
+
+  const anchors = {
+    padrao:    { x: cx - 188, y: cy - 110 },
+    pessoa:    { x: cx + 188, y: cy - 110 },
+    emocao:    { x: cx - 188, y: cy + 110 },
+    indicador: { x: cx + 188, y: cy + 110 },
+  }
+
+  const nodes: CMapNode[] = []
+  const edges: { x1:number; y1:number; x2:number; y2:number; cat:NodeCategory; dashed:boolean }[] = []
+
+  nodes.push({ id:'patient', label: sh(paciente?.split(' ')[0]||'Paciente',11), fullLabel: paciente||'Paciente', category:'patient', x:cx, y:cy, r:32 })
+
+  const groups: Array<{ key:NodeCategory; label:string; items:any[]; build:(item:any,pos:{x:number,y:number})=>CMapNode }> = [
+    { key:'padrao', label:'Padrões', items: analise.padroes?.slice(0,6)||[],
+      build:(p:Padrao,pos)=>({ id:'padrao_'+p.tema, label:sh(p.tema), fullLabel:p.tema, category:'padrao', x:pos.x, y:pos.y, r:Math.max(12,Math.min(20,8+p.frequencia*1.8)), frequencia:p.frequencia, detail:p.observacao, sessoes:p.sessoes, evolucao:p.evolucao }) },
+    { key:'pessoa', label:'Pessoas', items: analise.pessoas_citadas?.slice(0,6)||[],
+      build:(p:Pessoa,pos)=>({ id:'pessoa_'+p.nome_papel, label:sh(p.nome_papel), fullLabel:p.nome_papel, category:'pessoa', x:pos.x, y:pos.y, r:Math.max(12,Math.min(20,8+p.frequencia*1.8)), frequencia:p.frequencia, detail:p.contexto, sessoes:p.sessoes }) },
+    { key:'emocao', label:'Emoções', items: analise.emocoes_dominantes?.slice(0,5)||[],
+      build:(e:Emocao,pos)=>({ id:'emocao_'+e.emocao, label:sh(e.emocao), fullLabel:e.emocao, category:'emocao', x:pos.x, y:pos.y, r:Math.max(12,Math.min(19,8+e.frequencia*1.8)), frequencia:e.frequencia, intensidade:e.intensidade }) },
+    { key:'indicador', label:'Indicadores', items: analise.indicadores_progresso?.slice(0,5)||[],
+      build:(ind:Indicador,pos)=>({ id:'indicador_'+ind.indicador, label:sh(ind.indicador), fullLabel:ind.indicador, category:'indicador', x:pos.x, y:pos.y, r:13, detail:ind.indicador, tendencia:ind.tendencia }) },
+  ]
+
+  for (const g of groups) {
+    const a = anchors[g.key as keyof typeof anchors]
+    nodes.push({ id:'cat_'+g.key, label:g.label, fullLabel:g.label, category:g.key, x:a.x, y:a.y, r:22, isCategory:true })
+    edges.push({ x1:cx, y1:cy, x2:a.x, y2:a.y, cat:g.key, dashed:false })
+    const pos = itemPositions(a.x, a.y, g.items.length)
+    g.items.forEach((item, i) => {
+      nodes.push(g.build(item, pos[i]))
+      edges.push({ x1:a.x, y1:a.y, x2:pos[i].x, y2:pos[i].y, cat:g.key, dashed:true })
+    })
+  }
+
+  return (
+    <div className="flex gap-4" style={{ minHeight: 460 }}>
+      {/* Graph area */}
+      <div className="flex-1 rounded-xl border border-gray-100 overflow-hidden" style={{ background:'linear-gradient(135deg,#f8faff 0%,#f0f4ff 50%,#f8fffe 100%)' }}>
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 460 }}>
+          <defs>
+            {(Object.entries(NODE_COLORS) as [NodeCategory, typeof NODE_COLORS[NodeCategory]][]).map(([k,c]) => (
+              <radialGradient key={k} id={`grad_${k}`} cx="35%" cy="30%" r="70%">
+                <stop offset="0%" stopColor={c.border} />
+                <stop offset="100%" stopColor={c.bg} />
+              </radialGradient>
+            ))}
+          </defs>
+
+          {/* Edges */}
+          {edges.map((e,i) => {
+            const col = NODE_COLORS[e.cat]
+            return <line key={i} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
+              stroke={col.bg} strokeWidth={e.dashed ? 1.2 : 2}
+              strokeOpacity={e.dashed ? 0.3 : 0.45}
+              strokeDasharray={e.dashed ? '5 4' : undefined} />
+          })}
+
+          {/* Nodes */}
+          {nodes.map(node => {
+            const col = NODE_COLORS[node.category]
+            const isSel = selected?.id === node.id
+            const isHov = hoverId === node.id
+            const filled = node.isCategory || node.id === 'patient'
+            const lblY = filled ? 0 : (node.y > cy + 30 ? -(node.r + 11) : node.r + 12)
+            return (
+              <g key={node.id} transform={`translate(${node.x},${node.y})`}
+                onClick={() => setSelected(isSel ? null : node)}
+                onMouseEnter={() => setHoverId(node.id)}
+                onMouseLeave={() => setHoverId(null)}
+                style={{ cursor:'pointer' }}>
+                {(isSel||isHov) && <circle r={node.r+(isSel?7:4)} fill="none" stroke={col.bg} strokeWidth={isSel?2.5:1.5} strokeOpacity={isSel?0.55:0.3} />}
+                <circle r={node.r} fill={filled ? `url(#grad_${node.category})` : col.light} stroke={col.border} strokeWidth={isSel?2.5:1.5} strokeOpacity={0.85} />
+                {filled ? (
+                  <text textAnchor="middle" dominantBaseline="central" fill="white" fontSize={node.id==='patient'?10:8.5} fontWeight="700">{node.label}</text>
+                ) : node.frequencia !== undefined ? (
+                  <text textAnchor="middle" dominantBaseline="central" fill={col.text} fontSize={9} fontWeight="800">{node.frequencia}x</text>
+                ) : null}
+                {!filled && <text textAnchor="middle" y={lblY} fill={col.text} fontSize={8} fontWeight="500" opacity={0.9}>{node.label}</text>}
+              </g>
+            )
+          })}
+        </svg>
+      </div>
+
+      {/* Side panel */}
+      <div className="w-56 flex flex-col gap-3 flex-shrink-0">
+        <div className="bg-white border border-gray-100 rounded-xl shadow-sm flex-1 overflow-hidden">
+          {selected ? (
+            <div className="p-4">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                  style={{ background: NODE_COLORS[selected.category].light, color: NODE_COLORS[selected.category].text }}>
+                  {selected.isCategory ? 'Categoria' : selected.category === 'patient' ? 'Paciente' :
+                   selected.category === 'padrao' ? 'Padrão' : selected.category === 'pessoa' ? 'Pessoa' :
+                   selected.category === 'emocao' ? 'Emoção' : 'Indicador'}
+                </span>
+                <button onClick={() => setSelected(null)} className="text-gray-300 hover:text-gray-500 text-sm leading-none">×</button>
+              </div>
+              <p className="text-sm font-semibold text-gray-900 mb-3 leading-snug">{selected.fullLabel}</p>
+              {selected.frequencia !== undefined && (
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                    style={{ background: NODE_COLORS[selected.category].bg }}>{selected.frequencia}x</div>
+                  <span className="text-xs text-gray-500">citações</span>
+                </div>
+              )}
+              {selected.sessoes && selected.sessoes.length > 0 && (
+                <p className="text-xs text-gray-400 mb-2">Sessões: {selected.sessoes.join(', ')}</p>
+              )}
+              {selected.evolucao && <p className="text-xs text-gray-600 mb-1">Evolução: <span className="font-medium">{selected.evolucao}</span></p>}
+              {selected.intensidade && <p className="text-xs text-gray-600 mb-1">Intensidade: <span className="font-medium">{selected.intensidade}</span></p>}
+              {selected.tendencia && <p className="text-xs text-gray-600 mb-1">Tendência: <span className="font-medium">{selected.tendencia}</span></p>}
+              {selected.detail && !selected.isCategory && (
+                <p className="text-xs text-gray-500 leading-relaxed mt-2 pt-2 border-t border-gray-50">{selected.detail}</p>
+              )}
+            </div>
+          ) : (
+            <div className="p-4">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Legenda</p>
+              {(Object.entries(NODE_COLORS) as [NodeCategory, typeof NODE_COLORS[NodeCategory]][]).map(([key, col]) => (
+                <div key={key} className="flex items-center gap-2 mb-2.5">
+                  <div className="w-3.5 h-3.5 rounded-full flex-shrink-0" style={{ background: col.bg }} />
+                  <span className="text-xs text-gray-600">
+                    {key==='patient'?'Paciente':key==='padrao'?'Padrões':key==='pessoa'?'Pessoas':key==='emocao'?'Emoções':'Indicadores'}
+                  </span>
+                </div>
+              ))}
+              <p className="text-xs text-gray-300 mt-3 pt-2.5 border-t border-gray-50 leading-relaxed">
+                Clique em um nó para ver detalhes. Tamanho proporcional à frequência.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {analise.alertas_clinicos?.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex-shrink-0">
+            <p className="text-xs font-semibold text-amber-700 mb-2 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" /> Alertas ({analise.alertas_clinicos.length})
+            </p>
+            {analise.alertas_clinicos.slice(0,2).map((a,i) => (
+              <p key={i} className="text-xs text-amber-600 leading-relaxed mb-1 last:mb-0">{a}</p>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Main Page ──────────────────────────────────────────────────────────────────────────────────
 
 export default function MapaLongitudinalPage() {
   const { id } = useParams<{ id: string }>()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
-  const [aba, setAba] = useState<'analise' | 'timeline' | 'perguntas'>('analise')
+  const [aba, setAba] = useState<'analise' | 'timeline' | 'perguntas' | 'conceitos'>('analise')
 
-  // Perguntas (mapa Q&A)
   const [mapaMsg, setMapaMsg] = useState<{ role: 'user'|'assistant'; content: string }[]>([])
   const [mapaPergunta, setMapaPergunta] = useState('')
   const [mapaLoading, setMapaLoading] = useState(false)
@@ -159,7 +357,7 @@ export default function MapaLongitudinalPage() {
   const prontuarios: Prontuario[] = data?.prontuarios || []
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className={aba === 'conceitos' ? 'max-w-5xl mx-auto p-6' : 'max-w-4xl mx-auto p-6'}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-2">
         <Link href={`/pacientes/${id}`} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -192,15 +390,18 @@ export default function MapaLongitudinalPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6">
-        {([['analise','Análise','BarChart2'],['timeline','Linha do Tempo','FileText'],['perguntas','Perguntas','MessageSquare']] as const).map(([key, label, Icon]) => (
-          <button key={key} onClick={() => setAba(key)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium rounded-lg transition-all ${aba === key ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-            {key==='analise' && <BarChart2 className="w-4 h-4" />}
-            {key==='timeline' && <FileText className="w-4 h-4" />}
-            {key==='perguntas' && <MessageSquare className="w-4 h-4" />}
-            {label}
-          </button>
-        ))}
+        {(['analise','timeline','perguntas','conceitos'] as const).map((key) => {
+          const labels = { analise:'Análise', timeline:'Linha do Tempo', perguntas:'Perguntas', conceitos:'Conceitos' }
+          const IconMap = { analise:BarChart2, timeline:FileText, perguntas:MessageSquare, conceitos:Network }
+          const TabIcon = IconMap[key]
+          return (
+            <button key={key} onClick={() => setAba(key)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium rounded-lg transition-all ${aba === key ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+              <TabIcon className="w-4 h-4" />
+              {labels[key]}
+            </button>
+          )
+        })}
       </div>
 
       {/* ── ABA: ANÁLISE ── */}
@@ -213,7 +414,6 @@ export default function MapaLongitudinalPage() {
             </div>
           ) : (
             <>
-              {/* Resumo clínico */}
               {analise.resumo_clinico && (
                 <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
@@ -224,7 +424,6 @@ export default function MapaLongitudinalPage() {
                 </div>
               )}
 
-              {/* Padrões recorrentes */}
               {analise.padroes?.length > 0 && (
                 <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
                   <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
@@ -242,9 +441,7 @@ export default function MapaLongitudinalPage() {
                             <EvolucaoBadge e={p.evolucao} />
                           </div>
                           {p.observacao && <p className="text-xs text-gray-500">{p.observacao}</p>}
-                          {p.sessoes?.length > 0 && (
-                            <p className="text-xs text-gray-400 mt-0.5">Sessões: {p.sessoes.join(', ')}</p>
-                          )}
+                          {p.sessoes?.length > 0 && <p className="text-xs text-gray-400 mt-0.5">Sessões: {p.sessoes.join(', ')}</p>}
                         </div>
                       </div>
                     ))}
@@ -252,7 +449,6 @@ export default function MapaLongitudinalPage() {
                 </div>
               )}
 
-              {/* Pessoas citadas */}
               {analise.pessoas_citadas?.length > 0 && (
                 <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
                   <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
@@ -268,16 +464,13 @@ export default function MapaLongitudinalPage() {
                           <p className="text-sm font-medium text-gray-900 capitalize">{p.nome_papel}</p>
                           <p className="text-xs text-gray-500">{p.contexto}</p>
                         </div>
-                        {p.sessoes?.length > 0 && (
-                          <span className="text-xs text-gray-400">Sess. {p.sessoes.join(', ')}</span>
-                        )}
+                        {p.sessoes?.length > 0 && <span className="text-xs text-gray-400">Sess. {p.sessoes.join(', ')}</span>}
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Emoções + Indicadores side by side */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {analise.emocoes_dominantes?.length > 0 && (
                   <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
@@ -287,7 +480,7 @@ export default function MapaLongitudinalPage() {
                         <div key={i} className="flex items-center gap-2">
                           <div className="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
                             <div className="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full"
-                              style={{ width: `${Math.min(100, (e.frequencia / (data.total_sessoes || 1)) * 100)}%` }} />
+                              style={{ width: `${Math.min(100,(e.frequencia/(data.total_sessoes||1))*100)}%` }} />
                           </div>
                           <span className="text-xs text-gray-700 w-24 truncate">{e.emocao}</span>
                           <span className="text-xs text-gray-400 w-4">{e.frequencia}x</span>
@@ -311,7 +504,6 @@ export default function MapaLongitudinalPage() {
                 )}
               </div>
 
-              {/* Alertas clínicos */}
               {analise.alertas_clinicos?.length > 0 && (
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                   <h3 className="text-sm font-semibold text-amber-800 mb-2 flex items-center gap-2">
@@ -319,9 +511,7 @@ export default function MapaLongitudinalPage() {
                   </h3>
                   <ul className="space-y-1">
                     {analise.alertas_clinicos.map((a, i) => (
-                      <li key={i} className="text-sm text-amber-700 flex items-start gap-1.5">
-                        <span className="mt-1">•</span>{a}
-                      </li>
+                      <li key={i} className="text-sm text-amber-700 flex items-start gap-1.5"><span className="mt-1">•</span>{a}</li>
                     ))}
                   </ul>
                 </div>
@@ -331,7 +521,7 @@ export default function MapaLongitudinalPage() {
         </div>
       )}
 
-      {/* ── ABA: LINHA DO TEMPO ── */}
+      {/* ── ABA: TIMELINE ── */}
       {aba === 'timeline' && (
         <div>
           {prontuarios.length === 0 ? (
@@ -400,6 +590,11 @@ export default function MapaLongitudinalPage() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* ── ABA: CONCEITOS ── */}
+      {aba === 'conceitos' && (
+        <ConceptMap analise={analise} paciente={data?.paciente} />
       )}
     </div>
   )
