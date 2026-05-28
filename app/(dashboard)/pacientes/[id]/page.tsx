@@ -328,14 +328,16 @@ export default function PacienteDetailPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {prontuarios.map(pr => {
+                  {prontuarios.map((pr, index) => {
                     const isOpen = expandedId === pr.id
+                    const numero = String(prontuarios.length - index).padStart(2, '0')
                     return (
                       <div key={pr.id} className="border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 transition-colors">
                         <div className="flex items-center justify-between p-4 cursor-pointer select-none" onClick={() => setExpandedId(isOpen ? null : pr.id)}>
                           <div className="flex-1 min-w-0 pr-2">
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <span className="text-xs font-medium bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full capitalize">{pr.tipo}</span>
+                              <span className="text-xs font-bold text-gray-400 tabular-nums">#{numero}</span>
                               <span className="text-xs text-gray-400 flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(pr.data_atendimento)}</span>
                             </div>
                             <p className="text-sm font-medium text-gray-800 truncate">{pr.queixa_principal || 'Sem queixa registrada'}</p>
