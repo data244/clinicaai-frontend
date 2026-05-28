@@ -87,14 +87,18 @@ export default function ConfiguracoesPage() {
     e.preventDefault()
     setSaving(true)
     try {
-      const payload: Record<string, string> = {
+      const updatePayload: {
+        evolution_api_url?: string
+        evolution_instancia?: string
+        evolution_api_key?: string
+      } = {
         evolution_api_url: evolutionUrl,
         evolution_instancia: evolutionInstancia,
       }
       if (evolutionKey && !evolutionKey.startsWith('••')) {
         payload.evolution_api_key = evolutionKey
       }
-      await perfilApi.update(payload)
+      await perfilApi.update(updatePayload)
       showFeedback('success', 'Configuração WhatsApp salva!')
     } catch {
       showFeedback('error', 'Erro ao salvar configuração WhatsApp.')
