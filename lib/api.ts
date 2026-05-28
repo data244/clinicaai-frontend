@@ -136,6 +136,11 @@ export const iaApi = {
       '/api/v1/ia/copiloto',
       { method: 'POST', body: JSON.stringify({ pergunta, paciente_id: pacienteId, historico }) }
     ),
+
+  analiseLongitudinal: (pacienteId: string) =>
+    request<Record<string, unknown>>(
+      `/api/v1/ia/pacientes/${pacienteId}/analise`
+    ),
 }
 
 // ── Agenda ────────────────────────────────────────────────────────────────────
