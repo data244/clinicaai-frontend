@@ -145,6 +145,4 @@ export const iaApi = {
       method: 'POST',
       body: JSON.stringify({ pergunta, paciente_id: pacienteId, historico: historico || [], contexto_analise: contextoAnalise }),
     }),
-  analiseLongitudinal: (pacienteId: string) =>
-    request<any>(`/api/v1/ia/pacientes/${pacienteId}/analise-longitudinal`),
 }
