@@ -70,6 +70,7 @@ export const pacientesApi = {
     request<import('@/types').Paciente>(`/api/v1/pacientes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
   delete: (id: string) => request<void>(`/api/v1/pacientes/${id}`, { method: 'DELETE' }),
+  mapaLongitudinal: (id: string) => request<any>(`/api/v1/pacientes/${id}/mapa-longitudinal`),
 }
 
 // ── Prontuários ───────────────────────────────────────────────────────────────
@@ -122,4 +123,11 @@ export const iaApi = {
       '/api/v1/ia/busca-semantica',
       { method: 'POST', body: JSON.stringify({ query, paciente_id: pacienteId, limite }) }
     ),
+  buscar: (query: string, pacienteId?: string, limite?: number) =>
+    request<any[]>('/api/v1/ia/buscar', {
+      method: 'POST',
+      body: JSON.stringify({ query, paciente_id: pacienteId, limite: limite ?? 5 }),
+    }),
+  indexar: (prontuarioId: string) =>
+    request<any>(`/api/v1/ia/indexar/${prontuarioId}`, { method: 'POST' }),
 }
