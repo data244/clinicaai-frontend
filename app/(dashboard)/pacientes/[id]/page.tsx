@@ -242,7 +242,7 @@ export default function PacienteDetailPage() {
     setCopiloLoading(true)
     try {
       const historico = copiloMessages.map(m => ({ role: m.role, content: m.content }))
-      const res = await iaApi.copiloto(pergunta, id as string, historico)
+      const res = await iaApi.coPiloto(pergunta, id as string, historico)
       const updated = [...newMessages, { role: 'assistant' as const, content: res.resposta, fontes: res.fontes || [] }]
       setCopiloMessages(updated)
       if (typeof window !== 'undefined') window.localStorage.setItem('copiloto_' + id, JSON.stringify(updated))
