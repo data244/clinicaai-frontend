@@ -29,6 +29,14 @@ async function request<T>(
 
   const res = await fetch(`${API_URL}${path}`, { ...options, headers })
 
+  if (res.status === 401 && auth) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('clinicaai_token')
+      window.location.href = '/login'
+    }
+    throw new ApiError(401, 'Sessão expirada. Redirecionando para o login...')
+  }
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: 'Erro desconhecido' }))
     throw new ApiError(res.status, err.detail || JSON.stringify(err))
@@ -130,9 +138,9 @@ export const iaApi = {
     }),
   indexar: (prontuarioId: string) =>
     request<any>(`/api/v1/ia/indexar/${prontuarioId}`, { method: 'POST' }),
-  copiloto: (pergunta: string, pacienteId?: string) =>
+  copiloto: (pergunta: string, pacienteId?: string, historico?: { role: string; content: string }[]) =>
     request<{ resposta: string; fontes: any[] }>('/api/v1/ia/copiloto', {
       method: 'POST',
-      body: JSON.stringify({ pergunta, paciente_id: pacienteId }),
+      body: JSON.stringify({ pergunta, paciente_id: pacienteId, historico: historico ?? [] }),
     }),
 }
