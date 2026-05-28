@@ -139,7 +139,7 @@ export const iaApi = {
 
   analiseLongitudinal: (pacienteId: string) =>
     request<Record<string, unknown>>(
-      `/api/v1/ia/pacientes/${pacienteId}/analise`
+      `/api/v1/ia/pacientes/${pacienteId}/analise-longitudinal`
     ),
 }
 
