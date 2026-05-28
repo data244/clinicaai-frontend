@@ -186,7 +186,7 @@ function buildGraph(analise: Analise, paciente: string | undefined, W: number, H
   }
 
   const nodes: CMapNode[] = []
-  const edges: { x1:number; y1:number; x2:number; y2:number; cat:NodeCategory; dashed:boolean }[] = []
+  const edges: { x1:number; y1:number; x2:number; y2:number; cat:NodeCategory; dashed:boolean; targetId?:string }[] = []
 
   nodes.push({ id:'patient', label:sh(paciente?.split(' ')[0]||'Paciente',11), fullLabel:paciente||'Paciente', category:'patient', x:cx, y:cy, r:32 })
 
@@ -219,7 +219,7 @@ function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?:
   const [selected, setSelected] = useState<CMapNode | null>(null)
   const [hoverId, setHoverId] = useState<string | null>(null)
   const [simNodes, setSimNodes] = useState<CMapNode[]>([])
-  const [simEdges, setSimEdges] = useState<{ x1:number; y1:number; x2:number; y2:number; cat:NodeCategory; dashed:boolean }[]>([])
+  const [simEdges, setSimEdges] = useState<{ x1:number; y1:number; x2:number; y2:number; cat:NodeCategory; dashed:boolean; targetId?:string }[]>([])
 
   const W = 760, H = 510
 
