@@ -12,7 +12,7 @@ function getToken(): string | null {
   return localStorage.getItem('clinicaai_token')
 }
 
-async function request<T>(
+export async function request<T>(
   path: string,
   options: RequestInit = {},
   auth = true,
@@ -28,14 +28,6 @@ async function request<T>(
   }
 
   const res = await fetch(`${API_URL}${path}`, { ...options, headers })
-
-  if (res.status === 401 && auth) {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('clinicaai_token')
-      window.location.href = '/login'
-    }
-    throw new ApiError(401, 'Sessão expirada. Redirecionando para o login...')
-  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: 'Erro desconhecido' }))
@@ -78,7 +70,6 @@ export const pacientesApi = {
     request<import('@/types').Paciente>(`/api/v1/pacientes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
   delete: (id: string) => request<void>(`/api/v1/pacientes/${id}`, { method: 'DELETE' }),
-  mapaLongitudinal: (id: string) => request<any>(`/api/v1/pacientes/${id}/mapa-longitudinal`),
 }
 
 // ── Prontuários ───────────────────────────────────────────────────────────────
@@ -91,16 +82,15 @@ export const prontuariosApi = {
     request<import('@/types').Prontuario>('/api/v1/prontuarios/', { method: 'POST', body: JSON.stringify(data) }),
 
   get: (id: string) => request<import('@/types').Prontuario>(`/api/v1/prontuarios/${id}`),
-
-    update: (id: string, data: Partial<import('@/types').Prontuario>) =>
-          request<import('@/types').Prontuario>(`/api/v1/prontuarios/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  update: (id: string, data: Partial<import('@/types').Prontuario>) =>
+    request<import('@/types').Prontuario>(`/api/v1/prontuarios/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 }
 
-// ── IA — Transcrição, Resumo, Embeddings ──────────────────────────────────────
+// ── IA — Transcrição, Resumo, Embeddings ────────────────────────────────────
 
 export const iaApi = {
   transcrever: async (audioFile: File, prontuarioId?: string): Promise<{ transcricao: string; idioma: string; prontuario_id?: string }> => {
-    const token = getToken()
+    const token = typeof window !== 'undefined' ? localStorage.getItem('clinicaai_token') : null
     const form = new FormData()
     form.append('audio', audioFile)
     if (prontuarioId) form.append('prontuario_id', prontuarioId)
@@ -111,7 +101,7 @@ export const iaApi = {
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: 'Erro na transcrição' }))
-      throw new ApiError(res.status, err.detail || 'Erro na transcrição')
+      throw new Error(err.detail || 'Erro na transcrição')
     }
     return res.json()
   },
@@ -131,18 +121,83 @@ export const iaApi = {
       '/api/v1/ia/busca-semantica',
       { method: 'POST', body: JSON.stringify({ query, paciente_id: pacienteId, limite }) }
     ),
-  buscar: (query: string, pacienteId?: string, limite?: number) =>
-    request<any[]>('/api/v1/ia/buscar', {
-      method: 'POST',
-      body: JSON.stringify({ query, paciente_id: pacienteId, limite: limite ?? 5 }),
-    }),
-  indexar: (prontuarioId: string) =>
-    request<any>(`/api/v1/ia/indexar/${prontuarioId}`, { method: 'POST' }),
-  analiseLongitudinal: (pacienteId: string) =>
-    request<any>(`/api/v1/ia/pacientes/${pacienteId}/analise-longitudinal`),
-  copiloto: (pergunta: string, pacienteId: string, historico?: { role: string; content: string }[], contextoAnalise?: string) =>
-    request<{ resposta: string; fontes: any[] }>('/api/v1/ia/copiloto', {
-      method: 'POST',
-      body: JSON.stringify({ pergunta, paciente_id: pacienteId, historico: historico || [], contexto_analise: contextoAnalise }),
-    }),
+
+  coPiloto: (
+    pergunta: string,
+    pacienteId?: string,
+    historico: { role: string; content: string }[] = []
+  ) =>
+    request<{
+      resposta: string
+      fontes: { id: string; data: string; tipo: string; queixa: string; similaridade: number }[]
+      modelo: string
+      prontuarios_encontrados: number
+    }>(
+      '/api/v1/ia/copiloto',
+      { method: 'POST', body: JSON.stringify({ pergunta, paciente_id: pacienteId, historico }) }
+    ),
+}
+
+// ── Agenda ────────────────────────────────────────────────────────────────────
+
+export interface Agendamento {
+  id?: string
+  profissional_id?: string
+  paciente_id?: string | null
+  titulo: string
+  data_hora_inicio: string
+  data_hora_fim: string
+  tipo: 'consulta' | 'retorno' | 'exame' | 'bloqueio'
+  status: 'agendado' | 'confirmado' | 'cancelado' | 'realizado'
+  observacoes?: string
+  cor?: string
+  pacientes?: { id: string; nome: string; telefone?: string } | null
+}
+
+export const agendaApi = {
+  listar: (dataInicio?: string, dataFim?: string, pacienteId?: string) => {
+    const params = new URLSearchParams()
+    if (dataInicio) params.set('data_inicio', dataInicio)
+    if (dataFim) params.set('data_fim', dataFim)
+    if (pacienteId) params.set('paciente_id', pacienteId)
+    const qs = params.toString()
+    return request<{ agendamentos: Agendamento[]; total: number }>(
+      `/api/v1/agenda${qs ? `?${qs}` : ''}`
+    )
+  },
+
+  criar: (data: Omit<Agendamento, 'id' | 'profissional_id' | 'pacientes'>) =>
+    request<Agendamento>('/api/v1/agenda', { method: 'POST', body: JSON.stringify(data) }),
+
+  detalhe: (id: string) =>
+    request<Agendamento>(`/api/v1/agenda/${id}`),
+
+  atualizar: (id: string, data: Partial<Agendamento>) =>
+    request<Agendamento>(`/api/v1/agenda/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  cancelar: (id: string) =>
+    request<{ ok: boolean; id: string; status: string }>(`/api/v1/agenda/${id}`, { method: 'DELETE' }),
+}
+
+// ── Perfil / Configurações ────────────────────────────────────────────────────
+
+export const perfilApi = {
+  get: () => request<import('@/types').Profissional>('/api/v1/auth/me'),
+
+  update: (data: {
+    nome?: string; especialidade?: string; conselho?: string
+    numero_conselho?: string; telefone?: string; bio?: string
+    avatar_url?: string; evolution_api_url?: string
+    evolution_api_key?: string; evolution_instancia?: string
+  }) => request<import('@/types').Profissional>(
+    '/api/v1/auth/me', { method: 'PUT', body: JSON.stringify(data) }
+  ),
+
+  changePassword: (nova_senha: string) =>
+    request<{ ok: boolean; mensagem: string }>(
+      '/api/v1/auth/me/senha', { method: 'POST', body: JSON.stringify({ nova_senha }) }
+    ),
+
+  testarWhatsApp: () =>
+    request<{ ok: boolean; jobs: unknown[] }>('/api/v1/notificacoes/status'),
 }
