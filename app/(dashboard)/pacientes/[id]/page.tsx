@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { pacientesApi, prontuariosApi } from '@/lib/api'
 import { Paciente, Prontuario } from '@/types'
 import {
-  ArrowLeft, Phone, Mail, FileText, Plus, Calendar,
+  ArrowLeft, Phone, Mail, FileText, Plus, Calendar, Activity,
   ChevronDown, ChevronUp, Edit2, X, Save, User
 } from 'lucide-react'
 import Link from 'next/link'
@@ -265,11 +265,20 @@ export default function PacienteDetailPage() {
         <EditProntuarioModal prontuario={editingProntuario} onSave={handleSaveProntuario} onClose={() => setEditingProntuario(null)} saving={saving} />
       )}
       <div className="max-w-3xl">
-        <div className="flex items-center gap-3 mb-6">
-          <Link href="/pacientes" className="text-gray-400 hover:text-gray-600">
-            <ArrowLeft className="w-5 h-5" />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Link href="/pacientes" className="text-gray-400 hover:text-gray-600">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-900">{paciente.nome}</h1>
+          </div>
+          <Link
+            href={`/pacientes/${id}/mapa`}
+            className="flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <Activity className="w-4 h-4" />
+            Mapa Longitudinal
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">{paciente.nome}</h1>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">
