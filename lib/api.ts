@@ -5,7 +5,7 @@ class ApiError extends Error {
     super(message)
     this.name = 'ApiError'
   }
-}h
+}
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null
