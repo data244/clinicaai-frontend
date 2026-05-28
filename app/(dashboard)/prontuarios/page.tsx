@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { prontuariosApi, pacientesApi, iaApi } from '@/lib/api'
@@ -14,7 +14,7 @@ type FormData = {
   conduta: string; prescricao: string; observacoes: string
 }
 
-export default function ProntuariosPage() {
+function ProntuariosContent() {
   const searchParams = useSearchParams()
   const preselected = searchParams.get('paciente_id') || ''
   const [pacientes, setPacientes] = useState<Paciente[]>([])
@@ -199,5 +199,18 @@ export default function ProntuariosPage() {
         })}
       </div>
     </div>
+  )
+}
+
+
+export default function ProntuariosPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
+      </div>
+    }>
+      <ProntuariosContent />
+    </Suspense>
   )
 }
