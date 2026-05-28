@@ -153,12 +153,15 @@ export default function ProntuariosPage() {
             <p>Nenhum prontuario para este paciente.</p>
           </div>
         )}
-        {prontuarios.map(pr => (
+        {prontuarios.map((pr, index) => {
+          const numero = String(prontuarios.length - index).padStart(2, '0');
+          return (
           <div key={pr.id} className="card hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between cursor-pointer"
               onClick={() => setExpandedId(expandedId === pr.id ? null : pr.id)}>
               <div className="flex items-center gap-3">
                 <span className="text-xs font-medium bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full capitalize">{pr.tipo}</span>
+                <span className="text-xs font-bold text-gray-400 tabular-nums">#{numero}</span>
                 <p className="text-sm font-medium text-gray-800">{pr.queixa_principal || 'Sem queixa registrada'}</p>
               </div>
               <div className="flex items-center gap-3 text-gray-400">
@@ -192,7 +195,8 @@ export default function ProntuariosPage() {
               </div>
             )}
           </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
