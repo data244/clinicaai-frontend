@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { pacientesApi, prontuariosApi } from '@/lib/api'
+import { pacientesApi, prontuariosApi, iaApi } from '@/lib/api'
 import { Paciente, Prontuario } from '@/types'
 import {
   ArrowLeft, Phone, Mail, FileText, Plus, Calendar, Activity,
@@ -215,8 +215,28 @@ export default function PacienteDetailPage() {
   const [editingPaciente, setEditingPaciente] = useState(false)
   const [editingProntuario, setEditingProntuario] = useState<Prontuario | null>(null)
   const [saving, setSaving] = useState(false)
+  const [copiloQuestion, setCopiloQuestion] = useState('')
+  const [copiloResponse, setCopiloResponse] = useState<string | null>(null)
+  const [copiloFontes, setCopiloFontes] = useState<any[]>([])
+  const [copiloLoading, setCopiloLoading] = useState(false)
 
   useEffect(() => { loadData() }, [id])
+
+  async function askCopiloto() {
+    if (!copiloQuestion.trim() || copiloLoading) return
+    setCopiloLoading(true)
+    setCopiloResponse(null)
+    setCopiloFontes([])
+    try {
+      const res = await iaApi.copiloto(copiloQuestion, id as string)
+      setCopiloResponse(res.resposta)
+      setCopiloFontes(res.fontes || [])
+    } catch (e: any) {
+      setCopiloResponse('Erro ao consultar o copiloto: ' + (e.message || 'tente novamente'))
+    } finally {
+      setCopiloLoading(false)
+    }
+  }
 
   const loadData = () => {
     setLoading(true)
@@ -373,6 +393,48 @@ export default function PacienteDetailPage() {
           </div>
         </div>
       </div>
+    {/* Copiloto Clinico */}
+    <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-lg">🤖</span>
+        <h2 className="text-base font-semibold text-gray-800">Copiloto Clínico</h2>
+        <span className="text-xs text-gray-400 ml-1">Pergunte sobre o histórico do paciente</span>
+      </div>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={copiloQuestion}
+          onChange={e => setCopiloQuestion(e.target.value)}
+          onKeyDown={async e => { if (e.key === 'Enter' && !copiloLoading) await askCopiloto() }}
+          placeholder="Ex: Como o paciente descreveu sua relação com o trabalho?"
+          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300"
+        />
+        <button
+          onClick={askCopiloto}
+          disabled={copiloLoading || !copiloQuestion.trim()}
+          className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {copiloLoading ? '...' : 'Perguntar'}
+        </button>
+      </div>
+      {copiloResponse && (
+        <div className="mt-4 p-4 bg-primary-50 rounded-xl">
+          <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{copiloResponse}</p>
+          {copiloFontes.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-primary-100">
+              <p className="text-xs text-gray-400 font-medium mb-1">Baseado em {copiloFontes.length} registro(s)</p>
+              <div className="flex flex-wrap gap-1">
+                {copiloFontes.map((f: any, i: number) => (
+                  <span key={i} className="text-xs bg-white border border-primary-200 text-primary-700 px-2 py-0.5 rounded-full">
+                    {f.data_atendimento ? new Date(f.data_atendimento).toLocaleDateString('pt-BR') : 'Registro ' + (i+1)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
     </>
   )
                                                                                                   }
