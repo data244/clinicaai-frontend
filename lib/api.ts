@@ -138,6 +138,8 @@ export const iaApi = {
     }),
   indexar: (prontuarioId: string) =>
     request<any>(`/api/v1/ia/indexar/${prontuarioId}`, { method: 'POST' }),
+  analiseLongitudinal: (pacienteId: string) =>
+    request<any>(`/api/v1/ia/pacientes/${pacienteId}/analise-longitudinal`),
   copiloto: (pergunta: string, pacienteId?: string, historico?: { role: string; content: string }[]) =>
     request<{ resposta: string; fontes: any[] }>('/api/v1/ia/copiloto', {
       method: 'POST',
