@@ -27,7 +27,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
-      <main className="flex-1 p-8 overflow-auto">
+      {/* Desktop: flex-1, offset by sidebar. Mobile: full width, offset top bar + bottom nav */}
+      <main className="
+        flex-1 overflow-auto
+        md:p-8
+        p-4 pt-[calc(3.5rem+1rem)] pb-[calc(3.5rem+1rem)]
+      ">
         {children}
       </main>
     </div>
