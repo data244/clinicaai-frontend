@@ -367,7 +367,7 @@ export default function MapaLongitudinalPage() {
             <Activity className="w-5 h-5 text-indigo-500" />
             <h1 className="text-xl font-bold text-gray-900">Mapa Longitudinal</h1>
           </div>
-          {data?.paciente && <p className="text-sm text-gray-500 ml-7">{data.paciente as string}</p>}
+          {data?.paciente != null && <p className="text-sm text-gray-500 ml-7">{data.paciente as string}</p>}
         </div>
       </div>
 
