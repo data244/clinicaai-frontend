@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
+import ReactMarkdown from 'react-markdown'
 
 function Field({ label, value }: { label: string; value?: string }) {
   if (!value) return null
@@ -431,7 +432,25 @@ export default function PacienteDetailPage() {
           {copiloMessages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-800'}`}>
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                {msg.role === 'user' ? (
+                  <p className="text-sm leading-relaxed">{msg.content}</p>
+                ) : (
+                  <ReactMarkdown
+                    components={{
+                      h2: ({...props}) => <h2 className="text-sm font-bold mt-3 mb-1" {...props} />,
+                      h3: ({...props}) => <h3 className="text-xs font-semibold uppercase tracking-wide mt-3 mb-1 text-gray-500" {...props} />,
+                      p: ({...props}) => <p className="text-sm leading-relaxed mb-2 last:mb-0" {...props} />,
+                      strong: ({...props}) => <strong className="font-semibold" {...props} />,
+                      ul: ({...props}) => <ul className="text-sm list-disc ml-4 mb-2 space-y-0.5" {...props} />,
+                      ol: ({...props}) => <ol className="text-sm list-decimal ml-4 mb-2 space-y-0.5" {...props} />,
+                      li: ({...props}) => <li className="text-sm leading-relaxed" {...props} />,
+                      blockquote: ({...props}) => <blockquote className="border-l-2 border-indigo-300 pl-3 my-2 italic text-gray-600 text-sm" {...props} />,
+                      hr: ({...props}) => <hr className="my-3 border-gray-200" {...props} />,
+                    }}
+                  >
+                    {msg.content}
+                  </ReactMarkdown>
+                )}
                 {msg.role === 'assistant' && msg.fontes && msg.fontes.length > 0 && (
                   <div className="mt-2 pt-2 border-t border-gray-200">
                     <p className="text-xs text-gray-400 mb-1">Baseado em {msg.fontes.length} registro(s)</p>
