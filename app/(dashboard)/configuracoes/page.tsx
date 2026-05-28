@@ -96,7 +96,7 @@ export default function ConfiguracoesPage() {
         evolution_instancia: evolutionInstancia,
       }
       if (evolutionKey && !evolutionKey.startsWith('••')) {
-        payload.evolution_api_key = evolutionKey
+        updatePayload.evolution_api_key = evolutionKey
       }
       await perfilApi.update(updatePayload)
       showFeedback('success', 'Configuração WhatsApp salva!')
