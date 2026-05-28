@@ -10,7 +10,6 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
-import ReactMarkdown from 'react-markdown'
 
 function Field({ label, value }: { label: string; value?: string }) {
   if (!value) return null
@@ -435,21 +434,7 @@ export default function PacienteDetailPage() {
                 {msg.role === 'user' ? (
                   <p className="text-sm leading-relaxed">{msg.content}</p>
                 ) : (
-                  <ReactMarkdown
-                    components={{
-                      h2: ({...props}) => <h2 className="text-sm font-bold mt-3 mb-1" {...props} />,
-                      h3: ({...props}) => <h3 className="text-xs font-semibold uppercase tracking-wide mt-3 mb-1 text-gray-500" {...props} />,
-                      p: ({...props}) => <p className="text-sm leading-relaxed mb-2 last:mb-0" {...props} />,
-                      strong: ({...props}) => <strong className="font-semibold" {...props} />,
-                      ul: ({...props}) => <ul className="text-sm list-disc ml-4 mb-2 space-y-0.5" {...props} />,
-                      ol: ({...props}) => <ol className="text-sm list-decimal ml-4 mb-2 space-y-0.5" {...props} />,
-                      li: ({...props}) => <li className="text-sm leading-relaxed" {...props} />,
-                      blockquote: ({...props}) => <blockquote className="border-l-2 border-indigo-300 pl-3 my-2 italic text-gray-600 text-sm" {...props} />,
-                      hr: ({...props}) => <hr className="my-3 border-gray-200" {...props} />,
-                    }}
-                  >
-                    {msg.content}
-                  </ReactMarkdown>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                 )}
                 {msg.role === 'assistant' && msg.fontes && msg.fontes.length > 0 && (
                   <div className="mt-2 pt-2 border-t border-gray-200">
