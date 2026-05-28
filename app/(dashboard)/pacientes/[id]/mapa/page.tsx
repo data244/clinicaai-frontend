@@ -124,7 +124,7 @@ function runForce(inputNodes: CMapNode[], W: number, H: number, iters = 250): CM
   }))
 
   for (let it = 0; it < iters; it++) {
-    const cool = 1 - it / iters
+    const cool = Math.max(0.05, 1 - it / iters)
     for (let i = 0; i < particles.length; i++) {
       if (particles[i].fixed) continue
       let fx = 0, fy = 0
@@ -135,28 +135,28 @@ function runForce(inputNodes: CMapNode[], W: number, H: number, iters = 250): CM
         const dx = particles[i].x - particles[j].x
         const dy = particles[i].y - particles[j].y
         const dist2 = dx * dx + dy * dy
-        const minD = particles[i].r + particles[j].r + 14
-        if (dist2 < minD * minD && dist2 > 0.001) {
+        const minD = particles[i].r + particles[j].r + 22
+        if (dist2 < minD * minD * 1.5 && dist2 > 0.001) {
           const dist = Math.sqrt(dist2)
-          const strength = ((minD - dist) / minD) * 2.5
+          const strength = ((minD - dist) / minD) * 4.5
           fx += (dx / dist) * strength
           fy += (dy / dist) * strength
         }
       }
 
-      // Spring back towards original position (keeps cluster structure)
-      const springK = 0.08
+      // Very weak spring — just keeps node on correct side of center
+      const springK = 0.018
       fx += (particles[i].ox - particles[i].x) * springK
       fy += (particles[i].oy - particles[i].y) * springK
 
-      particles[i].vx = (particles[i].vx + fx) * 0.55
-      particles[i].vy = (particles[i].vy + fy) * 0.55
+      particles[i].vx = (particles[i].vx + fx) * 0.45
+      particles[i].vy = (particles[i].vy + fy) * 0.45
       particles[i].x += particles[i].vx * cool
       particles[i].y += particles[i].vy * cool
 
       // Clamp inside SVG
-      particles[i].x = Math.max(particles[i].r + 16, Math.min(W - particles[i].r - 16, particles[i].x))
-      particles[i].y = Math.max(particles[i].r + 18, Math.min(H - particles[i].r - 18, particles[i].y))
+      particles[i].x = Math.max(particles[i].r + 18, Math.min(W - particles[i].r - 18, particles[i].x))
+      particles[i].y = Math.max(particles[i].r + 20, Math.min(H - particles[i].r - 20, particles[i].y))
     }
   }
 
@@ -168,10 +168,10 @@ function buildGraph(analise: Analise, paciente: string | undefined, W: number, H
   const cx = W / 2, cy = H / 2
   const sh = (s: string, n = 13) => s.length > n ? s.slice(0, n - 1) + '…' : s
 
-  function itemPositions(catX: number, catY: number, count: number, dist = 95) {
+  function itemPositions(catX: number, catY: number, count: number, dist = 118) {
     if (count === 0) return []
     const dir = Math.atan2(catY - cy, catX - cx)
-    const spread = count <= 1 ? 0 : Math.min(1.4, (count - 1) * 0.42)
+    const spread = count <= 1 ? 0 : Math.min(2.0, (count - 1) * 0.55)
     return Array.from({ length: count }, (_, i) => {
       const t = count === 1 ? 0 : (i / (count - 1) - 0.5) * 2
       return { x: catX + Math.cos(dir + t * spread / 2) * dist, y: catY + Math.sin(dir + t * spread / 2) * dist }
@@ -179,10 +179,10 @@ function buildGraph(analise: Analise, paciente: string | undefined, W: number, H
   }
 
   const anchors = {
-    padrao:    { x: cx - 195, y: cy - 115 },
-    pessoa:    { x: cx + 195, y: cy - 115 },
-    emocao:    { x: cx - 195, y: cy + 115 },
-    indicador: { x: cx + 195, y: cy + 115 },
+    padrao:    { x: cx - 210, y: cy - 125 },
+    pessoa:    { x: cx + 210, y: cy - 125 },
+    emocao:    { x: cx - 210, y: cy + 125 },
+    indicador: { x: cx + 210, y: cy + 125 },
   }
 
   const nodes: CMapNode[] = []
@@ -191,11 +191,11 @@ function buildGraph(analise: Analise, paciente: string | undefined, W: number, H
   nodes.push({ id:'patient', label:sh(paciente?.split(' ')[0]||'Paciente',11), fullLabel:paciente||'Paciente', category:'patient', x:cx, y:cy, r:32 })
 
   const groups: Array<{ key:NodeCategory; items:any[]; build:(item:any,pos:{x:number,y:number})=>CMapNode }> = [
-    { key:'padrao', items:analise.padroes?.slice(0,7)||[],
+    { key:'padrao', items:analise.padroes?.slice(0,5)||[],
       build:(p:Padrao,pos)=>({ id:'p_'+p.tema.slice(0,20), label:sh(p.tema), fullLabel:p.tema, category:'padrao', x:pos.x, y:pos.y, r:Math.max(12,Math.min(21,8+p.frequencia*1.8)), frequencia:p.frequencia, detail:p.observacao, sessoes:p.sessoes, evolucao:p.evolucao }) },
     { key:'pessoa', items:analise.pessoas_citadas?.slice(0,6)||[],
       build:(p:Pessoa,pos)=>({ id:'ps_'+p.nome_papel.slice(0,20), label:sh(p.nome_papel), fullLabel:p.nome_papel, category:'pessoa', x:pos.x, y:pos.y, r:Math.max(13,Math.min(22,9+p.frequencia*2)), frequencia:p.frequencia, detail:p.contexto, sessoes:p.sessoes }) },
-    { key:'emocao', items:analise.emocoes_dominantes?.slice(0,6)||[],
+    { key:'emocao', items:analise.emocoes_dominantes?.slice(0,5)||[],
       build:(e:Emocao,pos)=>({ id:'e_'+e.emocao.slice(0,20), label:sh(e.emocao), fullLabel:e.emocao, category:'emocao', x:pos.x, y:pos.y, r:Math.max(12,Math.min(20,8+e.frequencia*1.8)), frequencia:e.frequencia, intensidade:e.intensidade }) },
     { key:'indicador', items:analise.indicadores_progresso?.slice(0,6)||[],
       build:(ind:Indicador,pos)=>({ id:'i_'+ind.indicador.slice(0,20), label:sh(ind.indicador), fullLabel:ind.indicador, category:'indicador', x:pos.x, y:pos.y, r:13, detail:ind.indicador, tendencia:ind.tendencia }) },
@@ -204,12 +204,12 @@ function buildGraph(analise: Analise, paciente: string | undefined, W: number, H
   for (const g of groups) {
     const a = anchors[g.key as keyof typeof anchors]
     nodes.push({ id:'cat_'+g.key, label:{padrao:'Padrões',pessoa:'Pessoas',emocao:'Emoções',indicador:'Indicadores'}[g.key], fullLabel:g.key, category:g.key, x:a.x, y:a.y, r:22, isCategory:true })
-    edges.push({ x1:cx, y1:cy, x2:a.x, y2:a.y, cat:g.key, dashed:false })
+    edges.push({ x1:cx, y1:cy, x2:a.x, y2:a.y, cat:g.key, dashed:false, targetId:'cat_'+g.key })
     const pos = itemPositions(a.x, a.y, g.items.length)
     g.items.forEach((item, i) => {
       const node = g.build(item, pos[i])
       nodes.push(node)
-      edges.push({ x1:a.x, y1:a.y, x2:pos[i].x, y2:pos[i].y, cat:g.key, dashed:true })
+      edges.push({ x1:a.x, y1:a.y, x2:pos[i].x, y2:pos[i].y, cat:g.key, dashed:true, targetId:node.id })
     })
   }
   return { nodes, edges }
@@ -221,7 +221,7 @@ function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?:
   const [simNodes, setSimNodes] = useState<CMapNode[]>([])
   const [simEdges, setSimEdges] = useState<{ x1:number; y1:number; x2:number; y2:number; cat:NodeCategory; dashed:boolean }[]>([])
 
-  const W = 720, H = 480
+  const W = 760, H = 510
 
   useEffect(() => {
     if (!analise) return
@@ -254,16 +254,19 @@ function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?:
             ))}
           </defs>
 
-          {simEdges.map((e,i) => {
-            // Recalculate edge endpoints from simNodes
-            const src = simNodes.find(n => e.dashed ? n.id === 'cat_'+e.cat : n.id === 'patient')
-            if (!src) return null
-            const col = NODE_COLORS[e.cat]
-            return <line key={i} x1={src.x} y1={src.y} x2={e.x2} y2={e.y2}
-              stroke={col.bg} strokeWidth={e.dashed ? 1.2 : 2}
-              strokeOpacity={e.dashed ? 0.3 : 0.45}
-              strokeDasharray={e.dashed ? '5 4' : undefined} />
-          })}
+          {(() => {
+            const nMap = new Map(simNodes.map(n => [n.id, n]))
+            return simEdges.map((e,i) => {
+              const src = nMap.get(e.dashed ? 'cat_'+e.cat : 'patient')
+              const dst = e.targetId ? nMap.get(e.targetId) : null
+              if (!src) return null
+              const col = NODE_COLORS[e.cat]
+              return <line key={i} x1={src.x} y1={src.y} x2={dst ? dst.x : e.x2} y2={dst ? dst.y : e.y2}
+                stroke={col.bg} strokeWidth={e.dashed ? 1.2 : 2}
+                strokeOpacity={e.dashed ? 0.28 : 0.42}
+                strokeDasharray={e.dashed ? '5 4' : undefined} />
+            })
+          })()}
 
           {simNodes.map(node => {
             const col = NODE_COLORS[node.category]
