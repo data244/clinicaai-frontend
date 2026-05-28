@@ -6,7 +6,12 @@ export interface Profissional {
   conselho?: string
   numero_conselho?: string
   telefone?: string
+  bio?: string
+  avatar_url?: string
   foto_url?: string
+  evolution_api_url?: string
+  evolution_api_key?: string
+  evolution_instancia?: string
   plano_id?: string
   created_at: string
 }
@@ -44,6 +49,20 @@ export interface Prontuario {
   observacoes?: string
   resumo_ia?: string
   created_at: string
+}
+
+export interface Agendamento {
+  id: string
+  profissional_id: string
+  paciente_id?: string
+  titulo: string
+  data_hora_inicio: string
+  data_hora_fim: string
+  tipo: string
+  status: string
+  observacoes?: string
+  cor?: string
+  pacientes?: Pick<Paciente, 'id' | 'nome' | 'telefone'>
 }
 
 export interface AuthState {
