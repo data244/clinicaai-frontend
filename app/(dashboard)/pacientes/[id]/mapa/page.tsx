@@ -123,14 +123,14 @@ function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?:
     )
   }
 
-  const W = 680, H = 460
+  const W = 680, H = 480
   const cx = W / 2, cy = H / 2
   const sh = (s: string, n = 13) => s.length > n ? s.slice(0, n - 1) + '…' : s
 
-  function itemPositions(catX: number, catY: number, count: number, dist = 90) {
+  function itemPositions(catX: number, catY: number, count: number, dist = 100) {
     if (count === 0) return []
     const dir = Math.atan2(catY - cy, catX - cx)
-    const spread = count <= 1 ? 0 : Math.min(1.3, (count - 1) * 0.4)
+    const spread = count <= 1 ? 0 : Math.min(1.8, (count - 1) * 0.5)
     return Array.from({ length: count }, (_, i) => {
       const t = count === 1 ? 0 : (i / (count - 1) - 0.5) * 2
       const angle = dir + t * (spread / 2)
@@ -173,10 +173,10 @@ function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?:
   }
 
   return (
-    <div className="flex gap-4" style={{ minHeight: 460 }}>
+    <div className="flex gap-4" style={{ minHeight: 480 }}>
       {/* Graph area */}
       <div className="flex-1 rounded-xl border border-gray-100 overflow-hidden" style={{ background:'linear-gradient(135deg,#f8faff 0%,#f0f4ff 50%,#f8fffe 100%)' }}>
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 460 }}>
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 480 }}>
           <defs>
             {(Object.entries(NODE_COLORS) as [NodeCategory, typeof NODE_COLORS[NodeCategory]][]).map(([k,c]) => (
               <radialGradient key={k} id={`grad_${k}`} cx="35%" cy="30%" r="70%">
