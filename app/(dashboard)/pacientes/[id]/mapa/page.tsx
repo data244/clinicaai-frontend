@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import { iaApi } from '@/lib/api'
 import {
   ArrowLeft, Activity, Calendar, FileText, Brain, ChevronDown, ChevronUp,
-  Users, TrendingUp, AlertTriangle, MessageSquare, BarChart2, Sendh, Network
+  Users, TrendingUp, AlertTriangle, MessageSquare, BarChart2, Send, Network
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
