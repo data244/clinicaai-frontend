@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { pacientesApi, prontuariosApi, iaApi } from '@/lib/api'
-import { Paciente } from '@/types'
+import { Paciente, Prontuario } from '@/types'
 import { ArrowLeft, Mic, MicOff, Square, Save, Loader2, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 
@@ -86,10 +86,10 @@ export default function NovoProntuarioAudioPage() {
   const handleSalvar = async () => {
     setSalvando(true); setErro('')
     try {
-      const payload: Record<string, string> = {
+      const payload: Partial<Prontuario> = {
         paciente_id: id,
         tipo,
-        transcricao,
+        anamnese: transcricao,
       }
       if (queixa) payload.queixa_principal = queixa
       if (conduta) payload.conduta = conduta
