@@ -137,9 +137,32 @@ export const iaApi = {
       { method: 'POST', body: JSON.stringify({ pergunta, paciente_id: pacienteId, historico }) }
     ),
 
-  analiseLongitudinal: (pacienteId: string) =>
-    request<Record<string, unknown>>(
-      `/api/v1/ia/pacientes/${pacienteId}/analise-longitudinal`
+  analiseLongitudinal: (pacienteId: string, forceRefresh = false) =>
+    request<{
+      paciente: string
+      total_sessoes: number
+      analise: Record<string, unknown> | null
+      prontuarios: Record<string, unknown>[]
+      from_cache?: boolean
+    }>(`/api/v1/ia/pacientes/${pacienteId}/analise-longitudinal${forceRefresh ? '?force_refresh=true' : ''}`),
+
+  carregarHistorico: (pacienteId: string) =>
+    request<{ mensagens: { role: string; content: string; timestamp?: string }[]; updated_at: string | null }>(
+      `/api/v1/ia/copiloto/historico/${pacienteId}`
+    ),
+
+  salvarHistorico: (pacienteId: string, mensagens: { role: string; content: string; timestamp?: string }[]) =>
+    request<{ ok: boolean }>(
+      '/api/v1/ia/copiloto/historico',
+      { method: 'POST', body: JSON.stringify({ paciente_id: pacienteId, mensagens }) }
+    ),
+
+  apagarHistorico: (pacienteId: string) =>
+    request<{ ok: boolean }>(`/api/v1/ia/copiloto/historico/${pacienteId}`, { method: 'DELETE' }),
+
+  backfillEmbeddings: () =>
+    request<{ mensagem: string; processados: number; erros: number; total_encontrados: number }>(
+      '/api/v1/ia/backfill-embeddings', { method: 'POST' }
     ),
 }
 
