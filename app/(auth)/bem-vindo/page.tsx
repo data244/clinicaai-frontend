@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
+import { Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CheckCircle, Clock, ArrowRight } from 'lucide-react'
 
-export default function BemVindoPage() {
+function BemVindoContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const status = searchParams.get('status')
@@ -56,5 +56,13 @@ export default function BemVindoPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function BemVindoPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>}>
+      <BemVindoContent />
+    </Suspense>
   )
 }
