@@ -230,3 +230,23 @@ export const perfilApi = {
   testarWhatsApp: () =>
     request<{ ok: boolean; jobs: unknown[] }>('/api/v1/notificacoes/status'),
 }
+
+// ── Assinaturas ───────────────────────────────────────────────────────────────
+
+export const assinaturaApi = {
+  planos: () => request<{ planos: Record<string, unknown> }>('/api/v1/assinatura/planos', {}, false),
+
+  status: () => request<{
+    plano: string
+    status_conta: string
+    plano_expiracao: string | null
+    ultima_assinatura: Record<string, unknown> | null
+    detalhes_plano: Record<string, unknown>
+  }>('/api/v1/assinatura/status'),
+
+  retomar: () => request<{ init_point: string; plano: string }>('/api/v1/assinatura/retomar', { method: 'POST' }),
+
+  upgrade: (novo_plano: string) => request<{ init_point: string; novo_plano: string }>(
+    '/api/v1/assinatura/upgrade', { method: 'POST', body: JSON.stringify({ novo_plano }) }
+  ),
+}
