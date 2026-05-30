@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ChevronLeft, ChevronRight, Plus, X, Clock, User, FileText, AlertCircle, DollarSign, Copy, Check, ExternalLink } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, X, Clock, User, FileText, AlertCircle, DollarSign, Copy, Check, ExternalLink, Repeat } from 'lucide-react'
 import { agendaApi, pacientesApi, Agendamento } from '@/lib/api'
+import { seriesApi } from '@/lib/series-api'
 
 // ── Helpers de data ────────────────────────────────────────────────────────────
 
@@ -27,10 +28,6 @@ function isoDate(date: Date): string {
 
 function formatHour(h: number): string {
   return `${String(h).padStart(2, '0')}:00`
-}
-
-function formatDateHeader(date: Date): string {
-  return date.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })
 }
 
 function formatMonthYear(date: Date): string {
@@ -63,10 +60,18 @@ interface ModalProps {
   pacientes: { id: string; nome: string }[]
   onClose: () => void
   onSave: (data: Partial<Agendamento>) => Promise<void>
+  onSaveSerie: (data: {
+    paciente_id: string
+    titulo: string
+    frequencia: 'semanal' | 'quinzenal'
+    data_hora_inicio: string
+    valor_sessao: number
+    sessoes_por_mes: number
+  }) => Promise<void>
   onDelete?: (id: string) => Promise<void>
 }
 
-function ModalAgendamento({ evento, pacientes, onClose, onSave, onDelete }: ModalProps) {
+function ModalAgendamento({ evento, pacientes, onClose, onSave, onSaveSerie, onDelete }: ModalProps) {
   const isNew = !evento?.id
   const [form, setForm] = useState({
     titulo: evento?.titulo || '',
@@ -77,23 +82,50 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onDelete }: Moda
     status: evento?.status || 'agendado',
     observacoes: evento?.observacoes || '',
   })
+  const [repetir, setRepetir] = useState<'nao' | 'semanal' | 'quinzenal'>('nao')
+  const [valorSessao, setValorSessao] = useState('')
+  const [sessoesMes, setSessoesMes] = useState('4')
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
+
+  const recorrente = isNew && repetir !== 'nao'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErro('')
-    if (!form.titulo || !form.data_hora_inicio || !form.data_hora_fim) {
-      setErro('Preencha título, data/hora início e fim.')
+    if (!form.titulo || !form.data_hora_inicio) {
+      setErro('Preencha título e data/hora de início.')
       return
+    }
+    if (!recorrente && !form.data_hora_fim) {
+      setErro('Preencha a data/hora de fim.')
+      return
+    }
+    if (recorrente) {
+      if (!form.paciente_id) { setErro('Selecione um paciente para o tratamento recorrente.'); return }
+      const v = parseFloat(valorSessao.replace(',', '.'))
+      const n = parseInt(sessoesMes, 10)
+      if (!v || v <= 0) { setErro('Informe o valor por sessão.'); return }
+      if (!n || n <= 0) { setErro('Informe o número de sessões por mês.'); return }
     }
     setLoading(true)
     try {
-      await onSave({
-        ...form,
-        paciente_id: form.paciente_id || null,
-        id: evento?.id,
-      })
+      if (recorrente) {
+        await onSaveSerie({
+          paciente_id: form.paciente_id,
+          titulo: form.titulo,
+          frequencia: repetir,
+          data_hora_inicio: form.data_hora_inicio,
+          valor_sessao: parseFloat(valorSessao.replace(',', '.')),
+          sessoes_por_mes: parseInt(sessoesMes, 10),
+        })
+      } else {
+        await onSave({
+          ...form,
+          paciente_id: form.paciente_id || null,
+          id: evento?.id,
+        })
+      }
       onClose()
     } catch (err: unknown) {
       setErro(err instanceof Error ? err.message : 'Erro ao salvar')
@@ -116,9 +148,15 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onDelete }: Moda
     }
   }
 
+  const totalRecorrente = (() => {
+    const v = parseFloat(valorSessao.replace(',', '.')) || 0
+    const n = parseInt(sessoesMes, 10) || 0
+    return (v * n).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  })()
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="text-lg font-semibold text-gray-900">
@@ -173,15 +211,67 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onDelete }: Moda
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fim *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Fim {recorrente ? '' : '*'}
+              </label>
               <input
                 type="datetime-local"
-                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                disabled={recorrente}
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-400"
                 value={form.data_hora_fim}
                 onChange={e => setForm(f => ({ ...f, data_hora_fim: e.target.value }))}
               />
             </div>
           </div>
+
+          {/* Repetir (tratamento recorrente) — apenas em novo agendamento */}
+          {isNew && (
+            <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-3 space-y-3">
+              <label className="flex items-center gap-2 text-sm font-medium text-indigo-800">
+                <Repeat size={14} /> Repetir (tratamento recorrente)
+              </label>
+              <select
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={repetir}
+                onChange={e => setRepetir(e.target.value as 'nao' | 'semanal' | 'quinzenal')}
+              >
+                <option value="nao">Não repetir (sessão avulsa)</option>
+                <option value="semanal">Semanal</option>
+                <option value="quinzenal">Quinzenal</option>
+              </select>
+              {recorrente && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Valor por sessão</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">R$</span>
+                      <input
+                        inputMode="decimal"
+                        placeholder="0,00"
+                        className="w-full border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        value={valorSessao}
+                        onChange={e => setValorSessao(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Sessões por mês</label>
+                    <input
+                      type="number"
+                      min={1}
+                      className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      value={sessoesMes}
+                      onChange={e => setSessoesMes(e.target.value)}
+                    />
+                  </div>
+                  <p className="col-span-2 text-[11px] text-gray-500">
+                    Cria {sessoesMes || '0'} consultas ({repetir}) e 1 cobrança adiantada de{' '}
+                    <strong>{totalRecorrente}</strong> por mês, até você encerrar o tratamento.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Tipo + Status */}
           <div className="grid grid-cols-2 gap-3">
@@ -256,7 +346,7 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onDelete }: Moda
                 disabled={loading}
                 className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
               >
-                {loading ? 'Salvando...' : 'Salvar'}
+                {loading ? 'Salvando...' : (recorrente ? 'Criar tratamento' : 'Salvar')}
               </button>
             </div>
           </div>
@@ -432,6 +522,25 @@ export default function AgendaPage() {
     await carregarAgendamentos()
   }
 
+  const handleSaveSerie = async (data: {
+    paciente_id: string
+    titulo: string
+    frequencia: 'semanal' | 'quinzenal'
+    data_hora_inicio: string
+    valor_sessao: number
+    sessoes_por_mes: number
+  }) => {
+    await seriesApi.criar(data)
+    await carregarAgendamentos()
+  }
+
+  const handleEncerrarSerie = async (serieId: string) => {
+    if (!confirm('Encerrar o tratamento? As consultas e cobranças deixam de ser geradas para os próximos meses (as já criadas permanecem).')) return
+    await seriesApi.encerrar(serieId)
+    await carregarAgendamentos()
+    setEventoClick(null)
+  }
+
   const handleDelete = async (id: string) => {
     await agendaApi.cancelar(id)
     await carregarAgendamentos()
@@ -451,6 +560,7 @@ export default function AgendaPage() {
   }
 
   const hoje = isoDate(new Date())
+  const serieIdEvento = eventoClick ? (eventoClick as Agendamento & { serie_id?: string }).serie_id : undefined
 
   return (
     <div className="flex flex-col h-full bg-gray-50">
@@ -617,6 +727,11 @@ export default function AgendaPage() {
                 <span className={`text-xs px-2 py-0.5 rounded-full ${TIPO_CONFIG[eventoClick.tipo]?.bg} ${TIPO_CONFIG[eventoClick.tipo]?.color}`}>
                   {TIPO_CONFIG[eventoClick.tipo]?.label}
                 </span>
+                {serieIdEvento && (
+                  <span className="ml-1 inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                    <Repeat size={11} /> Recorrente
+                  </span>
+                )}
               </div>
               <button onClick={() => setEventoClick(null)} className="p-1 hover:bg-gray-100 rounded-lg">
                 <X size={16} className="text-gray-400" />
@@ -651,8 +766,23 @@ export default function AgendaPage() {
               </div>
             </div>
 
-            {/* Gerar cobrança vinculada */}
-            <CobrancaSection evento={eventoClick} />
+            {/* Gerar cobrança avulsa — apenas para sessões NÃO recorrentes */}
+            {!serieIdEvento && <CobrancaSection evento={eventoClick} />}
+
+            {/* Encerrar tratamento — apenas para sessões de uma série ativa */}
+            {serieIdEvento && eventoClick.status !== 'cancelado' && (
+              <div className="mt-4 pt-4 border-t">
+                <button
+                  onClick={() => handleEncerrarSerie(serieIdEvento)}
+                  className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700"
+                >
+                  <X size={15} /> Encerrar tratamento
+                </button>
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Para de gerar novas consultas e cobranças nos próximos meses.
+                </p>
+              </div>
+            )}
 
             <div className="flex gap-2 mt-4">
               <button
@@ -679,6 +809,7 @@ export default function AgendaPage() {
           pacientes={pacientes}
           onClose={() => setModal(false)}
           onSave={handleSave}
+          onSaveSerie={handleSaveSerie}
           onDelete={modal?.id ? handleDelete : undefined}
         />
       )}
