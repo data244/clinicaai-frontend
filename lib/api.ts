@@ -205,6 +205,14 @@ export const agendaApi = {
 
   cancelar: (id: string) =>
     request<{ ok: boolean; id: string; status: string }>(`/api/v1/agenda/${id}`, { method: 'DELETE' }),
+
+  gerarCobranca: (id: string, data: { valor: number; descricao?: string; data_vencimento?: string; gerar_link?: boolean }) =>
+    request<{
+      cobranca: { id: string; valor: number; descricao: string; data_vencimento: string; status: string; link_pagamento?: string }
+      link?: string | null
+      ja_existia: boolean
+      aviso?: string | null
+    }>(`/api/v1/agenda/${id}/gerar-cobranca`, { method: 'POST', body: JSON.stringify(data) }),
 }
 
 // ── Perfil / Configurações ────────────────────────────────────────────────────

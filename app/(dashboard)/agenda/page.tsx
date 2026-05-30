@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ChevronLeft, ChevronRight, Plus, X, Clock, User, FileText, AlertCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, X, Clock, User, FileText, AlertCircle, DollarSign, Copy, Check, ExternalLink } from 'lucide-react'
 import { agendaApi, pacientesApi, Agendamento } from '@/lib/api'
 
 // ── Helpers de data ────────────────────────────────────────────────────────────
@@ -262,6 +262,113 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onDelete }: Moda
           </div>
         </form>
       </div>
+    </div>
+  )
+}
+
+// ── Seção: gerar cobrança vinculada ao agendamento ───────────────────────────────
+
+function CobrancaSection({ evento }: { evento: Agendamento }) {
+  const [aberto, setAberto] = useState(false)
+  const [valor, setValor] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [erro, setErro] = useState('')
+  const [aviso, setAviso] = useState('')
+  const [link, setLink] = useState('')
+  const [copiado, setCopiado] = useState(false)
+
+  const semPaciente = !evento.paciente_id
+  const cancelado = evento.status === 'cancelado'
+
+  const handleGerar = async () => {
+    setErro(''); setAviso('')
+    const v = parseFloat(valor.replace(',', '.'))
+    if (!v || v <= 0) { setErro('Informe um valor válido.'); return }
+    if (!evento.id) return
+    setLoading(true)
+    try {
+      const res = await agendaApi.gerarCobranca(evento.id, { valor: v })
+      setLink(res.link || res.cobranca?.link_pagamento || '')
+      if (res.aviso) setAviso(res.aviso)
+      else if (res.ja_existia) setAviso('Já existia uma cobrança para este agendamento.')
+    } catch (err: unknown) {
+      setErro(err instanceof Error ? err.message : 'Erro ao gerar cobrança')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const copiar = () => {
+    if (!link) return
+    navigator.clipboard.writeText(link)
+    setCopiado(true)
+    setTimeout(() => setCopiado(false), 2000)
+  }
+
+  if (cancelado) return null
+
+  return (
+    <div className="mt-4 pt-4 border-t">
+      {!aberto ? (
+        <button
+          onClick={() => setAberto(true)}
+          disabled={semPaciente}
+          title={semPaciente ? 'Vincule um paciente ao agendamento primeiro' : ''}
+          className="flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <DollarSign size={15} /> Gerar cobrança
+        </button>
+      ) : (
+        <div className="space-y-2">
+          <label className="block text-xs font-medium text-gray-600">Valor da cobrança</label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">R$</span>
+              <input
+                autoFocus
+                inputMode="decimal"
+                className="w-full border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="0,00"
+                value={valor}
+                onChange={e => setValor(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={handleGerar}
+              disabled={loading}
+              className="px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 whitespace-nowrap"
+            >
+              {loading ? 'Gerando...' : 'Gerar'}
+            </button>
+          </div>
+
+          {erro && (
+            <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 rounded-lg p-2">
+              <AlertCircle size={14} /> {erro}
+            </div>
+          )}
+          {aviso && (
+            <div className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 rounded-lg p-2">
+              <AlertCircle size={14} className="mt-0.5 flex-shrink-0" /> {aviso}
+            </div>
+          )}
+          {link && (
+            <div className="space-y-1">
+              <span className="text-xs text-emerald-700 font-medium">Link de pagamento gerado:</span>
+              <div className="flex gap-2">
+                <input readOnly value={link} className="flex-1 border rounded-lg px-2 py-1.5 text-xs bg-gray-50 text-gray-600" />
+                <button onClick={copiar} className="px-2 py-1.5 border rounded-lg hover:bg-gray-50" title="Copiar">
+                  {copiado ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} className="text-gray-500" />}
+                </button>
+                <a href={link} target="_blank" rel="noopener noreferrer" className="px-2 py-1.5 border rounded-lg hover:bg-gray-50" title="Abrir">
+                  <ExternalLink size={14} className="text-gray-500" />
+                </a>
+              </div>
+              <p className="text-[11px] text-gray-400">O link também será incluído no lembrete D-1 enviado ao paciente.</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -543,6 +650,9 @@ export default function AgendaPage() {
                 {STATUS_CONFIG[eventoClick.status]?.label}
               </div>
             </div>
+
+            {/* Gerar cobrança vinculada */}
+            <CobrancaSection evento={eventoClick} />
 
             <div className="flex gap-2 mt-4">
               <button
