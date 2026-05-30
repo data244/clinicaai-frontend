@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { pacientesApi, prontuariosApi, iaApi } from '@/lib/api'
-import { Paciente, Prontuario } from '@/types'
+import { Paciente } from '@/types'
 import { ArrowLeft, Mic, MicOff, Square, Save, Loader2, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 
@@ -74,6 +74,7 @@ export default function NovoProntuarioAudioPage() {
         const data = await res.json()
         const texto = data.transcricao || data.texto || ''
         setTranscricao(texto)
+        // Auto-popula queixa com primeiros 200 chars
         if (texto && !queixa) setQueixa(texto.slice(0, 200))
         setFase('revisao')
       } catch (e: unknown) {
@@ -86,15 +87,16 @@ export default function NovoProntuarioAudioPage() {
   const handleSalvar = async () => {
     setSalvando(true); setErro('')
     try {
-      const payload: Partial<Prontuario> = {
+      const payload: Record<string, string> = {
         paciente_id: id,
         tipo,
-        anamnese: transcricao,
+        transcricao,
       }
       if (queixa) payload.queixa_principal = queixa
       if (conduta) payload.conduta = conduta
       if (observacoes) payload.observacoes = observacoes
       const novo = await prontuariosApi.create(payload)
+      // Gerar resumo IA em background (não bloquear)
       iaApi.gerarResumo(novo.id).catch(() => {})
       setFase('salvo')
       setTimeout(() => router.push(`/pacientes/${id}`), 1500)

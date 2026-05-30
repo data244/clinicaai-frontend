@@ -217,6 +217,7 @@ export const perfilApi = {
     numero_conselho?: string; telefone?: string; bio?: string
     avatar_url?: string; evolution_api_url?: string
     evolution_api_key?: string; evolution_instancia?: string
+    mercadopago_access_token?: string
   }) => request<import('@/types').Profissional>(
     '/api/v1/auth/me', { method: 'PUT', body: JSON.stringify(data) }
   ),

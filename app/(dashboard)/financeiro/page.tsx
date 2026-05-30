@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react'
 import { request } from '@/lib/api'
 import {
   DollarSign, Plus, CheckCircle, Clock, AlertCircle, XCircle,
-  ChevronDown, ChevronUp, Loader2, Trash2, Search, Filter
+  ChevronDown, ChevronUp, Loader2, Trash2, Search, ExternalLink, Link2,
+  RefreshCw
 } from 'lucide-react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Paciente { id: string; nome: string; whatsapp?: string; telefone?: string }
+
+type Recorrencia = 'nenhuma' | 'semanal' | 'quinzenal' | 'mensal'
 
 interface Cobranca {
   id: string
@@ -18,6 +21,8 @@ interface Cobranca {
   valor: number
   data_vencimento: string
   status: 'pendente' | 'pago' | 'vencido' | 'cancelado'
+  recorrencia: Recorrencia
+  cobranca_pai_id?: string
   observacoes?: string
   link_pagamento?: string
   data_pagamento?: string
@@ -52,6 +57,13 @@ function statusConfig(s: string) {
   }
 }
 
+const RECORRENCIA_LABELS: Record<Recorrencia, string> = {
+  nenhuma:   'Sem recorrência',
+  semanal:   'Semanal',
+  quinzenal: 'Quinzenal',
+  mensal:    'Mensal',
+}
+
 // ─── Modal Nova Cobrança ──────────────────────────────────────────────────────
 
 function ModalNovaCobranca({
@@ -59,7 +71,8 @@ function ModalNovaCobranca({
 }: { onClose: () => void; onSaved: () => void }) {
   const [pacientes, setPacientes] = useState<Paciente[]>([])
   const [form, setForm] = useState({
-    paciente_id: '', descricao: '', valor: '', data_vencimento: '', observacoes: ''
+    paciente_id: '', descricao: '', valor: '', data_vencimento: '',
+    recorrencia: 'nenhuma' as Recorrencia, observacoes: ''
   })
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
@@ -83,6 +96,7 @@ function ModalNovaCobranca({
           descricao: form.descricao,
           valor: parseFloat(form.valor.replace(',', '.')),
           data_vencimento: form.data_vencimento,
+          recorrencia: form.recorrencia,
           observacoes: form.observacoes || undefined,
         }),
       })
@@ -138,7 +152,7 @@ function ModalNovaCobranca({
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-600 block mb-1">Vencimento *</label>
+              <label className="text-xs font-medium text-gray-600 block mb-1">1º vencimento *</label>
               <input
                 type="date"
                 value={form.data_vencimento}
@@ -147,6 +161,35 @@ function ModalNovaCobranca({
               />
             </div>
           </div>
+
+          {/* Recorrência */}
+          <div>
+            <label className="text-xs font-medium text-gray-600 block mb-1">Recorrência</label>
+            <div className="grid grid-cols-2 gap-2">
+              {(['nenhuma', 'semanal', 'quinzenal', 'mensal'] as Recorrencia[]).map(r => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, recorrencia: r }))}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-colors ${
+                    form.recorrencia === r
+                      ? 'border-primary-500 bg-primary-50 text-primary-700'
+                      : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                  }`}
+                >
+                  {r !== 'nenhuma' && <RefreshCw className="w-3 h-3" />}
+                  {RECORRENCIA_LABELS[r]}
+                </button>
+              ))}
+            </div>
+            {form.recorrencia !== 'nenhuma' && (
+              <p className="text-xs text-primary-600 mt-1.5 flex items-center gap-1">
+                <RefreshCw className="w-3 h-3" />
+                A próxima cobrança será gerada automaticamente ao marcar como paga.
+              </p>
+            )}
+          </div>
+
           <div>
             <label className="text-xs font-medium text-gray-600 block mb-1">Observações</label>
             <textarea
@@ -183,6 +226,7 @@ function CobrancaCard({ c, onAtualizar }: { c: Cobranca; onAtualizar: () => void
   const [loading, setLoading] = useState(false)
   const cfg = statusConfig(c.status)
   const Icon = cfg.icon
+  const ehRecorrente = c.recorrencia && c.recorrencia !== 'nenhuma'
 
   async function marcarPago() {
     setLoading(true)
@@ -201,6 +245,19 @@ function CobrancaCard({ c, onAtualizar }: { c: Cobranca; onAtualizar: () => void
     } finally { setLoading(false) }
   }
 
+  async function gerarLink() {
+    setLoading(true)
+    try {
+      const res = await request<{ link: string; sandbox: boolean }>(
+        `/api/v1/financeiro/${c.id}/gerar-link`, { method: 'POST' }
+      )
+      onAtualizar()
+      window.open(res.link, '_blank')
+    } catch (e: unknown) {
+      alert((e as Error).message || 'Erro ao gerar link')
+    } finally { setLoading(false) }
+  }
+
   return (
     <div className={`bg-white rounded-xl border shadow-sm overflow-hidden ${c.status === 'cancelado' ? 'opacity-60' : ''}`}>
       <div
@@ -208,12 +265,18 @@ function CobrancaCard({ c, onAtualizar }: { c: Cobranca; onAtualizar: () => void
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             <p className="text-sm font-medium text-gray-900 truncate">{c.descricao}</p>
             <span className={`text-xs px-2 py-0.5 rounded-full border font-medium flex items-center gap-1 shrink-0 ${cfg.cls}`}>
               <Icon className="w-3 h-3" />
               {cfg.label}
             </span>
+            {ehRecorrente && (
+              <span className="text-xs px-2 py-0.5 rounded-full border font-medium flex items-center gap-1 shrink-0 bg-purple-50 text-purple-700 border-purple-200">
+                <RefreshCw className="w-3 h-3" />
+                {RECORRENCIA_LABELS[c.recorrencia]}
+              </span>
+            )}
           </div>
           <p className="text-xs text-gray-500">
             {c.pacientes?.nome} · Vence {fmtData(c.data_vencimento)}
@@ -235,16 +298,43 @@ function CobrancaCard({ c, onAtualizar }: { c: Cobranca; onAtualizar: () => void
           {c.data_pagamento && (
             <p className="text-xs text-green-600">Pago em {fmtData(c.data_pagamento)}</p>
           )}
+          {ehRecorrente && c.status === 'pago' && (
+            <p className="text-xs text-purple-600 flex items-center gap-1">
+              <RefreshCw className="w-3 h-3" />
+              Próxima cobrança gerada automaticamente.
+            </p>
+          )}
+          {c.link_pagamento && (
+            <a
+              href={c.link_pagamento}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-700 font-medium"
+            >
+              <ExternalLink className="w-3 h-3" />
+              Ver link de pagamento
+            </a>
+          )}
           {c.status !== 'pago' && c.status !== 'cancelado' && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={marcarPago}
                 disabled={loading}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-green-600 text-white text-xs font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
-                Marcar como pago
+                {ehRecorrente ? 'Pago — gerar próxima' : 'Marcar como pago'}
               </button>
+              {!c.link_pagamento && (
+                <button
+                  onClick={gerarLink}
+                  disabled={loading}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-primary-200 text-primary-600 text-xs font-medium hover:bg-primary-50 transition-colors disabled:opacity-50"
+                >
+                  <Link2 className="w-3.5 h-3.5" />
+                  Gerar link MP
+                </button>
+              )}
               <button
                 onClick={cancelar}
                 disabled={loading}

@@ -1,208 +1,28 @@
 'use client'
-
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { pacientesApi, prontuariosApi, iaApi } from '@/lib/api'
+import { pacientesApi, prontuariosApi } from '@/lib/api'
 import { Paciente, Prontuario } from '@/types'
-import {
-  ArrowLeft, Phone, Mail, FileText, Plus, Calendar, Activity,
-  ChevronDown, ChevronUp, Edit2, X, Save, User
-} from 'lucide-react'
+import { ArrowLeft, Phone, Mail, FileText, Plus, Calendar, TrendingUp, X, Mic, Save, Pencil } from 'lucide-react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
 
-function Field({ label, value }: { label: string; value?: string }) {
-  if (!value) return null
-  return (
-    <div className="py-2.5 border-b border-gray-100 last:border-0">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">{label}</p>
-      <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{value}</p>
-    </div>
-  )
+const TIPOS = ['consulta', 'retorno', 'exame', 'evolucao', 'anamnese'] as const
+
+interface ProntuarioForm {
+  tipo: string
+  queixa_principal: string
+  anamnese: string
+  exame_fisico: string
+  hipotese_diagnostica: string
+  conduta: string
+  prescricao: string
+  observacoes: string
 }
 
-function EditProntuarioModal({
-  prontuario,
-  onSave,
-  onClose,
-  saving,
-}: {
-  prontuario: Prontuario
-  onSave: (data: Partial<Prontuario>) => Promise<void>
-  onClose: () => void
-  saving: boolean
-}) {
-  const [form, setForm] = useState({
-    tipo: prontuario.tipo || 'consulta',
-    queixa_principal: prontuario.queixa_principal || '',
-    anamnese: prontuario.anamnese || '',
-    exame_fisico: prontuario.exame_fisico || '',
-    hipotese_diagnostica: prontuario.hipotese_diagnostica || '',
-    conduta: prontuario.conduta || '',
-    prescricao: prontuario.prescricao || '',
-    observacoes: prontuario.observacoes || '',
-  })
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement | HTMLSelectElement>) =>
-    setForm(f => ({ ...f, [k]: e.target.value }))
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 py-8 px-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h3 className="font-semibold text-gray-900">Editar prontuario</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="px-6 py-4 space-y-4 max-h-[65vh] overflow-y-auto">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Tipo de atendimento</label>
-            <select value={form.tipo} onChange={set('tipo')} className="input text-sm w-full">
-              <option value="consulta">Consulta</option>
-              <option value="retorno">Retorno</option>
-              <option value="avaliacao">Avaliacao</option>
-              <option value="sessao">Sessao</option>
-              <option value="evolucao">Evolucao</option>
-              <option value="anamnese">Anamnese</option>
-              <option value="outro">Outro</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Queixa principal</label>
-            <input value={form.queixa_principal} onChange={set('queixa_principal')} className="input text-sm w-full" placeholder="Motivo da consulta..." />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Anamnese / Relato</label>
-            <textarea value={form.anamnese} onChange={set('anamnese')} rows={7} className="input text-sm w-full resize-y" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Exame fisico</label>
-            <textarea value={form.exame_fisico} onChange={set('exame_fisico')} rows={3} className="input text-sm w-full resize-none" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Hipotese diagnostica</label>
-            <textarea value={form.hipotese_diagnostica} onChange={set('hipotese_diagnostica')} rows={2} className="input text-sm w-full resize-none" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Conduta / Plano terapeutico</label>
-            <textarea value={form.conduta} onChange={set('conduta')} rows={3} className="input text-sm w-full resize-none" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Prescricao</label>
-            <textarea value={form.prescricao} onChange={set('prescricao')} rows={2} className="input text-sm w-full resize-none" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Observacoes</label>
-            <textarea value={form.observacoes} onChange={set('observacoes')} rows={2} className="input text-sm w-full resize-none" />
-          </div>
-        </div>
-        <div className="flex justify-end gap-2 px-6 py-4 border-t border-gray-100">
-          <button onClick={onClose} className="btn-ghost text-sm">Cancelar</button>
-          <button onClick={() => onSave(form)} disabled={saving} className="btn-primary text-sm flex items-center gap-1.5">
-            <Save className="w-3.5 h-3.5" />
-            {saving ? 'Salvando...' : 'Salvar prontuario'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function EditPacienteModal({
-  paciente,
-  onSave,
-  onClose,
-  saving,
-}: {
-  paciente: Paciente
-  onSave: (data: Partial<Paciente>) => Promise<void>
-  onClose: () => void
-  saving: boolean
-}) {
-  const [form, setForm] = useState({
-    nome: paciente.nome || '',
-    telefone: paciente.telefone || '',
-    email: paciente.email || '',
-    whatsapp: paciente.whatsapp || '',
-    data_nascimento: paciente.data_nascimento || '',
-    sexo: paciente.sexo || '',
-    convenio: paciente.convenio || '',
-    numero_convenio: paciente.numero_convenio || '',
-    observacoes: paciente.observacoes || '',
-  })
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm(f => ({ ...f, [k]: e.target.value }))
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-            <User className="w-4 h-4 text-gray-400" /> Editar paciente
-          </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="px-6 py-4 space-y-3 max-h-[65vh] overflow-y-auto">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Nome completo</label>
-            <input value={form.nome} onChange={set('nome')} className="input text-sm w-full" required />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Telefone</label>
-              <input value={form.telefone} onChange={set('telefone')} className="input text-sm w-full" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">WhatsApp</label>
-              <input value={form.whatsapp} onChange={set('whatsapp')} className="input text-sm w-full" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
-            <input value={form.email} onChange={set('email')} type="email" className="input text-sm w-full" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Data de nascimento</label>
-              <input value={form.data_nascimento} onChange={set('data_nascimento')} type="date" className="input text-sm w-full" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Sexo</label>
-              <select value={form.sexo} onChange={set('sexo')} className="input text-sm w-full">
-                <option value="">Nao informado</option>
-                <option value="M">Masculino</option>
-                <option value="F">Feminino</option>
-                <option value="O">Outro</option>
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Convenio</label>
-              <input value={form.convenio} onChange={set('convenio')} className="input text-sm w-full" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Nr convenio</label>
-              <input value={form.numero_convenio} onChange={set('numero_convenio')} className="input text-sm w-full" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Observacoes</label>
-            <textarea value={form.observacoes} onChange={set('observacoes')} rows={2} className="input text-sm w-full resize-none" />
-          </div>
-        </div>
-        <div className="flex justify-end gap-2 px-6 py-4 border-t border-gray-100">
-          <button onClick={onClose} className="btn-ghost text-sm">Cancelar</button>
-          <button onClick={() => onSave(form)} disabled={saving} className="btn-primary text-sm flex items-center gap-1.5">
-            <Save className="w-3.5 h-3.5" />
-            {saving ? 'Salvando...' : 'Salvar'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
+const formVazio: ProntuarioForm = {
+  tipo: 'consulta', queixa_principal: '', anamnese: '', exame_fisico: '',
+  hipotese_diagnostica: '', conduta: '', prescricao: '', observacoes: '',
 }
 
 export default function PacienteDetailPage() {
@@ -211,95 +31,142 @@ export default function PacienteDetailPage() {
   const [paciente, setPaciente] = useState<Paciente | null>(null)
   const [prontuarios, setProntuarios] = useState<Prontuario[]>([])
   const [loading, setLoading] = useState(true)
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [editingPaciente, setEditingPaciente] = useState(false)
-  const [editingProntuario, setEditingProntuario] = useState<Prontuario | null>(null)
-  const [saving, setSaving] = useState(false)
-  const [copiloMessages, setCopiloMessages] = useState<{ role: 'user'|'assistant'; content: string; fontes?: any[] }[]>([])
-  const [copiloQuestion, setCopiloQuestion] = useState('')
-  const [copiloLoading, setCopiloLoading] = useState(false)
-  const copiloEndRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { loadData() }, [id])
+  // Modal de criação
+  const [modalAberto, setModalAberto] = useState(false)
+  const [form, setForm] = useState<ProntuarioForm>(formVazio)
+  const [salvando, setSalvando] = useState(false)
+  const [erro, setErro] = useState('')
+
+  // Modal de edição
+  const [editando, setEditando] = useState<Prontuario | null>(null)
+  const [formEdit, setFormEdit] = useState<ProntuarioForm>(formVazio)
+  const [salvandoEdit, setSalvandoEdit] = useState(false)
+  const [erroEdit, setErroEdit] = useState('')
 
   useEffect(() => {
-    if (id && typeof window !== 'undefined') {
-      const saved = window.localStorage.getItem('copiloto_' + id)
-      if (saved) { try { setCopiloMessages(JSON.parse(saved)) } catch {} }
+    if (!id) return
+    const load = async () => {
+      try {
+        const [pac, prons] = await Promise.all([
+          pacientesApi.get(id),
+          prontuariosApi.listByPaciente(id),
+        ])
+        setPaciente(pac)
+        setProntuarios(prons)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
     }
+    load()
   }, [id])
 
-  useEffect(() => {
-    copiloEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [copiloMessages])
+  // ---- Criação ----
+  const abrirModal = () => { setForm(formVazio); setErro(''); setModalAberto(true) }
+  const fecharModal = () => { if (!salvando) setModalAberto(false) }
 
-  async function askCopiloto() {
-    if (!copiloQuestion.trim() || copiloLoading) return
-    const pergunta = copiloQuestion.trim()
-    const newMessages = [...copiloMessages, { role: 'user' as const, content: pergunta }]
-    setCopiloMessages(newMessages)
-    setCopiloQuestion('')
-    setCopiloLoading(true)
+  const handleSalvar = async () => {
+    if (!form.queixa_principal.trim() && !form.anamnese.trim() && !form.conduta.trim()) {
+      setErro('Preencha ao menos um campo clínico.')
+      return
+    }
+    setSalvando(true); setErro('')
     try {
-      const historico = copiloMessages.map(m => ({ role: m.role, content: m.content }))
-      const res = await iaApi.coPiloto(pergunta, id as string, historico)
-      const updated = [...newMessages, { role: 'assistant' as const, content: res.resposta, fontes: res.fontes || [] }]
-      setCopiloMessages(updated)
-      if (typeof window !== 'undefined') window.localStorage.setItem('copiloto_' + id, JSON.stringify(updated))
-    } catch (e: any) {
-      const updated = [...newMessages, { role: 'assistant' as const, content: 'Erro: ' + (e.message || 'tente novamente'), fontes: [] }]
-      setCopiloMessages(updated)
+      const payload: Record<string, string> = { paciente_id: id, tipo: form.tipo }
+      if (form.queixa_principal) payload.queixa_principal = form.queixa_principal
+      if (form.anamnese) payload.anamnese = form.anamnese
+      if (form.exame_fisico) payload.exame_fisico = form.exame_fisico
+      if (form.hipotese_diagnostica) payload.hipotese_diagnostica = form.hipotese_diagnostica
+      if (form.conduta) payload.conduta = form.conduta
+      if (form.prescricao) payload.prescricao = form.prescricao
+      if (form.observacoes) payload.observacoes = form.observacoes
+      const novo = await prontuariosApi.create(payload)
+      setProntuarios(prev => [novo, ...prev])
+      setModalAberto(false)
+    } catch (e: unknown) {
+      setErro(e instanceof Error ? e.message : 'Erro ao salvar registro.')
     } finally {
-      setCopiloLoading(false)
+      setSalvando(false)
     }
   }
 
-  const loadData = () => {
-    setLoading(true)
-    Promise.all([pacientesApi.get(id), prontuariosApi.listByPaciente(id)])
-      .then(([p, pr]) => { setPaciente(p); setProntuarios(pr) })
-      .catch(console.error)
-      .finally(() => setLoading(false))
+  // ---- Edição ----
+  const abrirEditar = (pr: Prontuario) => {
+    setFormEdit({
+      tipo: pr.tipo || 'consulta',
+      queixa_principal: pr.queixa_principal || '',
+      anamnese: pr.anamnese || '',
+      exame_fisico: pr.exame_fisico || '',
+      hipotese_diagnostica: pr.hipotese_diagnostica || '',
+      conduta: pr.conduta || '',
+      prescricao: pr.prescricao || '',
+      observacoes: pr.observacoes || '',
+    })
+    setErroEdit('')
+    setEditando(pr)
+  }
+  const fecharEditar = () => { if (!salvandoEdit) setEditando(null) }
+
+  const handleSalvarEdit = async () => {
+    if (!editando) return
+    setSalvandoEdit(true); setErroEdit('')
+    try {
+      const payload: Record<string, string> = { tipo: formEdit.tipo }
+      payload.queixa_principal = formEdit.queixa_principal
+      payload.anamnese = formEdit.anamnese
+      payload.exame_fisico = formEdit.exame_fisico
+      payload.hipotese_diagnostica = formEdit.hipotese_diagnostica
+      payload.conduta = formEdit.conduta
+      payload.prescricao = formEdit.prescricao
+      payload.observacoes = formEdit.observacoes
+      const atualizado = await prontuariosApi.update(editando.id, payload)
+      setProntuarios(prev => prev.map(p => p.id === editando.id ? atualizado : p))
+      setEditando(null)
+    } catch (e: unknown) {
+      setErroEdit(e instanceof Error ? e.message : 'Erro ao salvar edição.')
+    } finally {
+      setSalvandoEdit(false)
+    }
   }
 
-  const handleDeletePaciente = async () => {
+  // ---- Arquivar paciente ----
+  const handleDelete = async () => {
     if (!confirm('Arquivar este paciente?')) return
-    await pacientesApi.delete(id)
-    router.push('/pacientes')
-  }
-
-  const handleSavePaciente = async (data: Partial<Paciente>) => {
-    setSaving(true)
     try {
-      const updated = await pacientesApi.update(id, data)
-      setPaciente(updated)
-      setEditingPaciente(false)
-    } catch { alert('Erro ao salvar paciente') }
-    finally { setSaving(false) }
+      await pacientesApi.delete(id)
+      router.push('/pacientes')
+    } catch (e) { console.error(e) }
   }
 
-  const handleSaveProntuario = async (data: Partial<Prontuario>) => {
-    if (!editingProntuario) return
-    setSaving(true)
-    try {
-      const updated = await prontuariosApi.update(editingProntuario.id, data)
-      setProntuarios(prev => prev.map(p => p.id === updated.id ? updated : p))
-      setEditingProntuario(null)
-    } catch { alert('Erro ao salvar prontuario') }
-    finally { setSaving(false) }
+  // Helper campo textarea
+  const campo = (label: string, key: keyof ProntuarioForm, rows: number, placeholder: string, isEdit: boolean) => {
+    const val = isEdit ? formEdit[key] : form[key]
+    const setter = isEdit
+      ? (v: string) => setFormEdit(prev => ({ ...prev, [key]: v }))
+      : (v: string) => setForm(prev => ({ ...prev, [key]: v }))
+    const disabled = isEdit ? salvandoEdit : salvando
+    return (
+      <div key={key}>
+        <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+        <textarea
+          value={val}
+          onChange={e => setter(e.target.value)}
+          rows={rows}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+        />
+      </div>
+    )
   }
 
-  if (loading) return <div className="text-gray-400 text-sm p-4">Carregando...</div>
-  if (!paciente) return <div className="text-red-500 text-sm p-4">Paciente nao encontrado.</div>
+  if (loading) return <div className="text-gray-400 text-sm">Carregando...</div>
+  if (!paciente) return <div className="text-red-500 text-sm">Paciente não encontrado.</div>
 
   return (
     <>
-      {editingPaciente && (
-        <EditPacienteModal paciente={paciente} onSave={handleSavePaciente} onClose={() => setEditingPaciente(false)} saving={saving} />
-      )}
-      {editingProntuario && (
-        <EditProntuarioModal prontuario={editingProntuario} onSave={handleSaveProntuario} onClose={() => setEditingProntuario(null)} saving={saving} />
-      )}
       <div className="max-w-3xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -310,186 +177,219 @@ export default function PacienteDetailPage() {
           </div>
           <Link
             href={`/pacientes/${id}/mapa`}
-            className="flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-primary-50 text-primary-700 rounded-lg text-sm font-medium hover:bg-primary-100 transition-colors border border-primary-200"
           >
-            <Activity className="w-4 h-4" />
-            Mapa Longitudinal
+            <TrendingUp className="w-4 h-4" />
+            <span className="hidden sm:inline">Mapa Longitudinal</span>
+            <span className="sm:hidden">Mapa</span>
           </Link>
         </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
+          {/* Dados do paciente */}
+          <div className="lg:col-span-1 space-y-4">
             <div className="card">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center">
-                    <span className="text-primary-700 font-bold text-xl">{paciente.nome.charAt(0)}</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">{paciente.nome}</p>
-                    {paciente.data_nascimento && <p className="text-xs text-gray-400">{formatDate(paciente.data_nascimento)}</p>}
-                  </div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center">
+                  <span className="text-primary-700 font-bold text-xl">{paciente.nome.charAt(0)}</span>
                 </div>
-                <button onClick={() => setEditingPaciente(true)} className="text-gray-400 hover:text-primary-600 transition-colors p-1 rounded" title="Editar paciente">
-                  <Edit2 className="w-4 h-4" />
-                </button>
+                <div>
+                  <p className="font-semibold text-gray-900">{paciente.nome}</p>
+                  {paciente.data_nascimento && (
+                    <p className="text-xs text-gray-400">{formatDate(paciente.data_nascimento)}</p>
+                  )}
+                </div>
               </div>
               <div className="space-y-2 text-sm">
-                {paciente.telefone && <p className="flex items-center gap-2 text-gray-600"><Phone className="w-4 h-4 text-gray-400 shrink-0" />{paciente.telefone}</p>}
-                {paciente.email && <p className="flex items-center gap-2 text-gray-600"><Mail className="w-4 h-4 text-gray-400 shrink-0" />{paciente.email}</p>}
-                {paciente.sexo && <p className="text-gray-500">Sexo: <span className="font-medium">{paciente.sexo === 'M' ? 'Masculino' : paciente.sexo === 'F' ? 'Feminino' : 'Outro'}</span></p>}
-                {paciente.convenio && <p className="text-gray-500">Convenio: <span className="font-medium">{paciente.convenio}</span></p>}
-                {paciente.observacoes && <p className="text-gray-500 text-xs mt-2 pt-2 border-t border-gray-50">{paciente.observacoes}</p>}
+                {paciente.telefone && (
+                  <p className="flex items-center gap-2 text-gray-600"><Phone className="w-4 h-4 text-gray-400" />{paciente.telefone}</p>
+                )}
+                {paciente.email && (
+                  <p className="flex items-center gap-2 text-gray-600"><Mail className="w-4 h-4 text-gray-400" />{paciente.email}</p>
+                )}
+                {paciente.convenio && (
+                  <p className="text-gray-500">Convênio: <span className="font-medium">{paciente.convenio}</span></p>
+                )}
+                {paciente.observacoes && (
+                  <p className="text-gray-500 text-xs mt-2 pt-2 border-t border-gray-100">{paciente.observacoes}</p>
+                )}
               </div>
-              <button onClick={handleDeletePaciente} className="mt-4 text-xs text-red-400 hover:text-red-600 transition-colors">Arquivar paciente</button>
+              <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                <Link
+                  href={`/pacientes/${id}/mapa`}
+                  className="flex items-center gap-2 text-xs text-primary-600 hover:text-primary-800 transition-colors"
+                >
+                  <TrendingUp className="w-3.5 h-3.5" /> Ver mapa longitudinal
+                </Link>
+                <button
+                  onClick={handleDelete}
+                  className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition-colors"
+                >
+                  Arquivar paciente
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* Prontuários */}
           <div className="lg:col-span-2">
             <div className="card">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-semibold text-gray-900 flex items-center gap-2">
                   <FileText className="w-4 h-4 text-gray-400" />
-                  Prontuarios ({prontuarios.length})
+                  Prontuários ({prontuarios.length})
                 </h2>
-                <Link href={`/prontuarios?paciente_id=${id}`}>
-                  <span className="btn-primary text-sm py-1.5 px-3 flex items-center gap-1 cursor-pointer">
-                    <Plus className="w-3.5 h-3.5" /> Novo registro
-                  </span>
-                </Link>
+                <button
+                  onClick={abrirModal}
+                  className="btn-primary text-sm py-1.5 px-3 flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Novo registro
+                </button>
               </div>
+
               {prontuarios.length === 0 ? (
                 <div className="text-center py-8">
                   <FileText className="w-10 h-10 text-gray-200 mx-auto mb-2" />
-                  <p className="text-gray-400 text-sm">Nenhum registro clinico ainda</p>
-                  <Link href={`/prontuarios?paciente_id=${id}`} className="text-primary-600 text-xs mt-1 inline-block hover:underline">Criar primeiro registro</Link>
+                  <p className="text-gray-400 text-sm">Nenhum registro clínico ainda</p>
+                  <button onClick={abrirModal} className="mt-3 text-sm text-primary-600 hover:text-primary-800 underline">
+                    Criar primeiro registro
+                  </button>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {prontuarios.map((pr, index) => {
-                    const isOpen = expandedId === pr.id
-                    const numero = String(prontuarios.length - index).padStart(2, '0')
-                    return (
-                      <div key={pr.id} className="border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 transition-colors">
-                        <div className="flex items-center justify-between p-4 cursor-pointer select-none" onClick={() => setExpandedId(isOpen ? null : pr.id)}>
-                          <div className="flex-1 min-w-0 pr-2">
-                            <div className="flex items-center gap-2 mb-1 flex-wrap">
-                              <span className="text-xs font-medium bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full capitalize">{pr.tipo}</span>
-                              <span className="text-xs font-bold text-gray-400 tabular-nums">#{numero}</span>
-                              <span className="text-xs text-gray-400 flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(pr.data_atendimento)}</span>
-                            </div>
-                            <p className="text-sm font-medium text-gray-800 truncate">{pr.queixa_principal || 'Sem queixa registrada'}</p>
-                            {!isOpen && pr.anamnese && <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{pr.anamnese}</p>}
-                          </div>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <button onClick={e => { e.stopPropagation(); setEditingProntuario(pr) }} className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="Editar">
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            {isOpen ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
-                          </div>
+                <div className="space-y-3">
+                  {prontuarios.map(pr => (
+                    <div key={pr.id} className="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full capitalize">
+                            {pr.tipo}
+                          </span>
+                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {formatDate(pr.data_atendimento || pr.created_at)}
+                          </span>
                         </div>
-                        {isOpen && (
-                          <div className="px-4 pb-4 border-t border-gray-50 bg-gray-50/30">
-                            <Field label="Queixa principal" value={pr.queixa_principal} />
-                            <Field label="Anamnese / Relato" value={pr.anamnese} />
-                            <Field label="Exame fisico" value={pr.exame_fisico} />
-                            <Field label="Hipotese diagnostica" value={pr.hipotese_diagnostica} />
-                            <Field label="Conduta" value={pr.conduta} />
-                            <Field label="Prescricao" value={pr.prescricao} />
-                            <Field label="Observacoes" value={pr.observacoes} />
-                            {!pr.queixa_principal && !pr.anamnese && !pr.conduta && !pr.hipotese_diagnostica && (
-                              <p className="text-xs text-gray-400 italic py-3">Nenhum conteudo registrado.</p>
-                            )}
-                          </div>
-                        )}
+                        <button
+                          onClick={() => abrirEditar(pr)}
+                          className="text-gray-400 hover:text-primary-600 transition-colors p-1 rounded"
+                          title="Editar registro"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                    )
-                  })}
+                      {pr.queixa_principal && (
+                        <p className="text-sm text-gray-700 font-medium">{pr.queixa_principal}</p>
+                      )}
+                      {pr.conduta && (
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{pr.conduta}</p>
+                      )}
+                      {pr.resumo_ia && (
+                        <div className="mt-2 bg-purple-50 text-purple-700 text-xs p-2 rounded border border-purple-100">
+                          ✦ IA: {pr.resumo_ia}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
           </div>
         </div>
       </div>
-    {/* Copiloto Clínico */}
-    <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
-      <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-50">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🤖</span>
-          <h2 className="text-base font-semibold text-gray-800">Copiloto Clínico</h2>
-          <span className="text-xs text-gray-400 ml-1">Pergunte sobre o histórico do paciente</span>
-        </div>
-        {copiloMessages.length > 0 && (
-          <button
-            onClick={() => { setCopiloMessages([]); if (typeof window !== 'undefined') window.localStorage.removeItem('copiloto_' + id) }}
-            className="text-xs text-gray-400 hover:text-red-500 transition-colors px-2 py-1 rounded"
-          >
-            Nova conversa
-          </button>
-        )}
-      </div>
-      {copiloMessages.length > 0 && (
-        <div className="px-6 py-4 space-y-4 max-h-96 overflow-y-auto">
-          {copiloMessages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-800'}`}>
-                {msg.role === 'user' ? (
-                  <p className="text-sm leading-relaxed">{msg.content}</p>
-                ) : (
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                )}
-                {msg.role === 'assistant' && msg.fontes && msg.fontes.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-gray-200">
-                    <p className="text-xs text-gray-400 mb-1">Baseado em {msg.fontes.length} registro(s)</p>
-                    <div className="flex flex-wrap gap-1">
-                      {msg.fontes.map((f: any, fi: number) => (
-                        <span key={fi} className="text-xs bg-white border border-gray-200 text-gray-500 px-2 py-0.5 rounded-full">
-                          {f.data_atendimento ? new Date(f.data_atendimento).toLocaleDateString('pt-BR') : 'Registro ' + (fi+1)}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+
+      {/* Modal: novo prontuário */}
+      {modalAberto && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.45)' }}
+          onClick={e => { if (e.target === e.currentTarget) fecharModal() }}
+        >
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+              <h2 className="text-base font-semibold text-gray-900">Novo registro clínico</h2>
+              <button onClick={fecharModal} className="text-gray-400 hover:text-gray-600 transition-colors" disabled={salvando}>
+                <X className="w-5 h-5" />
+              </button>
             </div>
-          ))}
-          {copiloLoading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 rounded-2xl px-4 py-3 flex gap-1">
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'0ms'}} />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'150ms'}} />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'300ms'}} />
+            <div className="px-5 py-4 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de atendimento</label>
+                <select
+                  value={form.tipo}
+                  onChange={e => setForm(prev => ({ ...prev, tipo: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-300"
+                >
+                  {TIPOS.map(t => (<option key={t} value={t} className="capitalize">{t.charAt(0).toUpperCase() + t.slice(1)}</option>))}
+                </select>
               </div>
+              {campo('Queixa principal', 'queixa_principal', 2, 'Motivo da consulta...', false)}
+              {campo('Anamnese', 'anamnese', 3, 'História clínica, contexto...', false)}
+              {campo('Exame físico / observações clínicas', 'exame_fisico', 2, '', false)}
+              {campo('Hipótese diagnóstica', 'hipotese_diagnostica', 2, '', false)}
+              {campo('Conduta', 'conduta', 3, 'Intervenções, orientações, encaminhamentos...', false)}
+              {campo('Prescrição', 'prescricao', 2, '', false)}
+              {campo('Observações gerais', 'observacoes', 2, '', false)}
+              {erro && (<p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{erro}</p>)}
             </div>
-          )}
-          <div ref={copiloEndRef} />
+            <div className="px-5 pb-5 flex gap-3 justify-end border-t border-gray-100 pt-4">
+              <Link href={`/pacientes/${id}/prontuario/novo`} className="flex items-center gap-1.5 text-sm px-3 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+                <Mic className="w-4 h-4" /> Com áudio
+              </Link>
+              <button onClick={handleSalvar} disabled={salvando} className="btn-primary flex items-center gap-1.5 text-sm px-4 py-2 disabled:opacity-60">
+                <Save className="w-4 h-4" />
+                {salvando ? 'Salvando...' : 'Salvar registro'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
-      {copiloMessages.length === 0 && (
-        <div className="px-6 py-8 text-center">
-          <p className="text-sm text-gray-400">Faça uma pergunta sobre o histórico do paciente</p>
-          <p className="text-xs text-gray-300 mt-1">Ex: Como evoluiu a queixa principal?</p>
+
+      {/* Modal: editar prontuário */}
+      {editando && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.45)' }}
+          onClick={e => { if (e.target === e.currentTarget) fecharEditar() }}
+        >
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+              <h2 className="text-base font-semibold text-gray-900">Editar registro clínico</h2>
+              <button onClick={fecharEditar} className="text-gray-400 hover:text-gray-600 transition-colors" disabled={salvandoEdit}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Tipo de atendimento</label>
+                <select
+                  value={formEdit.tipo}
+                  onChange={e => setFormEdit(prev => ({ ...prev, tipo: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-300"
+                >
+                  {TIPOS.map(t => (<option key={t} value={t} className="capitalize">{t.charAt(0).toUpperCase() + t.slice(1)}</option>))}
+                </select>
+              </div>
+              {campo('Queixa principal', 'queixa_principal', 2, 'Motivo da consulta...', true)}
+              {campo('Anamnese', 'anamnese', 3, 'História clínica, contexto...', true)}
+              {campo('Exame físico / observações clínicas', 'exame_fisico', 2, '', true)}
+              {campo('Hipótese diagnóstica', 'hipotese_diagnostica', 2, '', true)}
+              {campo('Conduta', 'conduta', 3, 'Intervenções, orientações, encaminhamentos...', true)}
+              {campo('Prescrição', 'prescricao', 2, '', true)}
+              {campo('Observações gerais', 'observacoes', 2, '', true)}
+              {erroEdit && (<p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{erroEdit}</p>)}
+            </div>
+            <div className="px-5 pb-5 flex gap-3 justify-end border-t border-gray-100 pt-4">
+              <button onClick={fecharEditar} disabled={salvandoEdit} className="text-sm px-3 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+                Cancelar
+              </button>
+              <button onClick={handleSalvarEdit} disabled={salvandoEdit} className="btn-primary flex items-center gap-1.5 text-sm px-4 py-2 disabled:opacity-60">
+                <Save className="w-4 h-4" />
+                {salvandoEdit ? 'Salvando...' : 'Salvar alterações'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
-      <div className="px-6 pb-5 pt-4 border-t border-gray-50">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={copiloQuestion}
-            onChange={e => setCopiloQuestion(e.target.value)}
-            onKeyDown={async e => { if (e.key === 'Enter' && !copiloLoading) await askCopiloto() }}
-            placeholder="Pergunte sobre o histórico clínico..."
-            disabled={copiloLoading}
-            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-60"
-          />
-          <button
-            onClick={askCopiloto}
-            disabled={copiloLoading || !copiloQuestion.trim()}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {copiloLoading ? '...' : 'Enviar'}
-          </button>
-        </div>
-      </div>
-    </div>
     </>
   )
-                                                                                                  }
+}

@@ -25,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    // Restaura sessão do localStorage
     const t = localStorage.getItem('clinicaai_token')
     const u = localStorage.getItem('clinicaai_user_id')
     const n = localStorage.getItem('clinicaai_nome')

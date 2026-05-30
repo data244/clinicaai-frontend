@@ -12,6 +12,7 @@ export interface Profissional {
   evolution_api_url?: string
   evolution_api_key?: string
   evolution_instancia?: string
+  mercadopago_access_token?: string
   plano_id?: string
   created_at: string
 }

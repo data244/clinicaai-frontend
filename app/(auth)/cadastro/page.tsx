@@ -11,8 +11,8 @@ import { Loader2 } from 'lucide-react'
 
 const schema = z.object({
   nome: z.string().min(3, 'Nome muito curto'),
-  email: z.string().email('E-mail invÃ¡lido'),
-  password: z.string().min(6, 'MÃ­nimo 6 caracteres'),
+  email: z.string().email('E-mail inválido'),
+  password: z.string().min(6, 'Mínimo 6 caracteres'),
   especialidade: z.string().optional(),
   conselho: z.string().optional(),
   numero_conselho: z.string().optional(),
@@ -46,7 +46,7 @@ export default function CadastroPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label className="label">Nome completo *</label>
-          <input className="input" placeholder="Dr. JoÃ£o Silva" {...register('nome')} />
+          <input className="input" placeholder="Dr. João Silva" {...register('nome')} />
           {errors.nome && <p className="text-red-500 text-xs mt-1">{errors.nome.message}</p>}
         </div>
         <div>
@@ -56,7 +56,7 @@ export default function CadastroPage() {
         </div>
         <div>
           <label className="label">Senha *</label>
-          <input type="password" className="input" placeholder="MÃ­nimo 6 caracteres" {...register('password')} />
+          <input type="password" className="input" placeholder="Mínimo 6 caracteres" {...register('password')} />
           {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -73,13 +73,13 @@ export default function CadastroPage() {
             </select>
           </div>
           <div>
-            <label className="label">NÂº do conselho</label>
+            <label className="label">Nº do conselho</label>
             <input className="input" placeholder="123456" {...register('numero_conselho')} />
           </div>
         </div>
         <div>
           <label className="label">Especialidade</label>
-          <input className="input" placeholder="Psicologia, ClÃ­nica Geral..." {...register('especialidade')} />
+          <input className="input" placeholder="Psicologia, Clínica Geral..." {...register('especialidade')} />
         </div>
         {error && (
           <div className="bg-red-50 text-red-700 text-sm px-3 py-2 rounded-lg border border-red-200">
@@ -87,11 +87,11 @@ export default function CadastroPage() {
           </div>
         )}
         <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2" disabled={isSubmitting}>
-          {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Criando conta...</> : 'Criar conta grÃ¡tis'}
+          {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Criando conta...</> : 'Criar conta grátis'}
         </button>
       </form>
       <p className="text-center text-sm text-gray-500 mt-6">
-        JÃ¡ tem conta?{" "}
+        Já tem conta?{" "}
         <Link href="/login" className="text-primary-600 font-medium hover:underline">Entrar</Link>
       </p>
     </div>
