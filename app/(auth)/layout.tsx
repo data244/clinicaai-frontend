@@ -10,8 +10,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen lg:grid lg:grid-cols-2">
       {/* Painel da visão (desktop) */}
       <div className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-gradient-to-br from-primary-700 via-primary-600 to-indigo-700 p-12 text-white">
-        {/* Foto de fundo (coloque Frontend/public/login-bg.jpg). Some se o arquivo não existir. */}
-        <img src="/login-bg.jpg" alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover" onError={(e)=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />
+        {/* Foto de fundo (coloque Frontend/public/login-bg.jpg). */}
+        <img src="/login-bg.jpg" alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-br from-primary-800/90 via-primary-700/85 to-indigo-800/90" />
 
         <div className="relative z-10 flex items-center gap-3">
