@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Clock } from 'lucide-react'
 
 const schema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -17,6 +17,12 @@ type FormData = z.infer<typeof schema>
 export default function LoginPage() {
   const { login } = useAuth()
   const [error, setError] = useState('')
+  const [expirado, setExpirado] = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('expirado') === '1') setExpirado(true)
+  }, [])
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -24,6 +30,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: FormData) => {
     setError('')
+    setExpirado(false)
     try {
       await login(data.email, data.password)
     } catch (e: unknown) {
@@ -34,6 +41,12 @@ export default function LoginPage() {
   return (
     <div className="card">
       <h2 className="text-xl font-semibold text-gray-900 mb-6">Entrar na conta</h2>
+      {expirado && (
+        <div className="bg-amber-50 text-amber-800 text-sm px-3 py-2 rounded-lg border border-amber-200 mb-4 flex items-start gap-2">
+          <Clock className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>Sua sessão expirou. Entre novamente para continuar.</span>
+        </div>
+      )}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label className="label">E-mail profissional</label>

@@ -30,6 +30,13 @@ export async function request<T>(
   const res = await fetch(`${API_URL}${path}`, { ...options, headers })
 
   if (!res.ok) {
+    // Sessão expirada / token inválido: limpa e manda para o login com aviso.
+    if (res.status === 401 && auth && typeof window !== 'undefined') {
+      localStorage.removeItem('clinicaai_token')
+      if (!window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login?expirado=1'
+      }
+    }
     const err = await res.json().catch(() => ({ detail: 'Erro desconhecido' }))
     throw new ApiError(res.status, err.detail || JSON.stringify(err))
   }
