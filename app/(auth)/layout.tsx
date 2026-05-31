@@ -10,7 +10,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen lg:grid lg:grid-cols-2">
       {/* Painel da visão (desktop) */}
       <div className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-gradient-to-br from-primary-700 via-primary-600 to-indigo-700 p-12 text-white">
-        <div className="flex items-center gap-3">
+        {/* Figura discreta: profissional contemplativo (perfil) olhando para o futuro */}
+        <svg className="absolute left-0 bottom-0 h-[78%] pointer-events-none select-none" viewBox="0 0 240 320" fill="white" preserveAspectRatio="xMinYMax meet" style={{ opacity: 0.07 }}>
+          <path d="M28,320 L28,212 C28,184 56,172 84,170 C75,150 73,116 92,98 C97,64 126,49 156,58 C180,65 189,92 184,116 C198,118 203,132 191,139 C198,144 193,156 179,156 C179,174 165,186 145,188 C159,210 188,214 188,320 Z" />
+        </svg>
+
+        <div className="relative z-10 flex items-center gap-3">
           <div className="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">{Logo}</div>
           <div>
             <p className="font-bold text-lg leading-none">Clínica.ai</p>
@@ -18,7 +23,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
 
-        <div className="max-w-md">
+        <div className="relative z-10 max-w-md">
           <h2 className="text-3xl font-bold leading-tight">Do registro ao que vem a seguir.</h2>
           <p className="mt-4 text-white/80 leading-relaxed">
             Cada atendimento vira dado. A inteligência longitudinal revela padrões e antecipa
@@ -29,11 +34,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <svg viewBox="0 0 400 130" className="w-full mt-8" fill="none">
             <line x1="200" y1="10" x2="200" y2="120" stroke="white" strokeOpacity="0.35" strokeWidth="1.5" strokeDasharray="4 4" />
             <text x="200" y="128" fill="white" fillOpacity="0.6" fontSize="10" textAnchor="middle">hoje</text>
-            {/* passado: linha sólida com batimentos */}
             <polyline points="0,80 35,80 50,55 65,95 80,80 130,80 150,60 170,80 200,72"
               stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            {[35,80,130,170].map((x,i)=>(<circle key={i} cx={x} cy={[80,80,80,80][i]} r="3.5" fill="white" />))}
-            {/* futuro: predição tracejada subindo */}
+            {[35,80,130,170].map((x,i)=>(<circle key={i} cx={x} cy={80} r="3.5" fill="white" />))}
             <polyline points="200,72 250,60 300,44 350,30 392,18"
               stroke="white" strokeOpacity="0.85" strokeWidth="2.5" strokeDasharray="6 6" strokeLinecap="round" strokeLinejoin="round" />
             <circle cx="392" cy="18" r="5" fill="white" />
@@ -47,7 +50,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </ul>
         </div>
 
-        <p className="text-xs text-white/50">Cuidado guiado por inteligência · da Ciência da Informação à prática clínica</p>
+        <p className="relative z-10 text-xs text-white/50">Cuidado guiado por inteligência · da Ciência da Informação à prática clínica</p>
       </div>
 
       {/* Painel do formulário */}
