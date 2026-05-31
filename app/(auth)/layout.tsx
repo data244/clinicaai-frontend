@@ -10,10 +10,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen lg:grid lg:grid-cols-2">
       {/* Painel da visão (desktop) */}
       <div className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-gradient-to-br from-primary-700 via-primary-600 to-indigo-700 p-12 text-white">
-        {/* Figura discreta: profissional contemplativo (perfil) olhando para o futuro */}
-        <svg className="absolute left-0 bottom-0 h-[78%] pointer-events-none select-none" viewBox="0 0 240 320" fill="white" preserveAspectRatio="xMinYMax meet" style={{ opacity: 0.07 }}>
-          <path d="M28,320 L28,212 C28,184 56,172 84,170 C75,150 73,116 92,98 C97,64 126,49 156,58 C180,65 189,92 184,116 C198,118 203,132 191,139 C198,144 193,156 179,156 C179,174 165,186 145,188 C159,210 188,214 188,320 Z" />
-        </svg>
+        {/* Foto de fundo (coloque Frontend/public/login-bg.jpg). Some se o arquivo não existir. */}
+        <img src="/login-bg.jpg" alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover" onError={(e)=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-800/90 via-primary-700/85 to-indigo-800/90" />
 
         <div className="relative z-10 flex items-center gap-3">
           <div className="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">{Logo}</div>
