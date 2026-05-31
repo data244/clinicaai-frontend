@@ -25,7 +25,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!token) return null
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen">
+      {/* Fundo da aplicação: foto sutil + overlay claro (mantém a leitura confortável) */}
+      <div className="fixed inset-0 -z-10" aria-hidden>
+        <img src="/login-bg.jpg" alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gray-50/92 backdrop-blur-[2px]" />
+      </div>
+
       <Sidebar />
       {/* Desktop: flex-1, offset by sidebar. Mobile: full width, offset top bar + bottom nav */}
       <main className="
