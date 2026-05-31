@@ -65,9 +65,9 @@ export default function NovoProntuarioAudioPage() {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
         const formData = new FormData()
         formData.append('audio', blob, 'gravacao.webm')
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/ia/transcrever`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://clinicaai-backend-production.up.railway.app'}/api/v1/ia/transcrever`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          headers: { Authorization: `Bearer ${localStorage.getItem('clinicaai_token')}` },
           body: formData,
         })
         if (!res.ok) throw new Error('Erro na transcrição')
