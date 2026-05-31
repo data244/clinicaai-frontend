@@ -81,6 +81,7 @@ export default function CopilotoPage() {
   const enviar = async () => {
     const texto = input.trim()
     if (!texto || loading) return
+    if (!selectedPaciente) { setError('Selecione um paciente acima para conversar.'); return }
 
     const historicoAtual = [...mensagens, { role: 'user', content: texto } as Mensagem]
     setMensagens(historicoAtual)
@@ -115,6 +116,8 @@ export default function CopilotoPage() {
     'Quais pontos merecem atenção daqui pra frente?',
   ]
 
+  const conversasPaciente = selectedPaciente ? conversas.filter(c => c.paciente_id === selectedPaciente) : []
+
   return (
     <div className="flex gap-4 h-[calc(100vh-6rem)]">
       {/* Coluna principal */}
@@ -133,9 +136,9 @@ export default function CopilotoPage() {
           <select
             className="input max-w-xs text-sm"
             value={selectedPaciente}
-            onChange={e => setSelectedPaciente(e.target.value)}
+            onChange={e => { setSelectedPaciente(e.target.value); setMensagens([]); setConversaId(null); setError('') }}
           >
-            <option value="">Todos os pacientes</option>
+            <option value="" disabled>Selecione um paciente</option>
             {pacientes.map(p => (<option key={p.id} value={p.id}>{p.nome}</option>))}
           </select>
         </div>
@@ -237,12 +240,12 @@ export default function CopilotoPage() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Faça uma pergunta clínica... (Enter para enviar, Shift+Enter para nova linha)"
+            placeholder={selectedPaciente ? "Faça uma pergunta clínica... (Enter para enviar, Shift+Enter para nova linha)" : "Selecione um paciente acima para começar"}
             rows={2}
             className="flex-1 resize-none text-sm text-gray-800 placeholder-gray-400 outline-none bg-transparent leading-relaxed"
-            disabled={loading}
+            disabled={loading || !selectedPaciente}
           />
-          <button onClick={enviar} disabled={!input.trim() || loading}
+          <button onClick={enviar} disabled={!input.trim() || loading || !selectedPaciente}
             className="flex-shrink-0 w-10 h-10 bg-purple-600 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl flex items-center justify-center transition-colors">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
@@ -280,15 +283,17 @@ export default function CopilotoPage() {
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
             <MessageSquare className="w-3.5 h-3.5" /> Conversas
           </p>
-          {conversas.length === 0 ? (
-            <p className="text-xs text-gray-400 py-2">Suas conversas aparecem aqui.</p>
+          {!selectedPaciente ? (
+            <p className="text-xs text-gray-400 py-2">Selecione um paciente para ver as conversas.</p>
+          ) : conversasPaciente.length === 0 ? (
+            <p className="text-xs text-gray-400 py-2">Nenhuma conversa ainda com este paciente.</p>
           ) : (
             <div className="space-y-1">
-              {conversas.map(c => (
+              {conversasPaciente.map(c => (
                 <button key={c.id} onClick={() => abrirConversa(c)}
                   className={`w-full text-left rounded-lg px-2.5 py-2 transition-colors ${c.id === conversaId ? 'bg-purple-50 border border-purple-200' : 'hover:bg-gray-50 border border-transparent'}`}>
                   <p className="text-xs font-medium text-gray-700 truncate">{c.titulo}</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">{nomePaciente(c.paciente_id)} · {fmtQuando(c.updatedAt)}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{fmtQuando(c.updatedAt)}</p>
                 </button>
               ))}
             </div>
