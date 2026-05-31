@@ -13,15 +13,19 @@ export interface DocumentoItem {
   tamanho?: number
   mime?: string
   criado_em?: string
+  data_documento?: string | null
+  tipo?: string | null
 }
 
 export const documentosApi = {
   listar: (pacienteId: string) =>
     request<{ documentos: DocumentoItem[]; total: number }>(`/api/v1/documentos/paciente/${pacienteId}`),
 
-  enviar: async (pacienteId: string, file: File) => {
+  enviar: async (pacienteId: string, file: File, dataDocumento?: string, tipo?: string) => {
     const fd = new FormData()
     fd.append('file', file)
+    if (dataDocumento) fd.append('data_documento', dataDocumento)
+    if (tipo) fd.append('tipo', tipo)
     const t = token()
     const res = await fetch(`${API_URL}/api/v1/documentos/paciente/${pacienteId}`, {
       method: 'POST',
@@ -50,6 +54,21 @@ export const documentosApi = {
     a.click()
     a.remove()
     URL.revokeObjectURL(url)
+  },
+
+  baixarProntuario: async (pacienteId: string) => {
+    const t = token()
+    const res = await fetch(`${API_URL}/api/v1/documentos/paciente/${pacienteId}/prontuario`, {
+      headers: t ? { Authorization: `Bearer ${t}` } : {},
+    })
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({ detail: 'Prontuário não disponível' }))
+      throw new Error(e.detail || 'Prontuário consolidado ainda não disponível')
+    }
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    setTimeout(() => URL.revokeObjectURL(url), 60000)
   },
 
   excluir: (nodeId: string) =>
