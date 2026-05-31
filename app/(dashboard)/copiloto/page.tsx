@@ -243,9 +243,10 @@ export default function CopilotoPage() {
             placeholder={selectedPaciente ? "Faça uma pergunta clínica... (Enter para enviar, Shift+Enter para nova linha)" : "Selecione um paciente acima para começar"}
             rows={2}
             className="flex-1 resize-none text-sm text-gray-800 placeholder-gray-400 outline-none bg-transparent leading-relaxed"
-            disabled={loading || !selectedPaciente}
+            disabled={loading}
           />
-          <button onClick={enviar} disabled={!input.trim() || loading || !selectedPaciente}
+          <button onClick={enviar} disabled={!input.trim() || loading}
+            title={!selectedPaciente ? 'É necessário selecionar um paciente' : ''}
             className="flex-shrink-0 w-10 h-10 bg-purple-600 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl flex items-center justify-center transition-colors">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
