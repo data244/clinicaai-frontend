@@ -500,6 +500,45 @@ function CobrancaSection({ evento }: { evento: Agendamento }) {
 
 // ── Componente principal ───────────────────────────────────────────────────────
 
+function MonthView({ mesRef, agendamentos, hoje, onDiaClick }: {
+  mesRef: Date
+  agendamentos: Agendamento[]
+  hoje: string
+  onDiaClick: (dia: Date) => void
+}) {
+  const primeiro = new Date(mesRef.getFullYear(), mesRef.getMonth(), 1)
+  const inicioGrade = startOfWeek(primeiro)
+  const dias = Array.from({ length: 42 }, (_, i) => addDays(inicioGrade, i))
+  return (
+    <div className="flex-1 overflow-auto p-4">
+      <div className="grid grid-cols-7 gap-px bg-gray-100 border border-gray-100 rounded-xl overflow-hidden min-w-[700px]">
+        {DIAS_SEMANA.map(d => (
+          <div key={d} className="bg-white text-center text-xs font-medium text-gray-500 uppercase py-2">{d}</div>
+        ))}
+        {dias.map((dia, i) => {
+          const diaStr = isoDate(dia)
+          const noMes = dia.getMonth() === mesRef.getMonth()
+          const isHoje = diaStr === hoje
+          const eventos = agendamentos.filter(a => a.data_hora_inicio.startsWith(diaStr) && a.status !== 'cancelado')
+          return (
+            <button key={i} onClick={() => onDiaClick(dia)}
+              className={`bg-white min-h-[96px] p-1.5 text-left hover:bg-indigo-50/40 transition-colors ${noMes ? '' : 'opacity-40'}`}>
+              <div className={`text-xs font-semibold ${isHoje ? 'bg-indigo-600 text-white rounded-full w-6 h-6 flex items-center justify-center' : 'text-gray-700'}`}>{dia.getDate()}</div>
+              <div className="mt-1 space-y-0.5">
+                {eventos.slice(0, 3).map(ev => {
+                  const cfg = TIPO_CONFIG[ev.tipo] || TIPO_CONFIG.consulta
+                  return <div key={ev.id} className={`text-[10px] truncate rounded px-1 ${cfg.bg} ${cfg.color}`}>{fmtHoraBR(ev.data_hora_inicio)} {ev.titulo}</div>
+                })}
+                {eventos.length > 3 && <div className="text-[10px] text-gray-400 px-1">+{eventos.length - 3}</div>}
+              </div>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function AgendaPage() {
   const [semanaAtual, setSemanaAtual] = useState<Date>(() => startOfWeek(new Date()))
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
@@ -507,6 +546,8 @@ export default function AgendaPage() {
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState<Partial<Agendamento> | null | false>(false)
   const [eventoClick, setEventoClick] = useState<Agendamento | null>(null)
+  const [modo, setModo] = useState<'semana' | 'mes'>('semana')
+  const [mesRef, setMesRef] = useState<Date>(() => new Date())
 
   const diasSemana = Array.from({ length: 7 }, (_, i) => addDays(semanaAtual, i))
 
@@ -514,8 +555,13 @@ export default function AgendaPage() {
   const carregarAgendamentos = useCallback(async () => {
     setLoading(true)
     try {
-      const inicio = isoDate(semanaAtual)
-      const fim = isoDate(addDays(semanaAtual, 6))
+      let inicio: string, fim: string
+      if (modo === 'mes') {
+        const ini = startOfWeek(new Date(mesRef.getFullYear(), mesRef.getMonth(), 1))
+        inicio = isoDate(ini); fim = isoDate(addDays(ini, 41))
+      } else {
+        inicio = isoDate(semanaAtual); fim = isoDate(addDays(semanaAtual, 6))
+      }
       const res = await agendaApi.listar(inicio, fim)
       setAgendamentos(res.agendamentos)
     } catch (err) {
@@ -523,7 +569,7 @@ export default function AgendaPage() {
     } finally {
       setLoading(false)
     }
-  }, [semanaAtual])
+  }, [semanaAtual, mesRef, modo])
 
   useEffect(() => {
     carregarAgendamentos()
@@ -602,26 +648,32 @@ export default function AgendaPage() {
       <div className="flex items-center justify-between px-6 py-4 bg-white border-b">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Agenda</h1>
-          <p className="text-sm text-gray-500 capitalize">{formatMonthYear(semanaAtual)}</p>
+          <p className="text-sm text-gray-500 capitalize">{formatMonthYear(modo === 'mes' ? mesRef : semanaAtual)}</p>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Navegação semana */}
+          {/* Alternar Semana / Mês */}
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            <button onClick={() => setModo('semana')} className={`px-3 py-1 text-sm rounded-md transition-colors ${modo === 'semana' ? 'bg-white shadow-sm font-medium text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}>Semana</button>
+            <button onClick={() => setModo('mes')} className={`px-3 py-1 text-sm rounded-md transition-colors ${modo === 'mes' ? 'bg-white shadow-sm font-medium text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}>Mês</button>
+          </div>
+
+          {/* Navegação */}
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
             <button
-              onClick={() => setSemanaAtual(d => addDays(d, -7))}
+              onClick={() => modo === 'mes' ? setMesRef(d => new Date(d.getFullYear(), d.getMonth() - 1, 1)) : setSemanaAtual(d => addDays(d, -7))}
               className="p-1.5 hover:bg-white rounded-md transition-colors"
             >
               <ChevronLeft size={18} className="text-gray-600" />
             </button>
             <button
-              onClick={() => setSemanaAtual(startOfWeek(new Date()))}
+              onClick={() => { setSemanaAtual(startOfWeek(new Date())); setMesRef(new Date()) }}
               className="px-3 py-1 text-sm font-medium text-gray-700 hover:bg-white rounded-md"
             >
               Hoje
             </button>
             <button
-              onClick={() => setSemanaAtual(d => addDays(d, 7))}
+              onClick={() => modo === 'mes' ? setMesRef(d => new Date(d.getFullYear(), d.getMonth() + 1, 1)) : setSemanaAtual(d => addDays(d, 7))}
               className="p-1.5 hover:bg-white rounded-md transition-colors"
             >
               <ChevronRight size={18} className="text-gray-600" />
@@ -639,7 +691,10 @@ export default function AgendaPage() {
         </div>
       </div>
 
-      {/* Grade semanal */}
+      {/* Grade */}
+      {modo === 'mes' ? (
+        <MonthView mesRef={mesRef} agendamentos={agendamentos} hoje={hoje} onDiaClick={(dia) => { setSemanaAtual(startOfWeek(dia)); setModo('semana') }} />
+      ) : (
       <div className="flex-1 overflow-auto">
         <div className="min-w-[700px]">
           {/* Cabeçalho dos dias */}
@@ -736,6 +791,7 @@ export default function AgendaPage() {
           )}
         </div>
       </div>
+      )}
 
       {/* Legenda */}
       <div className="flex items-center gap-4 px-6 py-3 bg-white border-t text-xs text-gray-500">
