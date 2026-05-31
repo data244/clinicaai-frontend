@@ -6,6 +6,7 @@ import { Paciente, Prontuario } from '@/types'
 import { ArrowLeft, Phone, Mail, FileText, Plus, Calendar, TrendingUp, X, Mic, Save, Pencil } from 'lucide-react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
+import DocumentosPaciente from '@/components/DocumentosPaciente'
 
 const TIPOS = ['consulta', 'retorno', 'exame', 'evolucao', 'anamnese'] as const
 
@@ -293,6 +294,8 @@ export default function PacienteDetailPage() {
                 </div>
               )}
             </div>
+
+            <DocumentosPaciente pacienteId={id} />
           </div>
         </div>
       </div>
