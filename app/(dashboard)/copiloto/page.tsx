@@ -194,7 +194,7 @@ export default function CopilotoPage() {
                           <div key={fi} className="text-xs bg-purple-50 border border-purple-100 rounded-lg px-3 py-2">
                             <div className="flex items-center justify-between mb-0.5">
                               <span className="font-medium text-purple-700 capitalize">{f.tipo} — {f.data}</span>
-                              <span className="text-purple-400">{(f.similaridade * 100).toFixed(0)}% similar</span>
+                              {f.similaridade > 0 && <span className="text-purple-400">{(f.similaridade * 100).toFixed(0)}% similar</span>}
                             </div>
                             <p className="text-gray-600 truncate">{f.queixa || 'Sem queixa registrada'}</p>
                           </div>
