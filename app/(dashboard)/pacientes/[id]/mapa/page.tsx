@@ -124,11 +124,11 @@ function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?:
     )
   }
 
-  const W = 680, H = 480
+  const W = 1040, H = 560
   const cx = W / 2, cy = H / 2
   const sh = (s: string, n = 13) => s.length > n ? s.slice(0, n - 1) + '…' : s
 
-  function itemPositions(catX: number, catY: number, count: number, dist = 100) {
+  function itemPositions(catX: number, catY: number, count: number, dist = 115) {
     if (count === 0) return []
     const dir = Math.atan2(catY - cy, catX - cx)
     const spread = count <= 1 ? 0 : Math.min(1.8, (count - 1) * 0.5)
@@ -140,10 +140,10 @@ function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?:
   }
 
   const anchors = {
-    padrao:    { x: cx - 188, y: cy - 110 },
-    pessoa:    { x: cx + 188, y: cy - 110 },
-    emocao:    { x: cx - 188, y: cy + 110 },
-    indicador: { x: cx + 188, y: cy + 110 },
+    padrao:    { x: cx - 300, y: cy - 150 },
+    pessoa:    { x: cx + 300, y: cy - 150 },
+    emocao:    { x: cx - 300, y: cy + 150 },
+    indicador: { x: cx + 300, y: cy + 150 },
   }
 
   const nodes: CMapNode[] = []
@@ -174,10 +174,10 @@ function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?:
   }
 
   return (
-    <div className="flex gap-4" style={{ minHeight: 480 }}>
+    <div className="flex gap-4" style={{ minHeight: 560 }}>
       {/* Graph area */}
       <div className="flex-1 rounded-xl border border-gray-100 overflow-hidden" style={{ background:'linear-gradient(135deg,#f8faff 0%,#f0f4ff 50%,#f8fffe 100%)' }}>
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 480 }}>
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 560 }}>
           <defs>
             {(Object.entries(NODE_COLORS) as [NodeCategory, typeof NODE_COLORS[NodeCategory]][]).map(([k,c]) => (
               <radialGradient key={k} id={`grad_${k}`} cx="35%" cy="30%" r="70%">
@@ -358,7 +358,7 @@ export default function MapaLongitudinalPage() {
   const prontuarios = (data?.prontuarios as Prontuario[]) || []
 
   return (
-    <div className={aba === 'conceitos' ? 'max-w-5xl mx-auto p-6' : 'max-w-4xl mx-auto p-6'}>
+    <div className={aba === 'conceitos' ? 'max-w-7xl mx-auto p-6' : 'max-w-4xl mx-auto p-6'}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-2">
         <Link href={`/pacientes/${id}`} className="text-gray-400 hover:text-gray-600 transition-colors">
