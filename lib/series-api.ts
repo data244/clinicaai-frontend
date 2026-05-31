@@ -32,6 +32,7 @@ export const seriesApi = {
     duracao_min?: number
     valor_sessao: number
     sessoes_por_mes: number
+    dia_vencimento?: number
     observacoes?: string
   }) =>
     request<{ serie: SerieTratamento; ciclo: CicloGerado }>(

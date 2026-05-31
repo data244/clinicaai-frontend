@@ -34,6 +34,27 @@ function formatMonthYear(date: Date): string {
   return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
 }
 
+// Datas são horário de Brasília (naive, sem fuso). Parse/format manual evita o Date converter timezone.
+function parseNaiveDateTime(str: string): { y: number; mo: number; d: number; h: number; mi: number } {
+  const [datePart, timePart = ''] = (str || '').split('T')
+  const [y, mo, d] = datePart.split('-').map(Number)
+  const [h, mi] = timePart.split(':').map(Number)
+  return { y: y || 0, mo: mo || 1, d: d || 1, h: h || 0, mi: mi || 0 }
+}
+
+function fmtHoraBR(str: string): string {
+  const p = parseNaiveDateTime(str)
+  return `${String(p.h).padStart(2, '0')}:${String(p.mi).padStart(2, '0')}`
+}
+
+function fmtDataHoraBR(str: string): string {
+  const p = parseNaiveDateTime(str)
+  const semana = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado']
+  const wd = new Date(p.y, p.mo - 1, p.d).getDay()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${semana[wd]}, ${pad(p.d)}/${pad(p.mo)}, ${fmtHoraBR(str)}`
+}
+
 const DIAS_SEMANA = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
 const HORAS = Array.from({ length: 14 }, (_, i) => i + 7) // 07h às 20h
 
@@ -67,6 +88,7 @@ interface ModalProps {
     data_hora_inicio: string
     valor_sessao: number
     sessoes_por_mes: number
+    dia_vencimento: number
   }) => Promise<void>
   onDelete?: (id: string) => Promise<void>
 }
@@ -85,6 +107,7 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onSaveSerie, onD
   const [repetir, setRepetir] = useState<'nao' | 'semanal' | 'quinzenal'>('nao')
   const [valorSessao, setValorSessao] = useState('')
   const [sessoesMes, setSessoesMes] = useState('4')
+  const [diaVencimento, setDiaVencimento] = useState('5')
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
 
@@ -118,6 +141,7 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onSaveSerie, onD
           data_hora_inicio: form.data_hora_inicio,
           valor_sessao: parseFloat(valorSessao.replace(',', '.')),
           sessoes_por_mes: parseInt(sessoesMes, 10),
+          dia_vencimento: parseInt(diaVencimento, 10) || 5,
         })
       } else {
         await onSave({
@@ -264,9 +288,20 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onSaveSerie, onD
                       onChange={e => setSessoesMes(e.target.value)}
                     />
                   </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Dia de vencimento (do mês)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={28}
+                      className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      value={diaVencimento}
+                      onChange={e => setDiaVencimento(e.target.value)}
+                    />
+                  </div>
                   <p className="col-span-2 text-[11px] text-gray-500">
                     Cria {sessoesMes || '0'} consultas ({repetir}) e 1 cobrança adiantada de{' '}
-                    <strong>{totalRecorrente}</strong> por mês, até você encerrar o tratamento.
+                    <strong>{totalRecorrente}</strong> por mês, vencendo todo dia {diaVencimento || '5'}, até você encerrar o tratamento.
                   </p>
                 </div>
               )}
@@ -503,13 +538,11 @@ export default function AgendaPage() {
 
   // Agendar em slot específico
   const abrirNovoEmSlot = (dia: Date, hora: number) => {
-    const inicio = new Date(dia)
-    inicio.setHours(hora, 0, 0, 0)
-    const fim = new Date(inicio)
-    fim.setHours(hora + 1)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const ymd = `${dia.getFullYear()}-${pad(dia.getMonth() + 1)}-${pad(dia.getDate())}`
     setModal({
-      data_hora_inicio: inicio.toISOString().slice(0, 16),
-      data_hora_fim: fim.toISOString().slice(0, 16),
+      data_hora_inicio: `${ymd}T${pad(hora)}:00`,
+      data_hora_fim: `${ymd}T${pad(hora + 1)}:00`,
     })
   }
 
@@ -529,6 +562,7 @@ export default function AgendaPage() {
     data_hora_inicio: string
     valor_sessao: number
     sessoes_por_mes: number
+    dia_vencimento: number
   }) => {
     await seriesApi.criar(data)
     await carregarAgendamentos()
@@ -554,7 +588,7 @@ export default function AgendaPage() {
 
   const agendamentosNoSlot = (dia: Date, hora: number): Agendamento[] => {
     return agendamentosNoDia(dia).filter(a => {
-      const h = new Date(a.data_hora_inicio).getHours()
+      const h = parseNaiveDateTime(a.data_hora_inicio).h
       return h === hora
     })
   }
@@ -687,9 +721,9 @@ export default function AgendaPage() {
                               </div>
                             )}
                             <div className="text-[10px] opacity-60 mt-0.5">
-                              {new Date(ev.data_hora_inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                              {fmtHoraBR(ev.data_hora_inicio)}
                               {' – '}
-                              {new Date(ev.data_hora_fim).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                              {fmtHoraBR(ev.data_hora_fim)}
                             </div>
                           </div>
                         )
@@ -741,12 +775,9 @@ export default function AgendaPage() {
             <div className="space-y-2 text-sm text-gray-600">
               <div className="flex items-center gap-2">
                 <Clock size={14} className="text-gray-400" />
-                {new Date(eventoClick.data_hora_inicio).toLocaleString('pt-BR', {
-                  weekday: 'long', day: '2-digit', month: '2-digit',
-                  hour: '2-digit', minute: '2-digit'
-                })}
+                {fmtDataHoraBR(eventoClick.data_hora_inicio)}
                 {' – '}
-                {new Date(eventoClick.data_hora_fim).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                {fmtHoraBR(eventoClick.data_hora_fim)}
               </div>
               {eventoClick.pacientes && (
                 <div className="flex items-center gap-2">
