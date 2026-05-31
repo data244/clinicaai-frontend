@@ -29,7 +29,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Fundo da aplicação: foto sutil + overlay claro (mantém a leitura confortável) */}
       <div className="fixed inset-0 -z-10" aria-hidden>
         <img src="/login-bg.jpg" alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gray-50/92 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-gray-50/96 backdrop-blur-[3px]" />
       </div>
 
       <Sidebar />
