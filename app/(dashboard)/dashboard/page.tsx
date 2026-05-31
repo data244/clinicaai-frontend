@@ -20,16 +20,45 @@ export default function DashboardPage() {
     { label: 'Pacientes ativos', value: pacientes.length, icon: Users, color: 'bg-blue-50 text-blue-600', href: '/pacientes' },
     { label: 'Prontuários hoje', value: 0, icon: FileText, color: 'bg-green-50 text-green-600', href: '/prontuarios' },
     { label: 'Consultas esta semana', value: 0, icon: Calendar, color: 'bg-purple-50 text-purple-600', href: '/agenda' },
-    { label: 'IA resumos gerados', value: 0, icon: TrendingUp, color: 'bg-orange-50 text-orange-600', href: '/prontuarios' },
+    { label: 'Análises longitudinais', value: pacientes.length, icon: TrendingUp, color: 'bg-orange-50 text-orange-600', href: '/pacientes' },
   ]
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
           Olá, {nome?.split(' ')[0] ?? 'Profissional'} 👋
         </h1>
         <p className="text-gray-500 mt-1">Aqui está o resumo da sua clínica</p>
+      </div>
+
+      {/* Destaque: inteligência longitudinal preditiva */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 to-indigo-700 text-white p-6 mb-8">
+        <div className="relative z-10 max-w-2xl">
+          <p className="text-[11px] uppercase tracking-widest text-white/70 mb-1">Inteligência longitudinal</p>
+          <h2 className="text-xl font-bold leading-snug">Do histórico à predição — enxergue o que vem a seguir</h2>
+          <p className="text-sm text-white/80 mt-2 leading-relaxed">
+            Cada atendimento alimenta uma leitura que revela padrões e antecipa tendências. Abra o
+            <span className="font-semibold"> Mapa Longitudinal</span> de um paciente para ver a análise, ou converse com o
+            <span className="font-semibold"> Copiloto Clínico</span>.
+          </p>
+          <div className="flex flex-wrap gap-2 mt-4">
+            <Link href="/pacientes" className="bg-white/15 hover:bg-white/25 transition-colors text-sm font-medium px-3 py-1.5 rounded-lg backdrop-blur">
+              Ver pacientes
+            </Link>
+            <Link href="/copiloto" className="bg-white text-primary-700 hover:bg-white/90 transition-colors text-sm font-semibold px-3 py-1.5 rounded-lg">
+              Abrir Copiloto
+            </Link>
+          </div>
+        </div>
+        {/* motivo: registro -> predição */}
+        <svg viewBox="0 0 300 120" className="absolute right-0 bottom-0 h-full w-1/2 opacity-30 hidden sm:block" fill="none" preserveAspectRatio="xMaxYMax meet">
+          <polyline points="0,80 40,80 60,58 80,98 100,80 150,80 170,64 190,80 210,74"
+            stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <polyline points="210,74 245,58 275,40 298,26"
+            stroke="white" strokeWidth="2.5" strokeDasharray="6 6" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="298" cy="26" r="5" fill="white" />
+        </svg>
       </div>
 
       {/* Stats */}
