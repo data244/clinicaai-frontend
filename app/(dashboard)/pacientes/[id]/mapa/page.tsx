@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import { iaApi } from '@/lib/api'
 import {
   ArrowLeft, Activity, Calendar, FileText, Brain, ChevronDown, ChevronUp,
-  Users, TrendingUp, AlertTriangle, MessageSquare, BarChart2, Send, Network
+  Users, TrendingUp, AlertTriangle, MessageSquare, BarChart2, Send, Network, Maximize2, Minimize2
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
@@ -114,6 +114,12 @@ interface CMapNode {
 function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?: string }) {
   const [selected, setSelected] = useState<CMapNode | null>(null)
   const [hoverId, setHoverId] = useState<string | null>(null)
+  const [full, setFull] = useState(false)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setFull(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   if (!analise) {
     return (
@@ -174,10 +180,14 @@ function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?:
   }
 
   return (
-    <div className="flex gap-4" style={{ minHeight: 560 }}>
+    <div className={full ? 'fixed inset-0 z-50 bg-white p-4 flex gap-4 overflow-auto' : 'flex gap-4'} style={full ? undefined : { minHeight: 560 }}>
       {/* Graph area */}
-      <div className="flex-1 rounded-xl border border-gray-100 overflow-hidden" style={{ background:'linear-gradient(135deg,#f8faff 0%,#f0f4ff 50%,#f8fffe 100%)' }}>
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 560 }}>
+      <div className="relative flex-1 rounded-xl border border-gray-100 overflow-hidden" style={{ background:'linear-gradient(135deg,#f8faff 0%,#f0f4ff 50%,#f8fffe 100%)' }}>
+        <button onClick={() => setFull(!full)} title={full ? 'Sair da tela cheia (Esc)' : 'Tela cheia'}
+          className="absolute top-3 right-3 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-lg p-2 shadow-sm text-gray-600 transition-colors">
+          {full ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+        </button>
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: full ? '92vh' : 560 }}>
           <defs>
             {(Object.entries(NODE_COLORS) as [NodeCategory, typeof NODE_COLORS[NodeCategory]][]).map(([k,c]) => (
               <radialGradient key={k} id={`grad_${k}`} cx="35%" cy="30%" r="70%">
