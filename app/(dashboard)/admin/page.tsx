@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { adminApi, ContaAdmin } from '@/lib/api'
-import { ShieldCheck, Loader2, Check, Ban, Clock, Lock } from 'lucide-react'
+import { ShieldCheck, Loader2, Check, Ban, Lock, KeyRound, Copy, X } from 'lucide-react'
 
 const STATUS_INFO: Record<string, { label: string; cls: string }> = {
   ativo:              { label: 'Ativo',       cls: 'bg-green-50 text-green-700 border-green-200' },
@@ -17,6 +17,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [restrito, setRestrito] = useState(false)
   const [processando, setProcessando] = useState<string | null>(null)
+  const [senhaGerada, setSenhaGerada] = useState<{ nome: string; senha: string } | null>(null)
+  const [copiado, setCopiado] = useState(false)
 
   const carregar = useCallback(async () => {
     setLoading(true)
@@ -35,12 +37,19 @@ export default function AdminPage() {
 
   const alterar = async (id: string, status: string) => {
     setProcessando(id)
+    try { await adminApi.alterarStatus(id, status) } finally {
+      await carregar(); setProcessando(null)
+    }
+  }
+
+  const redefinirSenha = async (c: ContaAdmin) => {
+    setProcessando(c.id)
     try {
-      await adminApi.alterarStatus(id, status)
-      await carregar()
+      const r = await adminApi.resetSenha(c.id)
+      setSenhaGerada({ nome: c.nome || c.email, senha: r.senha_temporaria })
+      setCopiado(false)
     } catch {
-      // silencioso; recarrega de qualquer forma
-      await carregar()
+      // ignora; admin pode tentar de novo
     } finally {
       setProcessando(null)
     }
@@ -66,9 +75,9 @@ export default function AdminPage() {
         <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
           <ShieldCheck className="w-5 h-5 text-white" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">Admin — Liberação de contas</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Admin — Contas</h1>
       </div>
-      <p className="text-sm text-gray-600 mb-5 ml-12">Libere o acesso de novos profissionais com um clique.</p>
+      <p className="text-sm text-gray-600 mb-5 ml-12">Libere o acesso de novos profissionais ou redefina a senha de alguém.</p>
 
       <div className="flex gap-2 mb-4">
         {([['pendente_pagamento', 'Aguardando'], ['', 'Todas']] as const).map(([val, lbl]) => (
@@ -97,30 +106,34 @@ export default function AdminPage() {
               const info = STATUS_INFO[c.status_conta] || { label: c.status_conta, cls: 'bg-gray-50 text-gray-600 border-gray-200' }
               const busy = processando === c.id
               return (
-                <div key={c.id} className="flex items-center gap-4 px-5 py-3.5">
+                <div key={c.id} className="flex items-center gap-3 px-5 py-3.5">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-gray-900 truncate">{c.nome || '—'}</p>
                     <p className="text-xs text-gray-500 truncate">{c.email}</p>
                   </div>
-                  <div className="hidden sm:block text-xs text-gray-500 w-40 truncate">
-                    {c.especialidade || c.conselho || '—'}
-                    {c.numero_conselho ? ` · ${c.conselho || ''} ${c.numero_conselho}` : ''}
-                  </div>
-                  <div className="hidden md:block text-xs text-gray-400 w-24">{fmtData(c.created_at)}</div>
+                  <div className="hidden md:block text-xs text-gray-400 w-24 shrink-0">{fmtData(c.created_at)}</div>
                   <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${info.cls} shrink-0`}>{info.label}</span>
-                  <div className="w-28 flex justify-end shrink-0">
+                  <div className="flex items-center gap-3 justify-end shrink-0 w-44">
                     {busy ? (
                       <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                    ) : c.status_conta === 'ativo' ? (
-                      <button onClick={() => alterar(c.id, 'suspenso')}
-                        className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-red-600 transition-colors">
-                        <Ban className="w-3.5 h-3.5" /> Suspender
-                      </button>
                     ) : (
-                      <button onClick={() => alterar(c.id, 'ativo')}
-                        className="flex items-center gap-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg transition-colors">
-                        <Check className="w-3.5 h-3.5" /> Liberar
-                      </button>
+                      <>
+                        <button onClick={() => redefinirSenha(c)} title="Redefinir senha"
+                          className="text-gray-400 hover:text-indigo-600 transition-colors">
+                          <KeyRound className="w-4 h-4" />
+                        </button>
+                        {c.status_conta === 'ativo' ? (
+                          <button onClick={() => alterar(c.id, 'suspenso')}
+                            className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-red-600 transition-colors">
+                            <Ban className="w-3.5 h-3.5" /> Suspender
+                          </button>
+                        ) : (
+                          <button onClick={() => alterar(c.id, 'ativo')}
+                            className="flex items-center gap-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg transition-colors">
+                            <Check className="w-3.5 h-3.5" /> Liberar
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -129,6 +142,30 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+
+      {/* Modal: senha temporária gerada */}
+      {senhaGerada && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={() => setSenhaGerada(null)}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-2">
+              <h2 className="text-lg font-bold text-gray-900">Senha temporária</h2>
+              <button onClick={() => setSenhaGerada(null)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              Nova senha de <span className="font-medium text-gray-900">{senhaGerada.nome}</span>. Envie a ela e peça para trocar em Configurações depois de entrar.
+            </p>
+            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+              <code className="flex-1 text-base font-mono text-gray-900 tracking-wide select-all">{senhaGerada.senha}</code>
+              <button
+                onClick={() => { navigator.clipboard?.writeText(senhaGerada.senha); setCopiado(true) }}
+                className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+              >
+                <Copy className="w-3.5 h-3.5" /> {copiado ? 'Copiado' : 'Copiar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

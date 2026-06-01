@@ -289,4 +289,9 @@ export const adminApi = {
     request<{ ok: boolean; id: string; status_conta: string }>(
       `/api/v1/admin/contas/${id}/status`, { method: 'POST', body: JSON.stringify({ status_conta }) }
     ),
+
+  resetSenha: (id: string) =>
+    request<{ ok: boolean; senha_temporaria: string }>(
+      `/api/v1/admin/contas/${id}/reset-senha`, { method: 'POST' }
+    ),
 }
