@@ -14,6 +14,7 @@ export interface Profissional {
   evolution_instancia?: string
   mercadopago_access_token?: string
   plano_id?: string
+  status_conta?: string
   created_at: string
 }
 
