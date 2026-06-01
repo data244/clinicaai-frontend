@@ -34,7 +34,10 @@ export default function CadastroPage() {
       localStorage.setItem('clinicaai_token', res.access_token)
       localStorage.setItem('clinicaai_user_id', res.user_id)
       localStorage.setItem('clinicaai_nome', res.nome || '')
-      router.push('/dashboard')
+      localStorage.setItem('clinicaai_especialidade', data.especialidade || '')
+      // recarrega de verdade para o contexto de auth captar o token;
+      // o portão então mostra "Conta em análise" enquanto a conta não é liberada
+      window.location.href = '/dashboard'
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro ao cadastrar')
     }
