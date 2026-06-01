@@ -265,3 +265,28 @@ export const assinaturaApi = {
     '/api/v1/assinatura/upgrade', { method: 'POST', body: JSON.stringify({ novo_plano }) }
   ),
 }
+
+
+// ── Admin (acesso restrito) ─────────────────────────────────────────────────
+
+export interface ContaAdmin {
+  id: string
+  nome: string
+  email: string
+  conselho?: string
+  numero_conselho?: string
+  especialidade?: string
+  status_conta: string
+  plano?: string
+  created_at: string
+}
+
+export const adminApi = {
+  listarContas: (status?: string) =>
+    request<{ contas: ContaAdmin[] }>(`/api/v1/admin/contas${status ? `?status=${status}` : ''}`),
+
+  alterarStatus: (id: string, status_conta: string) =>
+    request<{ ok: boolean; id: string; status_conta: string }>(
+      `/api/v1/admin/contas/${id}/status`, { method: 'POST', body: JSON.stringify({ status_conta }) }
+    ),
+}
