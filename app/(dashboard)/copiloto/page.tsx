@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm'
 import { iaApi, pacientesApi } from '@/lib/api'
 import { Paciente } from '@/types'
 import { Brain, Send, Loader2, Sparkles, FileText, User, Bot, ChevronDown, Plus, TrendingUp, MessageSquare } from 'lucide-react'
+import InfoTip from '@/components/InfoTip'
 
 type Fonte = { id: string; data: string; tipo: string; queixa: string; similaridade: number }
 type Mensagem = { role: 'user' | 'assistant'; content: string; fontes?: Fonte[] }
@@ -128,6 +129,7 @@ export default function CopilotoPage() {
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <Brain className="w-6 h-6 text-purple-600" />
               Copiloto Clínico
+              <InfoTip title="Copiloto Clínico" text="Pergunte sobre o histórico do paciente em linguagem natural. Ele organiza a informação e cita as sessões — não propõe diagnóstico nem conduta. Selecione um paciente antes de perguntar." />
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">
               Leitura inteligente do histórico do paciente — padrões, evolução e o que tende a vir a seguir

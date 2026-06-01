@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth-context'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Users, FileText, Calendar, Settings2,
-  LogOut, Stethoscope, Brain, Menu, X, DollarSign
+  LogOut, Stethoscope, Brain, Menu, X, DollarSign, HelpCircle
 } from 'lucide-react'
 
 const nav = [
@@ -18,6 +18,7 @@ const nav = [
   { href: '/agenda',      label: 'Agenda',      icon: Calendar },
   { href: '/financeiro',    label: 'Financeiro',    icon: DollarSign },
   { href: '/configuracoes', label: 'Configurações', icon: Settings2 },
+  { href: '/ajuda',         label: 'Ajuda',         icon: HelpCircle },
 ]
 
 export default function Sidebar() {
@@ -172,7 +173,7 @@ export default function Sidebar() {
 
       {/* ── Mobile bottom nav ────────────────────────────── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 flex">
-        {nav.map(({ href, label, icon: Icon }) => {
+        {nav.filter((i) => i.href !== '/ajuda').map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href)
           return (
             <Link

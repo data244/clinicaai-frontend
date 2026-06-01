@@ -8,6 +8,7 @@ import {
   Users, TrendingUp, AlertTriangle, MessageSquare, BarChart2, Send, Network, Maximize2, Minimize2
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
+import InfoTip from '@/components/InfoTip'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -368,7 +369,7 @@ export default function MapaLongitudinalPage() {
   const prontuarios = (data?.prontuarios as Prontuario[]) || []
 
   return (
-    <div className={aba === 'conceitos' ? 'max-w-7xl mx-auto p-6' : 'max-w-4xl mx-auto p-6'}>
+    <div className={(aba === 'conceitos' || aba === 'perguntas') ? 'max-w-7xl mx-auto p-6' : 'max-w-4xl mx-auto p-6'}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-2">
         <Link href={`/pacientes/${id}`} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -377,7 +378,7 @@ export default function MapaLongitudinalPage() {
         <div>
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-indigo-500" />
-            <h1 className="text-xl font-bold text-gray-900">Mapa Longitudinal</h1>
+            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">Mapa Longitudinal<InfoTip title="Mapa Longitudinal" text="A leitura do caso por inteiro, a partir de todas as sessões: padrões, evolução, perguntas ao histórico e o mapa de temas. Quanto mais sessões registradas, mais consistente." /></h1>
           </div>
           {data?.paciente != null && <p className="text-sm text-gray-500 ml-7">{data.paciente as string}</p>}
         </div>
@@ -548,49 +549,71 @@ export default function MapaLongitudinalPage() {
 
       {/* ── ABA: PERGUNTAS ── */}
       {aba === 'perguntas' && (
-        <div className="bg-white border border-gray-100 rounded-xl shadow-sm">
-          <div className="px-5 py-4 border-b border-gray-50">
-            <p className="text-sm font-semibold text-gray-800">Perguntas ao Histórico</p>
-            <p className="text-xs text-gray-400 mt-0.5">Ex: Quantas vezes ele citou a esposa? Houve evolução na queixa principal?</p>
+        <div className="flex flex-col lg:flex-row gap-4 items-start">
+          {/* Conversa + input */}
+          <div className="flex-1 w-full bg-white border border-gray-100 rounded-xl shadow-sm">
+            <div className="px-5 py-4 border-b border-gray-50">
+              <p className="text-sm font-semibold text-gray-800">Perguntas ao Histórico</p>
+              <p className="text-xs text-gray-400 mt-0.5">Ex: Quantas vezes ele citou a esposa? Houve evolução na queixa principal?</p>
+            </div>
+            {mapaMsg.length > 0 && (
+              <div className="px-5 py-4 space-y-4 max-h-96 overflow-y-auto">
+                {mapaMsg.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-800'}`}>
+                      {msg.role === 'user' ? <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p> : <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>}
+                    </div>
+                  </div>
+                ))}
+                {mapaLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-gray-100 rounded-2xl px-4 py-3 flex gap-1">
+                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'0ms'}} />
+                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'150ms'}} />
+                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'300ms'}} />
+                    </div>
+                  </div>
+                )}
+                <div ref={mapaEndRef} />
+              </div>
+            )}
+            {mapaMsg.length === 0 && (
+              <div className="px-5 py-8 text-center text-gray-400">
+                <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                <p className="text-sm">Faça uma pergunta sobre o histórico do paciente</p>
+              </div>
+            )}
+            <div className="px-5 py-4 border-t border-gray-50 flex gap-2">
+              <input type="text" value={mapaPergunta} onChange={e => setMapaPergunta(e.target.value)}
+                onKeyDown={async e => { if (e.key === 'Enter' && !mapaLoading) await perguntarMapa() }}
+                placeholder="Quantas vezes ele citou a esposa?" disabled={mapaLoading}
+                className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-60" />
+              <button onClick={perguntarMapa} disabled={mapaLoading || !mapaPergunta.trim()}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-1.5">
+                <Send className="w-3.5 h-3.5" />
+                {mapaLoading ? '...' : 'Enviar'}
+              </button>
+            </div>
           </div>
-          {mapaMsg.length > 0 && (
-            <div className="px-5 py-4 space-y-4 max-h-96 overflow-y-auto">
-              {mapaMsg.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-800'}`}>
-                    {msg.role === 'user' ? <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p> : <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>}
-                  </div>
-                </div>
-              ))}
-              {mapaLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-100 rounded-2xl px-4 py-3 flex gap-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'0ms'}} />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'150ms'}} />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'300ms'}} />
-                  </div>
-                </div>
+          {/* Painel direito: perguntas feitas */}
+          <aside className="w-full lg:w-72 shrink-0 bg-white border border-gray-100 rounded-xl shadow-sm">
+            <div className="px-4 py-3 border-b border-gray-50">
+              <p className="text-sm font-semibold text-gray-800">Perguntas feitas</p>
+              <p className="text-xs text-gray-400 mt-0.5">Clique para perguntar de novo</p>
+            </div>
+            <div className="p-3 space-y-2 max-h-[28rem] overflow-y-auto">
+              {mapaMsg.filter(m => m.role === 'user').length === 0 ? (
+                <p className="text-xs text-gray-400 px-1 py-2">Nenhuma pergunta ainda.</p>
+              ) : (
+                mapaMsg.filter(m => m.role === 'user').map((m, i) => (
+                  <button key={i} onClick={() => setMapaPergunta(m.content)}
+                    className="w-full text-left text-xs text-gray-600 bg-gray-50 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg px-3 py-2 transition-colors">
+                    {m.content}
+                  </button>
+                ))
               )}
-              <div ref={mapaEndRef} />
             </div>
-          )}
-          {mapaMsg.length === 0 && (
-            <div className="px-5 py-8 text-center text-gray-400">
-              <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">Faça uma pergunta sobre o histórico do paciente</p>
-            </div>
-          )}
-          <div className="px-5 py-4 border-t border-gray-50 flex gap-2">
-            <input type="text" value={mapaPergunta} onChange={e => setMapaPergunta(e.target.value)}
-              onKeyDown={async e => { if (e.key === 'Enter' && !mapaLoading) await perguntarMapa() }}
-              placeholder="Quantas vezes ele citou a esposa?" disabled={mapaLoading}
-              className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-60" />
-            <button onClick={perguntarMapa} disabled={mapaLoading || !mapaPergunta.trim()}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-1.5">
-              <Send className="w-3.5 h-3.5" />
-              {mapaLoading ? '...' : 'Enviar'}
-            </button>
-          </div>
+          </aside>
         </div>
       )}
 
