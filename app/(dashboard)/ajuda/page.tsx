@@ -40,7 +40,7 @@ export default function AjudaPage() {
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Central de Ajuda</h1>
       </div>
-      <p className="text-sm text-gray-500 mb-5 ml-12">Guias rápidos para tirar o máximo do Clínica.ai.</p>
+      <p className="text-sm text-gray-600 mb-5 ml-12">Guias rápidos para tirar o máximo do Clínica.ai.</p>
 
       <div className="relative mb-6 max-w-md">
         <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -54,13 +54,13 @@ export default function AjudaPage() {
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Lista de artigos */}
-        <nav className="w-full lg:w-72 shrink-0 space-y-5">
+        <nav className="w-full lg:w-72 shrink-0 bg-white border border-gray-100 rounded-xl shadow-sm p-4 space-y-5">
           {categorias.map(cat => {
             const itens = filtrados.filter(a => a.categoria === cat)
             if (itens.length === 0) return null
             return (
               <div key={cat}>
-                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2 px-1">{cat}</p>
+                <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2 px-1">{cat}</p>
                 <div className="space-y-1">
                   {itens.map(a => (
                     <button
