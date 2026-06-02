@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { adminApi, ContaAdmin } from '@/lib/api'
-import { ShieldCheck, Loader2, Check, Ban, Lock, KeyRound, Copy, X } from 'lucide-react'
+import { ShieldCheck, Loader2, Check, Ban, Lock, KeyRound, Copy, X, Trash2 } from 'lucide-react'
 
 const STATUS_INFO: Record<string, { label: string; cls: string }> = {
   ativo:              { label: 'Ativo',       cls: 'bg-green-50 text-green-700 border-green-200' },
@@ -50,6 +50,19 @@ export default function AdminPage() {
       setCopiado(false)
     } catch {
       // ignora; admin pode tentar de novo
+    } finally {
+      setProcessando(null)
+    }
+  }
+
+  const deletarConta = async (c: ContaAdmin) => {
+    if (!confirm(`Deletar a conta de "${c.nome || c.email}"?\n\nEsta ação é irreversível e libera o e-mail para reutilização.`)) return
+    setProcessando(c.id)
+    try {
+      await adminApi.deletarConta(c.id)
+      setContas(prev => prev.filter(x => x.id !== c.id))
+    } catch {
+      alert('Não foi possível deletar a conta.')
     } finally {
       setProcessando(null)
     }
@@ -118,6 +131,10 @@ export default function AdminPage() {
                       <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
                     ) : (
                       <>
+                        <button onClick={() => deletarConta(c)} title="Deletar conta"
+                          className="text-gray-400 hover:text-red-500 transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                         <button onClick={() => redefinirSenha(c)} title="Redefinir senha"
                           className="text-gray-400 hover:text-indigo-600 transition-colors">
                           <KeyRound className="w-4 h-4" />

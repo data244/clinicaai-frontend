@@ -294,4 +294,9 @@ export const adminApi = {
     request<{ ok: boolean; senha_temporaria: string }>(
       `/api/v1/admin/contas/${id}/reset-senha`, { method: 'POST' }
     ),
+
+  deletarConta: (id: string) =>
+    request<{ ok: boolean; email_liberado: string }>(
+      `/api/v1/admin/contas/${id}`, { method: 'DELETE' }
+    ),
 }
