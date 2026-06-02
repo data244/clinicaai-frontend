@@ -67,6 +67,9 @@ export const authApi = {
 
 export const pacientesApi = {
   list: () => request<import('@/types').Paciente[]>('/api/v1/pacientes/'),
+  listArquivados: () => request<import('@/types').Paciente[]>('/api/v1/pacientes/?ativo=false'),
+  reativar: (id: string) => request<{ ok: boolean }>(`/api/v1/pacientes/${id}/reativar`, { method: 'POST' }),
+  excluirDefinitivo: (id: string) => request<{ ok: boolean }>(`/api/v1/pacientes/${id}/excluir-definitivo`, { method: 'DELETE' }),
 
   create: (data: Partial<import('@/types').Paciente>) =>
     request<import('@/types').Paciente>('/api/v1/pacientes/', { method: 'POST', body: JSON.stringify(data) }),
