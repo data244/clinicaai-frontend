@@ -42,6 +42,23 @@ export default function AjudaPage() {
       </div>
       <p className="text-sm text-gray-600 mb-5 ml-12">Guias rápidos para tirar o máximo do Clínica.ai.</p>
 
+      {/* Vídeo de primeiros passos */}
+      <div className="mb-6 bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100">
+          <p className="text-sm font-semibold text-gray-900">▶ Primeiros passos — importando histórico clínico com IA</p>
+          <p className="text-xs text-gray-500 mt-0.5">Veja como importar o histórico de um paciente e gerar a análise longitudinal em minutos.</p>
+        </div>
+        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+          <iframe
+            src="https://www.youtube.com/embed/8w8hTzO1eKk"
+            title="Clínica.ai — Primeiros passos"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full"
+          />
+        </div>
+      </div>
+
       <div className="relative mb-6 max-w-md">
         <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
         <input
