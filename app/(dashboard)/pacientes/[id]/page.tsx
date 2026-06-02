@@ -3,10 +3,11 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { pacientesApi, prontuariosApi } from '@/lib/api'
 import { Paciente, Prontuario } from '@/types'
-import { ArrowLeft, Phone, Mail, FileText, Plus, Calendar, TrendingUp, X, Mic, Save, Pencil } from 'lucide-react'
+import { ArrowLeft, Phone, Mail, FileText, Plus, Calendar, TrendingUp, X, Mic, Save, Pencil, FolderInput } from 'lucide-react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
 import DocumentosPaciente from '@/components/DocumentosPaciente'
+import ImportarHistorico from '@/components/ImportarHistorico'
 
 const TIPOS = ['consulta', 'retorno', 'exame', 'evolucao', 'anamnese'] as const
 
@@ -38,6 +39,8 @@ export default function PacienteDetailPage() {
   const [form, setForm] = useState<ProntuarioForm>(formVazio)
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
+
+  const [importarAberto, setImportarAberto] = useState(false)
 
   // Modal de edição
   const [editando, setEditando] = useState<Prontuario | null>(null)
@@ -240,12 +243,21 @@ export default function PacienteDetailPage() {
                   <FileText className="w-4 h-4 text-gray-400" />
                   Prontuários ({prontuarios.length})
                 </h2>
-                <button
-                  onClick={abrirModal}
-                  className="btn-primary text-sm py-1.5 px-3 flex items-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Novo registro
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setImportarAberto(true)}
+                    className="text-sm py-1.5 px-3 flex items-center gap-1 border border-indigo-200 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors"
+                    title="Importar histórico de anotações"
+                  >
+                    <FolderInput className="w-3.5 h-3.5" /> Importar
+                  </button>
+                  <button
+                    onClick={abrirModal}
+                    className="btn-primary text-sm py-1.5 px-3 flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Novo registro
+                  </button>
+                </div>
               </div>
 
               {prontuarios.length === 0 ? (
@@ -345,6 +357,19 @@ export default function PacienteDetailPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {importarAberto && (
+        <ImportarHistorico
+          pacienteId={id}
+          pacienteNome={paciente?.nome ?? ''}
+          onClose={() => setImportarAberto(false)}
+          onConcluido={async () => {
+            setImportarAberto(false)
+            const prons = await prontuariosApi.listByPaciente(id)
+            setProntuarios(prons)
+          }}
+        />
       )}
 
       {/* Modal: editar prontuário */}
