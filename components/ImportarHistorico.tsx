@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { X, Upload, FileText, Camera, HelpCircle, Loader2, ChevronDown, ChevronUp, AlertTriangle, Check, Trash2 } from 'lucide-react'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? ''
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://clinicaai-backend-production.up.railway.app'
 const token = () => typeof window !== 'undefined' ? localStorage.getItem('clinicaai_token') ?? '' : ''
 
 type Aba = 'texto' | 'arquivo' | 'foto'
