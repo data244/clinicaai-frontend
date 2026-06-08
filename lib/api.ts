@@ -264,6 +264,9 @@ export const assinaturaApi = {
 
   retomar: () => request<{ init_point: string; plano: string }>('/api/v1/assinatura/retomar', { method: 'POST' }),
 
+  checkoutTrial: () =>
+    request<{ init_point: string; plano: string }>('/api/v1/assinatura/checkout-trial', { method: 'POST' }),
+
   upgrade: (novo_plano: string) => request<{ init_point: string; novo_plano: string }>(
     '/api/v1/assinatura/upgrade', { method: 'POST', body: JSON.stringify({ novo_plano }) }
   ),
@@ -302,4 +305,23 @@ export const adminApi = {
     request<{ ok: boolean; email_liberado: string }>(
       `/api/v1/admin/contas/${id}`, { method: 'DELETE' }
     ),
+}
+
+// ── Convites beta ─────────────────────────────────────────────────────────────
+export const convitesApi = {
+  validar: (token: string) =>
+    request<{ valido: boolean; motivo?: string }>(`/api/v1/convites/validar/${token}`, {}, false),
+  registrarBeta: (data: {
+    token_convite: string; email: string; password: string; nome: string
+    especialidade?: string; telefone?: string
+  }) =>
+    request<{ access_token: string; user_id: string; nome: string; status_conta: string; trial_expires_at: string }>(
+      '/api/v1/auth/registrar-beta', { method: 'POST', body: JSON.stringify(data) }, false
+    ),
+  gerar: () =>
+    request<{ token: string; link: string; expires_at: string }>('/api/v1/convites/gerar', { method: 'POST' }),
+  listar: () =>
+    request<{ convites: Array<{ id: string; token: string; link: string; usado: boolean; usado_em?: string; expires_at: string; created_at: string }> }>('/api/v1/convites/'),
+  listarAdmin: () =>
+    request<{ convites: Array<{ id: string; token: string; link: string; criado_por: string; usado_por?: string; usado: boolean; usado_em?: string; expires_at: string; created_at: string }> }>('/api/v1/convites/admin'),
 }

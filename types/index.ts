@@ -15,6 +15,8 @@ export interface Profissional {
   mercadopago_access_token?: string
   plano_id?: string
   status_conta?: string
+  trial_expires_at?: string
+  plano?: string
   created_at: string
 }
 

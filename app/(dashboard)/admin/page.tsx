@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { adminApi, ContaAdmin } from '@/lib/api'
-import { ShieldCheck, Loader2, Check, Ban, Lock, KeyRound, Copy, X, Trash2 } from 'lucide-react'
+import { adminApi, convitesApi, ContaAdmin } from '@/lib/api'
+import { ShieldCheck, Loader2, Check, Ban, Lock, KeyRound, Copy, X, Trash2, Link2, Gift } from 'lucide-react'
 
 const STATUS_INFO: Record<string, { label: string; cls: string }> = {
   ativo:              { label: 'Ativo',       cls: 'bg-green-50 text-green-700 border-green-200' },
@@ -19,6 +19,13 @@ export default function AdminPage() {
   const [processando, setProcessando] = useState<string | null>(null)
   const [senhaGerada, setSenhaGerada] = useState<{ nome: string; senha: string } | null>(null)
   const [copiado, setCopiado] = useState(false)
+
+  // Convites beta
+  type Convite = { id: string; token: string; link: string; criado_por?: string; usado_por?: string; usado: boolean; usado_em?: string; expires_at: string; created_at: string }
+  const [convites, setConvites] = useState<Convite[]>([])
+  const [loadingConvites, setLoadingConvites] = useState(false)
+  const [gerandoConvite, setGerandoConvite] = useState(false)
+  const [linkCopiado, setLinkCopiado] = useState<string | null>(null)
 
   const carregar = useCallback(async () => {
     setLoading(true)
@@ -66,6 +73,31 @@ export default function AdminPage() {
     } finally {
       setProcessando(null)
     }
+  }
+
+  const carregarConvites = async () => {
+    setLoadingConvites(true)
+    try {
+      const r = await convitesApi.listarAdmin()
+      setConvites(r.convites)
+    } catch { /* ignore */ }
+    finally { setLoadingConvites(false) }
+  }
+
+  const gerarConvite = async () => {
+    setGerandoConvite(true)
+    try {
+      await convitesApi.gerar()
+      await carregarConvites()
+    } catch (e: unknown) {
+      alert((e as Error).message || 'Erro ao gerar convite.')
+    } finally { setGerandoConvite(false) }
+  }
+
+  const copiarLink = (link: string) => {
+    navigator.clipboard?.writeText(link)
+    setLinkCopiado(link)
+    setTimeout(() => setLinkCopiado(null), 2000)
   }
 
   if (restrito) {
@@ -158,6 +190,71 @@ export default function AdminPage() {
             })}
           </div>
         )}
+      </div>
+
+      {/* Seção: Convites Beta */}
+      <div className="mt-10">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Gift className="w-5 h-5 text-indigo-500" />
+            <h2 className="text-lg font-bold text-gray-900">Convites Beta</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            {convites.length === 0 && !loadingConvites && (
+              <button onClick={carregarConvites} className="text-xs text-gray-400 hover:text-gray-600 underline">
+                Carregar convites
+              </button>
+            )}
+            <button
+              onClick={gerarConvite}
+              disabled={gerandoConvite}
+              className="flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition-colors"
+            >
+              {gerandoConvite ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
+              Gerar convite
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+          {loadingConvites ? (
+            <div className="py-10 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-indigo-500" /></div>
+          ) : convites.length === 0 ? (
+            <div className="py-10 text-center text-gray-400 text-sm">
+              Nenhum convite gerado ainda. Clique em "Gerar convite" para criar o primeiro.
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {convites.map(c => (
+                <div key={c.id} className="flex items-center gap-3 px-5 py-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-mono text-gray-500 truncate">{c.link}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Criado em {new Date(c.created_at).toLocaleDateString('pt-BR')}
+                      {c.usado && c.usado_em && ` · Usado em ${new Date(c.usado_em).toLocaleDateString('pt-BR')}`}
+                    </p>
+                  </div>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full border shrink-0 ${
+                    c.usado
+                      ? 'bg-gray-50 text-gray-500 border-gray-200'
+                      : 'bg-green-50 text-green-700 border-green-200'
+                  }`}>
+                    {c.usado ? 'Usado' : 'Disponível'}
+                  </span>
+                  {!c.usado && (
+                    <button
+                      onClick={() => copiarLink(c.link)}
+                      className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700 shrink-0"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      {linkCopiado === c.link ? 'Copiado!' : 'Copiar link'}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modal: senha temporária gerada */}
