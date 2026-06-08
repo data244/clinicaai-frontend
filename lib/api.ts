@@ -328,3 +328,25 @@ export const convitesApi = {
   listarAdmin: () =>
     request<{ convites: Array<{ id: string; token: string; link: string; criado_por: string; usado_por?: string; usado: boolean; usado_em?: string; expires_at: string; created_at: string }> }>('/api/v1/convites/admin'),
 }
+
+// ── Releases / Changelog ──────────────────────────────────────────────────────
+export const releasesApi = {
+  listar: () =>
+    request<{ releases: Release[] }>('/api/v1/releases/'),
+  listarAdmin: () =>
+    request<{ releases: Release[] }>('/api/v1/releases/admin'),
+  criar: (data: { versao: string; titulo: string; notas: string; publico?: boolean }) =>
+    request<Release>('/api/v1/releases/', { method: 'POST', body: JSON.stringify(data) }),
+  deletar: (id: string) =>
+    request<{ ok: boolean }>(`/api/v1/releases/${id}`, { method: 'DELETE' }),
+}
+
+export interface Release {
+  id: string
+  versao: string
+  titulo: string
+  notas: string
+  publico: boolean
+  criado_por?: string
+  created_at: string
+}

@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth-context'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Users, FileText, Calendar, Settings2,
-  LogOut, Stethoscope, Brain, Menu, X, DollarSign, HelpCircle
+  LogOut, Stethoscope, Brain, Menu, X, DollarSign, HelpCircle, Megaphone
 } from 'lucide-react'
 
 const nav = [
@@ -17,6 +17,7 @@ const nav = [
   { href: '/copiloto',    label: 'Copiloto IA', icon: Brain },
   { href: '/agenda',      label: 'Agenda',      icon: Calendar },
   { href: '/financeiro',    label: 'Financeiro',    icon: DollarSign },
+  { href: '/novidades',     label: 'Novidades',     icon: Megaphone },
   { href: '/configuracoes', label: 'Configurações', icon: Settings2 },
   { href: '/ajuda',         label: 'Ajuda',         icon: HelpCircle },
 ]

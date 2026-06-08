@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { adminApi, convitesApi, ContaAdmin } from '@/lib/api'
-import { ShieldCheck, Loader2, Check, Ban, Lock, KeyRound, Copy, X, Trash2, Link2, Gift } from 'lucide-react'
+import { adminApi, convitesApi, releasesApi, Release, ContaAdmin } from '@/lib/api'
+import { ShieldCheck, Loader2, Check, Ban, Lock, KeyRound, Copy, X, Trash2, Link2, Gift, Megaphone, Plus, Globe, EyeOff } from 'lucide-react'
 
 const STATUS_INFO: Record<string, { label: string; cls: string }> = {
   ativo:              { label: 'Ativo',       cls: 'bg-green-50 text-green-700 border-green-200' },
@@ -26,6 +26,44 @@ export default function AdminPage() {
   const [loadingConvites, setLoadingConvites] = useState(false)
   const [gerandoConvite, setGerandoConvite] = useState(false)
   const [linkCopiado, setLinkCopiado] = useState<string | null>(null)
+  // Releases / Changelog
+  const [releases, setReleases] = useState<Release[]>([])
+  const [loadingReleases, setLoadingReleases] = useState(false)
+  const [criarRelease, setCriarRelease] = useState(false)
+  const [salvandoRelease, setSalvandoRelease] = useState(false)
+  const [novaRelease, setNovaRelease] = useState({ versao: '', titulo: '', notas: '', publico: true })
+
+  const carregarReleases = async () => {
+    setLoadingReleases(true)
+    try {
+      const r = await releasesApi.listarAdmin()
+      setReleases(r.releases)
+    } catch { /* ignore */ }
+    finally { setLoadingReleases(false) }
+  }
+
+  const salvarRelease = async () => {
+    if (!novaRelease.versao || !novaRelease.titulo || !novaRelease.notas) return
+    setSalvandoRelease(true)
+    try {
+      await releasesApi.criar(novaRelease)
+      setNovaRelease({ versao: '', titulo: '', notas: '', publico: true })
+      setCriarRelease(false)
+      await carregarReleases()
+    } catch (e: unknown) {
+      alert((e as Error).message || 'Erro ao salvar release.')
+    } finally { setSalvandoRelease(false) }
+  }
+
+  const deletarRelease = async (id: string) => {
+    if (!confirm('Apagar esta versão do changelog?')) return
+    try {
+      await releasesApi.deletar(id)
+      setReleases(prev => prev.filter(r => r.id !== id))
+    } catch (e: unknown) {
+      alert((e as Error).message || 'Erro ao apagar release.')
+    }
+  }
 
   const carregar = useCallback(async () => {
     setLoading(true)
@@ -276,6 +314,133 @@ export default function AdminPage() {
         </div>
       </div>
 
+
+      {/* Seção: Releases / Changelog */}
+      <div className="mt-10">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Megaphone className="w-5 h-5 text-indigo-500" />
+            <h2 className="text-lg font-bold text-gray-900">Novidades & Changelog</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            {releases.length === 0 && !loadingReleases && (
+              <button onClick={carregarReleases} className="text-xs text-gray-400 hover:text-gray-600 underline">
+                Carregar versões
+              </button>
+            )}
+            <button
+              onClick={() => setCriarRelease(true)}
+              className="flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Nova versão
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+          {loadingReleases ? (
+            <div className="py-10 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-indigo-500" /></div>
+          ) : releases.length === 0 ? (
+            <div className="py-10 text-center text-gray-400 text-sm">
+              Nenhuma versão registrada ainda. Clique em &quot;Nova versão&quot; para começar.
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {releases.map(r => (
+                <div key={r.id} className="flex items-center gap-3 px-5 py-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-xs font-mono font-bold text-indigo-600">v{r.versao}</span>
+                      <span className="text-sm font-medium text-gray-900 truncate">{r.titulo}</span>
+                    </div>
+                    <p className="text-xs text-gray-400">{new Date(r.created_at).toLocaleDateString('pt-BR')}</p>
+                  </div>
+                  <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border shrink-0 ${
+                    r.publico
+                      ? 'bg-green-50 text-green-700 border-green-200'
+                      : 'bg-gray-50 text-gray-500 border-gray-200'
+                  }`}>
+                    {r.publico ? <><Globe className="w-3 h-3" /> Público</> : <><EyeOff className="w-3 h-3" /> Privado</>}
+                  </span>
+                  <button
+                    onClick={() => deletarRelease(r.id)}
+                    className="text-gray-300 hover:text-red-500 transition-colors shrink-0"
+                    title="Apagar versão"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modal: criar release */}
+      {criarRelease && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={() => setCriarRelease(false)}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Nova versão</h2>
+              <button onClick={() => setCriarRelease(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="space-y-3">
+              <div className="flex gap-3">
+                <div className="w-32 shrink-0">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Versão</label>
+                  <input
+                    value={novaRelease.versao}
+                    onChange={e => setNovaRelease(p => ({ ...p, versao: e.target.value }))}
+                    placeholder="1.2.0"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Título</label>
+                  <input
+                    value={novaRelease.titulo}
+                    onChange={e => setNovaRelease(p => ({ ...p, titulo: e.target.value }))}
+                    placeholder="Ex: Módulo Financeiro lançado"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Notas (o que mudou)</label>
+                <textarea
+                  value={novaRelease.notas}
+                  onChange={e => setNovaRelease(p => ({ ...p, notas: e.target.value }))}
+                  rows={5}
+                  placeholder="• Lançamento do módulo financeiro com controle de cobranças&#10;• Correção no calendário da agenda&#10;• Melhoria de performance no copiloto"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                />
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={novaRelease.publico}
+                  onChange={e => setNovaRelease(p => ({ ...p, publico: e.target.checked }))}
+                  className="w-4 h-4 rounded text-indigo-600"
+                />
+                <span className="text-sm text-gray-700">Visível para todos os usuários</span>
+              </label>
+            </div>
+            <div className="flex gap-2 mt-5">
+              <button onClick={() => setCriarRelease(false)} className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-xl text-sm font-medium hover:bg-gray-50">
+                Cancelar
+              </button>
+              <button
+                onClick={salvarRelease}
+                disabled={salvandoRelease || !novaRelease.versao || !novaRelease.titulo || !novaRelease.notas}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white py-2 rounded-xl text-sm font-medium transition-colors"
+              >
+                {salvandoRelease ? 'Salvando...' : 'Publicar versão'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Modal: senha temporária gerada */}
       {senhaGerada && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={() => setSenhaGerada(null)}>
