@@ -115,6 +115,10 @@ export default function CopilotoPage() {
     'Houve evolução nas últimas sessões?',
     'O que tende a se repetir no histórico?',
     'Quais pontos merecem atenção daqui pra frente?',
+    'Há elementos no histórico consistentes com algum critério do DSM-5-TR?',
+    'Qual hipótese diagnóstica o histórico sugere? Explore o diferencial.',
+    'Qual seria o código CID-11 mais adequado para este caso?',
+    'Analise os critérios diagnósticos considerando os dados disponíveis.',
   ]
 
   const conversasPaciente = selectedPaciente ? conversas.filter(c => c.paciente_id === selectedPaciente) : []
