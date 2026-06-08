@@ -79,6 +79,7 @@ export default function AdminPage() {
   }, [filtro])
 
   useEffect(() => { carregar() }, [carregar])
+  useEffect(() => { carregarConvites(); carregarReleases() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const alterar = async (id: string, status: string) => {
     setProcessando(id)
@@ -248,11 +249,7 @@ export default function AdminPage() {
             <h2 className="text-lg font-bold text-gray-900">Convites Beta</h2>
           </div>
           <div className="flex items-center gap-2">
-            {convites.length === 0 && !loadingConvites && (
-              <button onClick={carregarConvites} className="text-xs text-gray-400 hover:text-gray-600 underline">
-                Carregar convites
-              </button>
-            )}
+
             <button
               onClick={gerarConvite}
               disabled={gerandoConvite}
@@ -323,11 +320,7 @@ export default function AdminPage() {
             <h2 className="text-lg font-bold text-gray-900">Novidades & Changelog</h2>
           </div>
           <div className="flex items-center gap-2">
-            {releases.length === 0 && !loadingReleases && (
-              <button onClick={carregarReleases} className="text-xs text-gray-400 hover:text-gray-600 underline">
-                Carregar versões
-              </button>
-            )}
+
             <button
               onClick={() => setCriarRelease(true)}
               className="flex items-center gap-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition-colors"
