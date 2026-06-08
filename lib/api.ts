@@ -322,6 +322,9 @@ export const convitesApi = {
     request<{ token: string; link: string; expires_at: string }>('/api/v1/convites/gerar', { method: 'POST' }),
   listar: () =>
     request<{ convites: Array<{ id: string; token: string; link: string; usado: boolean; usado_em?: string; expires_at: string; created_at: string }> }>('/api/v1/convites/'),
+  apagar: (id: string) =>
+    request<{ ok: boolean }>(`/api/v1/convites/${id}`, { method: 'DELETE' }),
+
   listarAdmin: () =>
     request<{ convites: Array<{ id: string; token: string; link: string; criado_por: string; usado_por?: string; usado: boolean; usado_em?: string; expires_at: string; created_at: string }> }>('/api/v1/convites/admin'),
 }

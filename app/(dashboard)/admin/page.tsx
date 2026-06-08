@@ -94,6 +94,16 @@ export default function AdminPage() {
     } finally { setGerandoConvite(false) }
   }
 
+  const apagarConvite = async (id: string) => {
+    if (!confirm('Apagar este convite? Esta ação não pode ser desfeita.')) return
+    try {
+      await convitesApi.apagar(id)
+      setConvites(prev => prev.filter(c => c.id !== id))
+    } catch (e: unknown) {
+      alert((e as Error).message || 'Erro ao apagar convite.')
+    }
+  }
+
   const copiarLink = (link: string) => {
     navigator.clipboard?.writeText(link)
     setLinkCopiado(link)
@@ -242,13 +252,22 @@ export default function AdminPage() {
                     {c.usado ? 'Usado' : 'Disponível'}
                   </span>
                   {!c.usado && (
-                    <button
-                      onClick={() => copiarLink(c.link)}
-                      className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700 shrink-0"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                      {linkCopiado === c.link ? 'Copiado!' : 'Copiar link'}
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => copiarLink(c.link)}
+                        className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        {linkCopiado === c.link ? 'Copiado!' : 'Copiar link'}
+                      </button>
+                      <button
+                        onClick={() => apagarConvite(c.id)}
+                        className="text-gray-300 hover:text-red-500 transition-colors"
+                        title="Apagar convite"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}
