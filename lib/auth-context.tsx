@@ -9,6 +9,7 @@ interface AuthContextType {
   userId: string | null
   nome: string | null
   especialidade: string | null
+  email: string | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null)
   const [nome, setNome] = useState<string | null>(null)
   const [especialidade, setEspecialidade] = useState<string | null>(null)
+  const [email, setEmail] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -30,20 +32,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const u = localStorage.getItem('clinicaai_user_id')
     const n = localStorage.getItem('clinicaai_nome')
     const e = localStorage.getItem('clinicaai_especialidade')
-    if (t) { setToken(t); setUserId(u); setNome(n); setEspecialidade(e) }
+    const em = localStorage.getItem('clinicaai_email')
+    if (t) { setToken(t); setUserId(u); setNome(n); setEspecialidade(e); setEmail(em) }
     setIsLoading(false)
   }, [])
 
-  const login = async (email: string, password: string) => {
-    const res = await authApi.login(email, password)
+  const login = async (emailInput: string, password: string) => {
+    const res = await authApi.login(emailInput, password)
     localStorage.setItem('clinicaai_token', res.access_token)
     localStorage.setItem('clinicaai_user_id', res.user_id)
     localStorage.setItem('clinicaai_nome', res.nome || '')
     localStorage.setItem('clinicaai_especialidade', res.especialidade || '')
+    localStorage.setItem('clinicaai_email', emailInput)
     setToken(res.access_token)
     setUserId(res.user_id)
     setNome(res.nome)
     setEspecialidade(res.especialidade)
+    setEmail(emailInput)
     router.push('/dashboard')
   }
 
@@ -52,12 +57,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('clinicaai_user_id')
     localStorage.removeItem('clinicaai_nome')
     localStorage.removeItem('clinicaai_especialidade')
-    setToken(null); setUserId(null); setNome(null); setEspecialidade(null)
+    localStorage.removeItem('clinicaai_email')
+    setToken(null); setUserId(null); setNome(null); setEspecialidade(null); setEmail(null)
     router.push('/login')
   }
 
   return (
-    <AuthContext.Provider value={{ token, userId, nome, especialidade, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ token, userId, nome, especialidade, email, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

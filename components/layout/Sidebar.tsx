@@ -7,8 +7,10 @@ import { useAuth } from '@/lib/auth-context'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Users, FileText, Calendar, Settings2,
-  LogOut, Stethoscope, Brain, Menu, X, DollarSign, HelpCircle, Megaphone
+  LogOut, Stethoscope, Brain, Menu, X, DollarSign, HelpCircle, Megaphone, ShieldCheck
 } from 'lucide-react'
+
+const ADMIN_EMAILS = ['leopadilha@gmail.com', 'data@datagestao.com.br']
 
 const nav = [
   { href: '/dashboard',   label: 'Dashboard',  icon: LayoutDashboard },
@@ -24,8 +26,14 @@ const nav = [
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const { nome, especialidade, logout } = useAuth()
+  const { nome, especialidade, email, logout } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  const isAdmin = email ? ADMIN_EMAILS.includes(email) : false
+
+  const allNav = isAdmin
+    ? [...nav, { href: '/admin', label: 'Admin', icon: ShieldCheck }]
+    : nav
 
   const NavLink = ({ href, label, icon: Icon, onClick }: {
     href: string; label: string; icon: React.ElementType; onClick?: () => void
@@ -64,7 +72,7 @@ export default function Sidebar() {
 
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1">
-          {nav.map((item) => <NavLink key={item.href} {...item} />)}
+          {allNav.map((item) => <NavLink key={item.href} {...item} />)}
         </nav>
 
         {/* User */}
@@ -142,7 +150,7 @@ export default function Sidebar() {
 
             {/* Nav */}
             <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-              {nav.map((item) => (
+              {allNav.map((item) => (
                 <NavLink key={item.href} {...item} onClick={() => setMobileOpen(false)} />
               ))}
             </nav>
@@ -174,7 +182,7 @@ export default function Sidebar() {
 
       {/* ── Mobile bottom nav ────────────────────────────── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 flex">
-        {nav.filter((i) => i.href !== '/ajuda').map(({ href, label, icon: Icon }) => {
+        {allNav.filter((i) => i.href !== '/ajuda').map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href)
           return (
             <Link
