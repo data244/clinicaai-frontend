@@ -10,6 +10,7 @@ interface AuthContextType {
   nome: string | null
   especialidade: string | null
   email: string | null
+  isAdmin: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
@@ -24,31 +25,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [nome, setNome] = useState<string | null>(null)
   const [especialidade, setEspecialidade] = useState<string | null>(null)
   const [email, setEmail] = useState<string | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Restaura sessão do localStorage
     const t = localStorage.getItem('clinicaai_token')
     const u = localStorage.getItem('clinicaai_user_id')
     const n = localStorage.getItem('clinicaai_nome')
     const e = localStorage.getItem('clinicaai_especialidade')
     const em = localStorage.getItem('clinicaai_email')
-    if (t) { setToken(t); setUserId(u); setNome(n); setEspecialidade(e); setEmail(em) }
+    const adm = localStorage.getItem('clinicaai_is_admin') === 'true'
+    if (t) { setToken(t); setUserId(u); setNome(n); setEspecialidade(e); setEmail(em); setIsAdmin(adm) }
     setIsLoading(false)
   }, [])
 
   const login = async (emailInput: string, password: string) => {
     const res = await authApi.login(emailInput, password)
+    const adminFlag = res.is_admin ?? false
     localStorage.setItem('clinicaai_token', res.access_token)
     localStorage.setItem('clinicaai_user_id', res.user_id)
     localStorage.setItem('clinicaai_nome', res.nome || '')
     localStorage.setItem('clinicaai_especialidade', res.especialidade || '')
     localStorage.setItem('clinicaai_email', emailInput)
+    localStorage.setItem('clinicaai_is_admin', String(adminFlag))
     setToken(res.access_token)
     setUserId(res.user_id)
     setNome(res.nome)
     setEspecialidade(res.especialidade)
     setEmail(emailInput)
+    setIsAdmin(adminFlag)
     router.push('/dashboard')
   }
 
@@ -58,12 +63,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('clinicaai_nome')
     localStorage.removeItem('clinicaai_especialidade')
     localStorage.removeItem('clinicaai_email')
-    setToken(null); setUserId(null); setNome(null); setEspecialidade(null); setEmail(null)
+    localStorage.removeItem('clinicaai_is_admin')
+    setToken(null); setUserId(null); setNome(null); setEspecialidade(null)
+    setEmail(null); setIsAdmin(false)
     router.push('/login')
   }
 
   return (
-    <AuthContext.Provider value={{ token, userId, nome, especialidade, email, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ token, userId, nome, especialidade, email, isAdmin, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

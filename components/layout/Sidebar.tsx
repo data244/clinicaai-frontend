@@ -10,8 +10,6 @@ import {
   LogOut, Stethoscope, Brain, Menu, X, DollarSign, HelpCircle, Megaphone, ShieldCheck
 } from 'lucide-react'
 
-const ADMIN_EMAILS = ['leopadilha@gmail.com', 'data@datagestao.com.br']
-
 const nav = [
   { href: '/dashboard',   label: 'Dashboard',  icon: LayoutDashboard },
   { href: '/pacientes',   label: 'Pacientes',   icon: Users },
@@ -26,10 +24,9 @@ const nav = [
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const { nome, especialidade, email, logout } = useAuth()
+  const { nome, especialidade, isAdmin, logout } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const isAdmin = email ? ADMIN_EMAILS.includes(email) : false
 
   const allNav = isAdmin
     ? [...nav, { href: '/admin', label: 'Admin', icon: ShieldCheck }]

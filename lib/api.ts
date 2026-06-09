@@ -56,7 +56,7 @@ export const authApi = {
   ),
 
   login: (email: string, password: string) =>
-    request<{ access_token: string; user_id: string; nome: string; especialidade: string }>(
+    request<{ access_token: string; user_id: string; nome: string; especialidade: string; is_admin: boolean }>(
       '/api/v1/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }, false
     ),
 
@@ -284,6 +284,7 @@ export interface ContaAdmin {
   especialidade?: string
   status_conta: string
   plano?: string
+  is_admin: boolean
   created_at: string
 }
 
@@ -304,6 +305,11 @@ export const adminApi = {
   deletarConta: (id: string) =>
     request<{ ok: boolean; email_liberado: string }>(
       `/api/v1/admin/contas/${id}`, { method: 'DELETE' }
+    ),
+
+  toggleAdmin: (id: string) =>
+    request<{ ok: boolean; is_admin: boolean }>(
+      `/api/v1/admin/contas/${id}/toggle-admin`, { method: 'POST' }
     ),
 }
 

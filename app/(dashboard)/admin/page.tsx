@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { adminApi, convitesApi, releasesApi, Release, ContaAdmin } from '@/lib/api'
-import { ShieldCheck, Loader2, Check, Ban, Lock, KeyRound, Copy, X, Trash2, Link2, Gift, Megaphone, Plus, Globe, EyeOff } from 'lucide-react'
+import { ShieldCheck, ShieldAlert, Loader2, Check, Ban, Lock, KeyRound, Copy, X, Trash2, Link2, Gift, Megaphone, Plus, Globe, EyeOff } from 'lucide-react'
 
 const STATUS_INFO: Record<string, { label: string; cls: string }> = {
   ativo:              { label: 'Ativo',       cls: 'bg-green-50 text-green-700 border-green-200' },
@@ -62,6 +62,20 @@ export default function AdminPage() {
       setReleases(prev => prev.filter(r => r.id !== id))
     } catch (e: unknown) {
       alert((e as Error).message || 'Erro ao apagar release.')
+    }
+  }
+
+  const toggleAdmin = async (c: ContaAdmin) => {
+    const acao = c.is_admin ? 'remover admin de' : 'tornar admin'
+    if (!confirm(`Deseja ${acao} "${c.nome || c.email}"?`)) return
+    setProcessando(c.id)
+    try {
+      const r = await adminApi.toggleAdmin(c.id)
+      setContas(prev => prev.map(x => x.id === c.id ? { ...x, is_admin: r.is_admin } : x))
+    } catch {
+      alert('Não foi possível alterar o status admin.')
+    } finally {
+      setProcessando(null)
     }
   }
 
@@ -212,6 +226,11 @@ export default function AdminPage() {
                       <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
                     ) : (
                       <>
+                        <button onClick={() => toggleAdmin(c)}
+                          title={c.is_admin ? 'Remover admin' : 'Tornar admin'}
+                          className={c.is_admin ? 'text-indigo-500 hover:text-gray-400 transition-colors' : 'text-gray-400 hover:text-indigo-500 transition-colors'}>
+                          <ShieldAlert className="w-4 h-4" />
+                        </button>
                         <button onClick={() => deletarConta(c)} title="Deletar conta"
                           className="text-gray-400 hover:text-red-500 transition-colors">
                           <Trash2 className="w-4 h-4" />
