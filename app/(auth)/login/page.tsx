@@ -66,6 +66,11 @@ export default function LoginPage() {
         <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2" disabled={isSubmitting}>
           {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Entrando...</> : 'Entrar'}
         </button>
+        <div className="text-center">
+          <Link href="/esqueci-senha" className="text-sm text-gray-400 hover:text-primary-600 transition-colors">
+            Esqueceu sua senha?
+          </Link>
+        </div>
       </form>
       <p className="text-center text-sm text-gray-500 mt-6">
         Não tem conta?{' '}
