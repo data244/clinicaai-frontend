@@ -36,13 +36,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             if (!p.onboarding_completo) setMostrarOnboarding(true)
             setAcesso('liberado')
           } else if (p.status_conta === 'trial') {
-            const exp = p.trial_expires_at ? new Date(p.trial_expires_at) : null
-            if (exp && exp < new Date()) {
+            // Calcular expiração: prefer trial_expires_at; fallback: data_inicio_beta + 30d
+            let expDate: Date | null = null
+            if (p.trial_expires_at) {
+              expDate = new Date(p.trial_expires_at)
+            } else if (p.data_inicio_beta) {
+              expDate = new Date(new Date(p.data_inicio_beta).getTime() + 30 * 24 * 60 * 60 * 1000)
+            }
+            if (expDate && expDate < new Date()) {
               setAcesso('trial_expirado')
             } else {
               setNomeUsuario(p.nome)
               if (!p.onboarding_completo) setMostrarOnboarding(true)
-              setTrialExpiresAt(p.trial_expires_at ?? null)
+              setTrialExpiresAt(expDate ? expDate.toISOString() : null)
               setAcesso('liberado')
             }
           } else {

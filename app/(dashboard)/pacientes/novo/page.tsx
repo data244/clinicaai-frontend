@@ -6,8 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
 import { pacientesApi } from '@/lib/api'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Zap, Lock } from 'lucide-react'
 import Link from 'next/link'
+import { assinaturaApi } from '@/lib/api'
 
 const schema = z.object({
   nome: z.string().min(2, 'Nome obrigatório'),
@@ -26,6 +27,8 @@ type FormData = z.infer<typeof schema>
 export default function NovoPacientePage() {
   const router = useRouter()
   const [error, setError] = useState('')
+  const [trialLimit, setTrialLimit] = useState(false)
+  const [loadingCheckout, setLoadingCheckout] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
   })
@@ -37,13 +40,59 @@ export default function NovoPacientePage() {
       const p = await pacientesApi.create(clean)
       router.push(`/pacientes/${p.id}?import=1`)
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Erro ao cadastrar paciente')
+      const msg = e instanceof Error ? e.message : 'Erro ao cadastrar paciente'
+      if (msg.includes('TRIAL_LIMIT')) {
+        setTrialLimit(true)
+      } else {
+        setError(msg)
+      }
     }
   }
 
 
+  const assinarAgora = async () => {
+    setLoadingCheckout(true)
+    try {
+      const { init_point } = await assinaturaApi.checkoutTrial()
+      window.location.href = init_point
+    } catch {
+      alert('Não foi possível iniciar o checkout. Tente novamente.')
+    } finally {
+      setLoadingCheckout(false)
+    }
+  }
+
   return (
     <div className="max-w-2xl">
+      {/* Modal: limite de pacientes beta */}
+      {trialLimit && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-6">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-2xl mb-4">
+              <Lock className="w-6 h-6 text-indigo-600" />
+            </div>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Limite do beta atingido</h2>
+            <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+              O período beta permite até <strong>3 pacientes</strong>. Assine para adicionar pacientes ilimitados e desbloquear todos os recursos.
+            </p>
+            <button
+              onClick={assinarAgora}
+              disabled={loadingCheckout}
+              className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-3 rounded-xl transition-colors mb-3"
+            >
+              <Zap className="w-4 h-4" />
+              {loadingCheckout ? 'Aguarde...' : 'Assinar o Clínica.ai'}
+            </button>
+            <button
+              onClick={() => setTrialLimit(false)}
+              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              Voltar
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-3 mb-6">
         <Link href="/pacientes" className="text-gray-400 hover:text-gray-600 transition-colors">
           <ArrowLeft className="w-5 h-5" />

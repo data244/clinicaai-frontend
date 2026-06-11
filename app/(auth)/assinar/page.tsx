@@ -10,7 +10,9 @@ const PLANOS = {
   base: {
     nome: 'Clínica.ai Base',
     preco: 99,
+    precoPor: null as string | null,
     destaque: false,
+    clinica: false,
     features: [
       'Agenda com lembretes WhatsApp',
       'Prontuário clínico completo',
@@ -22,13 +24,28 @@ const PLANOS = {
   premium: {
     nome: 'Base + Módulo Financeiro',
     preco: 129,
+    precoPor: null as string | null,
     destaque: true,
+    clinica: false,
     features: [
       'Tudo do plano Base',
       'Lembretes automáticos de cobrança',
       'Régua de inadimplência automática',
       'Dashboard de receita e fluxo de caixa',
       'Relatórios financeiros',
+    ],
+  },
+  clinica: {
+    nome: 'Clínica / Equipe',
+    preco: 237,
+    precoPor: 'R$79/psicólogo' as string | null,
+    destaque: false,
+    clinica: true,
+    features: [
+      'Tudo do plano Base para cada psicólogo',
+      'Mínimo 3 psicólogos do mesmo CNPJ',
+      'R$79/psicólogo/mês',
+      'Você gerencia os acessos da equipe',
     ],
   },
 }
@@ -38,7 +55,7 @@ function AssinarContent() {
   const searchParams = useSearchParams()
   const erroInicial = searchParams.get('status') === 'erro'
 
-  const [planoSelecionado, setPlanoSelecionado] = useState<'base' | 'premium'>('base')
+  const [planoSelecionado, setPlanoSelecionado] = useState<'base' | 'premium' | 'clinica'>('base')
   const [step, setStep] = useState<'planos' | 'cadastro'>(erroInicial ? 'cadastro' : 'planos')
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState(erroInicial ? 'Houve um problema com o pagamento. Tente novamente.' : '')
@@ -48,6 +65,8 @@ function AssinarContent() {
   const [password, setPassword] = useState('')
   const [especialidade, setEspecialidade] = useState('')
   const [telefone, setTelefone] = useState('')
+  const [cnpj, setCnpj] = useState('')
+  const [numPsicologos, setNumPsicologos] = useState(3)
 
   async function handleCadastro(e: React.FormEvent) {
     e.preventDefault()
@@ -130,6 +149,9 @@ function AssinarContent() {
                       <div className="mt-1">
                         <span className="text-3xl font-bold text-primary-700">R${plano.preco}</span>
                         <span className="text-gray-500 text-sm">/mês</span>
+                        {plano.precoPor && (
+                          <span className="block text-xs text-primary-600 font-medium mt-0.5">{plano.precoPor}/mês · mínimo 3</span>
+                        )}
                       </div>
                     </div>
                     <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1 ${
@@ -229,6 +251,27 @@ function AssinarContent() {
                   placeholder="(11) 99999-9999"
                 />
               </div>
+              {planoSelecionado === 'clinica' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">CNPJ da clínica *</label>
+                    <input
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      value={cnpj} onChange={e => setCnpj(e.target.value)}
+                      placeholder="00.000.000/0001-00" required={planoSelecionado === 'clinica'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Nº de psicólogos (mínimo 3)</label>
+                    <input
+                      type="number" min={3} max={50}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      value={numPsicologos} onChange={e => setNumPsicologos(Math.max(3, parseInt(e.target.value) || 3))}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Total: R${numPsicologos * 79}/mês ({numPsicologos} × R$79)</p>
+                  </div>
+                </>
+              )}
 
               <button
                 type="submit" disabled={loading || !nome || !email || !password}
