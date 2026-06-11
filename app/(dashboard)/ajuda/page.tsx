@@ -42,20 +42,36 @@ export default function AjudaPage() {
       </div>
       <p className="text-sm text-gray-600 mb-5 ml-12">Guias rápidos para tirar o máximo do Clínica.ai.</p>
 
-      {/* Vídeo de primeiros passos */}
-      <div className="mb-6 bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <p className="text-sm font-semibold text-gray-900">▶ Primeiros passos — importando histórico clínico com IA</p>
-          <p className="text-xs text-gray-500 mt-0.5">Veja como importar o histórico de um paciente e gerar a análise longitudinal em minutos.</p>
-        </div>
-        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-          <iframe
-            src="https://www.youtube.com/embed/8w8hTzO1eKk"
-            title="Clínica.ai — Primeiros passos"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="absolute inset-0 w-full h-full"
-          />
+
+      {/* Tour Guiado */}
+      <div className="mb-6">
+        <h2 className="text-base font-semibold text-gray-900 mb-1">Tour guiado — conheça o sistema</h2>
+        <p className="text-xs text-gray-500 mb-4">6 vídeos curtos, um por área. Assista na ordem ou vá direto ao que precisar.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {[
+            { id: '5948eJBQ5IA', titulo: '01 — Dashboard', desc: 'Visão geral da sua clínica' },
+            { id: 'mFbRov-HZNw', titulo: '02 — Pacientes e Prontuário', desc: 'Cadastro, sessões e memo de voz' },
+            { id: 'yNL7YGkM0k8', titulo: '03 — Mapa Longitudinal', desc: 'Padrões, emoções e alertas clínicos' },
+            { id: 'kzXtjcyTKpc', titulo: '04 — Copiloto IA', desc: 'DSM-5, CID-11 e suporte clínico' },
+            { id: '_YHedZOv5_0', titulo: '05 — Financeiro', desc: 'Cobranças e links de pagamento' },
+            { id: '2WK9Aau8rEU', titulo: '06 — Configurações', desc: 'WhatsApp, Mercado Pago e perfil' },
+          ].map(v => (
+            <div key={v.id} className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                  src={`https://www.youtube.com/embed/${v.id}`}
+                  title={`Clínica.ai — ${v.titulo}`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full"
+                />
+              </div>
+              <div className="px-4 py-3">
+                <p className="text-sm font-semibold text-gray-900">{v.titulo}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{v.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
