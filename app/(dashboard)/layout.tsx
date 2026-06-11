@@ -3,15 +3,17 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { perfilApi, assinaturaApi } from '@/lib/api'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import Sidebar from '@/components/layout/Sidebar'
 import TrialBanner from '@/components/TrialBanner'
 import OnboardingWizard from '@/components/OnboardingWizard'
+import MarinaHelper from '@/components/MarinaHelper'
 import { Loader2, Clock, Zap } from 'lucide-react'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { token, isLoading, logout } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
   const [acesso, setAcesso] = useState<'verificando' | 'liberado' | 'bloqueado' | 'trial_expirado'>('verificando')
   const [trialExpiresAt, setTrialExpiresAt] = useState<string | null>(null)
   const [loadingAssinar, setLoadingAssinar] = useState(false)
@@ -62,18 +64,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!token) return null
 
-  const fecharOnboarding = async (pulou: boolean, respostas?: { num_pacientes?: string; como_registra?: string; quer_guia?: boolean }) => {
+  const fecharOnboarding = async () => {
     setMostrarOnboarding(false)
     try {
       await fetch('/api/v1/onboarding/completar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ pulou, ...respostas }),
+        body: JSON.stringify({ pulou: false }),
       })
     } catch { /* silencioso */ }
-    if (!pulou && respostas?.quer_guia === true) {
-      router.push('/pacientes')
-    }
+    router.push('/pacientes')
   }
 
   const assinarAgora = async () => {
@@ -161,6 +161,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </div>
     </div>
+    <MarinaHelper pathname={pathname} />
     </>
   )
 }
