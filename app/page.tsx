@@ -17,9 +17,6 @@ const schema = z.object({
   num_pacientes: z.enum(['ate_10', '11_20', '21_35', 'mais_35'], {
     required_error: 'Selecione uma opção',
   }),
-  como_registra: z.enum(['caderno', 'word_docs', 'software', 'nao_registro'], {
-    required_error: 'Selecione uma opção',
-  }),
   como_conheceu: z.enum(['instagram', 'linkedin', 'indicacao', 'outro'], {
     required_error: 'Selecione uma opção',
   }),
@@ -186,18 +183,6 @@ function FormularioInscricao() {
           <option value="mais_35">Mais de 35 pacientes</option>
         </select>
         {errors.num_pacientes && <p className={errorCls}>{errors.num_pacientes.message}</p>}
-      </div>
-
-      <div>
-        <label className={labelCls}>Como você registra suas sessões hoje? *</label>
-        <select {...register('como_registra')} className={inputCls}>
-          <option value="">Selecione...</option>
-          <option value="caderno">Caderno / papel</option>
-          <option value="word_docs">Word, Docs ou similar</option>
-          <option value="software">Software / prontuário eletrônico</option>
-          <option value="nao_registro">Não registro com regularidade</option>
-        </select>
-        {errors.como_registra && <p className={errorCls}>{errors.como_registra.message}</p>}
       </div>
 
       <div>

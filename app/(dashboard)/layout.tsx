@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { perfilApi, assinaturaApi } from '@/lib/api'
+import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/layout/Sidebar'
 import TrialBanner from '@/components/TrialBanner'
+import OnboardingWizard from '@/components/OnboardingWizard'
 import { Loader2, Clock, Zap } from 'lucide-react'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [acesso, setAcesso] = useState<'verificando' | 'liberado' | 'bloqueado' | 'trial_expirado'>('verificando')
   const [trialExpiresAt, setTrialExpiresAt] = useState<string | null>(null)
   const [loadingAssinar, setLoadingAssinar] = useState(false)
+  const [mostrarOnboarding, setMostrarOnboarding] = useState(false)
+  const [nomeUsuario, setNomeUsuario] = useState<string | undefined>()
 
   useEffect(() => {
     if (!isLoading && !token) router.push('/login')
@@ -27,12 +30,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .then(p => {
           if (!vivo) return
           if (p.status_conta === 'ativo') {
+            setNomeUsuario(p.nome)
+            if (!p.onboarding_completo) setMostrarOnboarding(true)
             setAcesso('liberado')
           } else if (p.status_conta === 'trial') {
             const exp = p.trial_expires_at ? new Date(p.trial_expires_at) : null
             if (exp && exp < new Date()) {
               setAcesso('trial_expirado')
             } else {
+              setNomeUsuario(p.nome)
+              if (!p.onboarding_completo) setMostrarOnboarding(true)
               setTrialExpiresAt(p.trial_expires_at ?? null)
               setAcesso('liberado')
             }
@@ -54,6 +61,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   if (!token) return null
+
+  const fecharOnboarding = async (pulou: boolean, respostas?: { num_pacientes?: string; como_registra?: string; quer_guia?: boolean }) => {
+    setMostrarOnboarding(false)
+    try {
+      await fetch('/api/v1/onboarding/completar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ pulou, ...respostas }),
+      })
+    } catch { /* silencioso */ }
+    if (!pulou && respostas?.quer_guia === true) {
+      router.push('/pacientes')
+    }
+  }
 
   const assinarAgora = async () => {
     setLoadingAssinar(true)
@@ -115,6 +136,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
+    <>
+    {mostrarOnboarding && (
+      <OnboardingWizard nomeUsuario={nomeUsuario} onClose={fecharOnboarding} />
+    )}
     <div className="flex min-h-screen">
       {/* Fundo da aplicação: foto sutil + overlay claro */}
       <div className="fixed inset-0 -z-10" aria-hidden>
@@ -136,5 +161,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </div>
     </div>
+    </>
   )
 }

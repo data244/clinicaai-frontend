@@ -17,6 +17,7 @@ export interface Profissional {
   status_conta?: string
   trial_expires_at?: string
   plano?: string
+  onboarding_completo?: boolean
   created_at: string
 }
 
