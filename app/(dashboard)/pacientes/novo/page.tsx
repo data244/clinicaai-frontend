@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
-import ImportarHistorico from '@/components/ImportarHistorico'
 import { pacientesApi } from '@/lib/api'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
@@ -27,8 +26,6 @@ type FormData = z.infer<typeof schema>
 export default function NovoPacientePage() {
   const router = useRouter()
   const [error, setError] = useState('')
-  const [pacienteCriado, setPacienteCriado] = useState<{ id: string; nome: string } | null>(null)
-
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
   })
@@ -38,20 +35,12 @@ export default function NovoPacientePage() {
     try {
       const clean = Object.fromEntries(Object.entries(data).filter(([,v]) => v !== '' && v != null))
       const p = await pacientesApi.create(clean)
-      setPacienteCriado({ id: p.id, nome: p.nome })
+      router.push(`/pacientes/${p.id}?import=1`)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro ao cadastrar paciente')
     }
   }
 
-  if (pacienteCriado) return (
-    <ImportarHistorico
-      pacienteId={pacienteCriado.id}
-      pacienteNome={pacienteCriado.nome}
-      onClose={() => router.push(`/pacientes/${pacienteCriado.id}`)}
-      onConcluido={() => router.push(`/pacientes/${pacienteCriado.id}`)}
-    />
-  )
 
   return (
     <div className="max-w-2xl">

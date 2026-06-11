@@ -161,7 +161,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </div>
     </div>
-    <MarinaHelper pathname={pathname} />
+    <MarinaHelper key={mostrarOnboarding ? "wizard-ativo" : "livre"} pathname={pathname} />
     </>
   )
 }

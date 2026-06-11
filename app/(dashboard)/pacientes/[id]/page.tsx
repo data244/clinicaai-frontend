@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { pacientesApi, prontuariosApi } from '@/lib/api'
 import { Paciente, Prontuario } from '@/types'
 import { ArrowLeft, Phone, Mail, FileText, Plus, Calendar, TrendingUp, X, Mic, Save, Pencil, FolderInput } from 'lucide-react'
@@ -30,6 +30,7 @@ const formVazio: ProntuarioForm = {
 export default function PacienteDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [paciente, setPaciente] = useState<Paciente | null>(null)
   const [prontuarios, setProntuarios] = useState<Prontuario[]>([])
   const [loading, setLoading] = useState(true)
@@ -41,6 +42,15 @@ export default function PacienteDetailPage() {
   const [erro, setErro] = useState('')
 
   const [importarAberto, setImportarAberto] = useState(false)
+
+  // Abre o modal de import se vier de /pacientes/novo (?import=1)
+  useEffect(() => {
+    if (searchParams.get('import') === '1') {
+      setImportarAberto(true)
+      // Remove o param da URL sem renavegar
+      router.replace(`/pacientes/${id}`)
+    }
+  }, [searchParams, id, router])
 
   // Modal de edição
   const [editando, setEditando] = useState<Prontuario | null>(null)
