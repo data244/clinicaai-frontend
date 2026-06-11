@@ -66,13 +66,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const fecharOnboarding = async () => {
     setMostrarOnboarding(false)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://clinicaai-backend-production.up.railway.app'
     try {
-      await fetch('/api/v1/onboarding/completar', {
+      await fetch(`${apiUrl}/api/v1/onboarding/completar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ pulou: false }),
       })
-    } catch { /* silencioso */ }
+    } catch (e) { console.error('onboarding completar falhou:', e) }
     router.push('/pacientes')
   }
 
