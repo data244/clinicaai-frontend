@@ -4,6 +4,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { adminApi, convitesApi, releasesApi, Release, ContaAdmin } from '@/lib/api'
 import { ShieldCheck, ShieldAlert, Loader2, Check, Ban, Lock, KeyRound, Copy, X, Trash2, Link2, Gift, Megaphone, Plus, Globe, EyeOff, UserPlus } from 'lucide-react'
 
+const PLANO_INFO: Record<string, string> = {
+  base: 'Base',
+  premium: 'Premium',
+  clinica: 'Clínica',
+  beta_convidado: '🎁 Beta Convidado',
+}
+
 const STATUS_INFO: Record<string, { label: string; cls: string }> = {
   ativo:              { label: 'Ativo',       cls: 'bg-green-50 text-green-700 border-green-200' },
   pendente_pagamento: { label: 'Aguardando',  cls: 'bg-amber-50 text-amber-700 border-amber-200' },
@@ -265,16 +272,22 @@ export default function AdminPage() {
                           className="text-gray-400 hover:text-indigo-600 transition-colors">
                           <KeyRound className="w-4 h-4" />
                         </button>
-                        {c.status_conta === 'ativo' ? (
+                        {c.status_conta === 'ativo' || c.status_conta === 'trial' ? (
                           <button onClick={() => alterar(c.id, 'suspenso')}
                             className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-red-600 transition-colors">
                             <Ban className="w-3.5 h-3.5" /> Suspender
                           </button>
                         ) : (
-                          <button onClick={() => alterar(c.id, 'ativo')}
-                            className="flex items-center gap-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg transition-colors">
-                            <Check className="w-3.5 h-3.5" /> Liberar
-                          </button>
+                          <>
+                            <button onClick={() => alterar(c.id, 'trial')}
+                              className="flex items-center gap-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2.5 py-1.5 rounded-lg transition-colors">
+                              <Gift className="w-3.5 h-3.5" /> Beta
+                            </button>
+                            <button onClick={() => alterar(c.id, 'ativo')}
+                              className="flex items-center gap-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 px-2.5 py-1.5 rounded-lg transition-colors">
+                              <Check className="w-3.5 h-3.5" /> Conta
+                            </button>
+                          </>
                         )}
                       </>
                     )}
@@ -556,6 +569,7 @@ export default function AdminPage() {
                     onChange={e => setNovoUser(p => ({ ...p, plano: e.target.value }))}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                   >
+                    <option value="beta_convidado">Beta Convidado (grátis)</option>
                     <option value="base">Base (R$99)</option>
                     <option value="premium">Premium (R$129)</option>
                     <option value="clinica">Clínica</option>
