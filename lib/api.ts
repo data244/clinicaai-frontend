@@ -311,6 +311,11 @@ export const adminApi = {
     request<{ ok: boolean; is_admin: boolean }>(
       `/api/v1/admin/contas/${id}/toggle-admin`, { method: 'POST' }
     ),
+
+  criarUsuario: (data: { nome: string; email: string; password: string; plano?: string; status_conta?: string }) =>
+    request<{ ok: boolean; id: string; email: string; status_conta: string }>(
+      '/api/v1/admin/criar-usuario', { method: 'POST', body: JSON.stringify(data) }
+    ),
 }
 
 // ── Convites beta ─────────────────────────────────────────────────────────────

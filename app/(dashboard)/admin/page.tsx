@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { adminApi, convitesApi, releasesApi, Release, ContaAdmin } from '@/lib/api'
-import { ShieldCheck, ShieldAlert, Loader2, Check, Ban, Lock, KeyRound, Copy, X, Trash2, Link2, Gift, Megaphone, Plus, Globe, EyeOff } from 'lucide-react'
+import { ShieldCheck, ShieldAlert, Loader2, Check, Ban, Lock, KeyRound, Copy, X, Trash2, Link2, Gift, Megaphone, Plus, Globe, EyeOff, UserPlus } from 'lucide-react'
 
 const STATUS_INFO: Record<string, { label: string; cls: string }> = {
   ativo:              { label: 'Ativo',       cls: 'bg-green-50 text-green-700 border-green-200' },
@@ -26,6 +26,11 @@ export default function AdminPage() {
   const [loadingConvites, setLoadingConvites] = useState(false)
   const [gerandoConvite, setGerandoConvite] = useState(false)
   const [linkCopiado, setLinkCopiado] = useState<string | null>(null)
+  // Criar usuário diretamente
+  const [modalCriarUser, setModalCriarUser] = useState(false)
+  const [criandoUser, setCriandoUser] = useState(false)
+  const [novoUser, setNovoUser] = useState({ nome: '', email: '', password: '', plano: 'base', status_conta: 'ativo' })
+
   // Releases / Changelog
   const [releases, setReleases] = useState<Release[]>([])
   const [loadingReleases, setLoadingReleases] = useState(false)
@@ -157,6 +162,19 @@ export default function AdminPage() {
     }
   }
 
+  const criarUsuario = async () => {
+    if (!novoUser.nome || !novoUser.email || !novoUser.password) return
+    setCriandoUser(true)
+    try {
+      await adminApi.criarUsuario(novoUser)
+      setModalCriarUser(false)
+      setNovoUser({ nome: '', email: '', password: '', plano: 'base', status_conta: 'ativo' })
+      await carregar()
+    } catch (e: unknown) {
+      alert((e as Error).message || 'Erro ao criar usuário.')
+    } finally { setCriandoUser(false) }
+  }
+
   const copiarLink = (link: string) => {
     navigator.clipboard?.writeText(link)
     setLinkCopiado(link)
@@ -187,7 +205,15 @@ export default function AdminPage() {
       </div>
       <p className="text-sm text-gray-600 mb-5 ml-12">Libere o acesso de novos profissionais ou redefina a senha de alguém.</p>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 items-center">
+        <button
+          onClick={() => setModalCriarUser(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+        >
+          <UserPlus className="w-4 h-4" />
+          Criar usuário
+        </button>
+        <div className="w-px h-5 bg-gray-200 mx-1" />
         {([['pendente_pagamento', 'Aguardando'], ['', 'Todas']] as const).map(([val, lbl]) => (
           <button
             key={lbl}
@@ -471,6 +497,98 @@ export default function AdminPage() {
                 className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700"
               >
                 <Copy className="w-3.5 h-3.5" /> {copiado ? 'Copiado' : 'Copiar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Criar Usuário */}
+      {modalCriarUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-indigo-600" />
+                <h2 className="text-lg font-bold text-gray-900">Criar usuário</h2>
+              </div>
+              <button onClick={() => setModalCriarUser(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Nome completo *</label>
+                <input
+                  type="text"
+                  value={novoUser.nome}
+                  onChange={e => setNovoUser(p => ({ ...p, nome: e.target.value }))}
+                  placeholder="Ex: Carolina Mendes"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">E-mail *</label>
+                <input
+                  type="email"
+                  value={novoUser.email}
+                  onChange={e => setNovoUser(p => ({ ...p, email: e.target.value }))}
+                  placeholder="email@exemplo.com"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Senha *</label>
+                <input
+                  type="text"
+                  value={novoUser.password}
+                  onChange={e => setNovoUser(p => ({ ...p, password: e.target.value }))}
+                  placeholder="Mínimo 6 caracteres"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Plano</label>
+                  <select
+                    value={novoUser.plano}
+                    onChange={e => setNovoUser(p => ({ ...p, plano: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  >
+                    <option value="base">Base (R$99)</option>
+                    <option value="premium">Premium (R$129)</option>
+                    <option value="clinica">Clínica</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
+                  <select
+                    value={novoUser.status_conta}
+                    onChange={e => setNovoUser(p => ({ ...p, status_conta: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  >
+                    <option value="ativo">Ativo</option>
+                    <option value="trial">Trial</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-5">
+              <button
+                onClick={() => setModalCriarUser(false)}
+                className="flex-1 px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={criarUsuario}
+                disabled={criandoUser || !novoUser.nome || !novoUser.email || !novoUser.password}
+                className="flex-1 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {criandoUser ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                {criandoUser ? 'Criando...' : 'Criar conta'}
               </button>
             </div>
           </div>
