@@ -365,10 +365,13 @@ export interface Release {
 // ── Supervisão ────────────────────────────────────────────────────────────────
 export interface SupervisaoEvolucao { sessao: string; destaque: string }
 export interface SupervisaoPadrao { tema: string; tendencia: string; sessoes: number[]; observacao: string }
+export interface SupervisaoDirecao { direcao: string; porque: string }
 export interface SupervisaoConteudo {
   resumo_caso?: string
   evolucao_recente?: SupervisaoEvolucao[]
   padroes?: SupervisaoPadrao[]
+  leitura_clinica?: string
+  direcoes?: SupervisaoDirecao[]
   perguntas_supervisao?: string[]
   pontos_atencao?: string[]
   _total_sessoes?: number
@@ -397,5 +400,11 @@ export const supervisaoApi = {
   historico: (pacienteId: string) =>
     request<{ supervisoes: SupervisaoRegistro[] }>(
       `/api/v1/pacientes/${pacienteId}/supervisao/historico`
+    ),
+
+  discutir: (pacienteId: string, pergunta: string, historico: { role: string; content: string }[]) =>
+    request<{ resposta: string }>(
+      `/api/v1/pacientes/${pacienteId}/supervisao/discutir`,
+      { method: 'POST', body: JSON.stringify({ pergunta, historico }) }
     ),
 }

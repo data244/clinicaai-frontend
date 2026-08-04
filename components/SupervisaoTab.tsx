@@ -4,8 +4,11 @@ import { useState } from 'react'
 import {
   GraduationCap, Info, Loader2, Copy, Check, RefreshCw, History,
   ClipboardList, TrendingUp, HelpCircle, AlertTriangle, PenLine, ChevronDown, ChevronUp,
+  Brain, Compass, Send, MessageSquare,
 } from 'lucide-react'
 import { supervisaoApi, SupervisaoConteudo, SupervisaoRegistro } from '@/lib/api'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const TENDENCIA_CLS: Record<string, string> = {
   crescente: 'bg-red-100 text-red-700',
@@ -53,8 +56,17 @@ function montarTexto(c: SupervisaoConteudo, notas: string): string {
     })
     l.push('')
   }
+  if (c.leitura_clinica) {
+    l.push('LEITURA DO CASO')
+    l.push(c.leitura_clinica, '')
+  }
+  if (c.direcoes?.length) {
+    l.push('DIREÇÕES A CONSIDERAR')
+    c.direcoes.forEach(d => l.push(`• ${d.direcao}\n  Porquê: ${d.porque}`))
+    l.push('')
+  }
   if (c.perguntas_supervisao?.length) {
-    l.push('PERGUNTAS PARA A SUPERVISÃO')
+    l.push('PERGUNTAS PARA PENSAR')
     c.perguntas_supervisao.forEach((q, i) => l.push(`${i + 1}. ${q}`))
     l.push('')
   }
@@ -82,6 +94,10 @@ export default function SupervisaoTab({ pacienteId }: { pacienteId: string }) {
   const [erro, setErro] = useState<string | null>(null)
   const [copiado, setCopiado] = useState(false)
 
+  const [chat, setChat] = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
+  const [pergunta, setPergunta] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+
   const [historico, setHistorico] = useState<SupervisaoRegistro[]>([])
   const [mostrarHist, setMostrarHist] = useState(false)
   const [loadingHist, setLoadingHist] = useState(false)
@@ -107,6 +123,19 @@ export default function SupervisaoTab({ pacienteId }: { pacienteId: string }) {
       setNotasSalvas(true)
       setTimeout(() => setNotasSalvas(false), 2000)
     } catch { /* silencioso */ }
+  }
+
+  const discutir = async () => {
+    if (!pergunta.trim() || chatLoading) return
+    const q = pergunta.trim()
+    const novas = [...chat, { role: 'user' as const, content: q }]
+    setChat(novas); setPergunta(''); setChatLoading(true)
+    try {
+      const r = await supervisaoApi.discutir(pacienteId, q, chat)
+      setChat([...novas, { role: 'assistant' as const, content: r.resposta }])
+    } catch {
+      setChat([...novas, { role: 'assistant' as const, content: 'Não consegui responder agora. Tente de novo.' }])
+    } finally { setChatLoading(false) }
   }
 
   const copiarTudo = () => {
@@ -251,8 +280,29 @@ export default function SupervisaoTab({ pacienteId }: { pacienteId: string }) {
             </Bloco>
           )}
 
+          {conteudo.leitura_clinica && (
+            <Bloco icon={Brain} titulo="Leitura do caso">
+              <div className="prose prose-sm max-w-none text-gray-600 leading-relaxed prose-p:mt-0 prose-p:mb-3">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{conteudo.leitura_clinica}</ReactMarkdown>
+              </div>
+            </Bloco>
+          )}
+
+          {!!conteudo.direcoes?.length && (
+            <Bloco icon={Compass} titulo="Direções a considerar">
+              <div className="space-y-3.5">
+                {conteudo.direcoes.map((d, i) => (
+                  <div key={i} className="border-l-2 border-indigo-100 pl-3">
+                    <p className="text-sm text-gray-700 leading-relaxed">{d.direcao}</p>
+                    <p className="text-xs text-gray-400 leading-relaxed mt-1">{d.porque}</p>
+                  </div>
+                ))}
+              </div>
+            </Bloco>
+          )}
+
           {!!conteudo.perguntas_supervisao?.length && (
-            <Bloco icon={HelpCircle} titulo="Perguntas sugeridas para a supervisão">
+            <Bloco icon={HelpCircle} titulo="Perguntas para pensar">
               <ol className="space-y-2.5">
                 {conteudo.perguntas_supervisao.map((q, i) => (
                   <li key={i} className="flex gap-2.5">
@@ -262,7 +312,7 @@ export default function SupervisaoTab({ pacienteId }: { pacienteId: string }) {
                 ))}
               </ol>
               <p className="text-xs text-gray-400 mt-3">
-                Sugestões — edite ou descarte conforme o que fizer sentido no seu caso.
+                Leve para a discussão as que fizerem sentido no seu caso.
               </p>
             </Bloco>
           )}
@@ -296,6 +346,59 @@ export default function SupervisaoTab({ pacienteId }: { pacienteId: string }) {
                   <Check className="w-3 h-3" /> Salvo
                 </span>
               )}
+            </div>
+          </Bloco>
+
+          {/* Discussão do caso */}
+          <Bloco icon={MessageSquare} titulo="Discutir o caso">
+            {chat.length === 0 && (
+              <p className="text-sm text-gray-400 leading-relaxed mb-3">
+                Pergunte sobre a condução, teste uma hipótese, traga o que ficou incomodando
+                na última sessão.
+              </p>
+            )}
+
+            {chat.length > 0 && (
+              <div className="space-y-3 mb-3 max-h-[32rem] overflow-y-auto pr-1">
+                {chat.map((m, i) => (
+                  <div key={i} className={m.role === 'user' ? 'flex justify-end' : ''}>
+                    {m.role === 'user' ? (
+                      <div className="bg-indigo-600 text-white text-sm rounded-2xl rounded-br-sm px-3.5 py-2 max-w-[85%] leading-relaxed">
+                        {m.content}
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 rounded-2xl rounded-bl-sm px-3.5 py-2.5 max-w-[92%]">
+                        <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed prose-p:mt-0 prose-p:mb-2 last:prose-p:mb-0">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {chatLoading && (
+                  <div className="flex items-center gap-2 text-xs text-gray-400 px-1">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Pensando no caso...
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <input
+                value={pergunta}
+                onChange={e => setPergunta(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); discutir() } }}
+                placeholder="O que você quer discutir?"
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+              />
+              <button
+                onClick={discutir}
+                disabled={chatLoading || !pergunta.trim()}
+                className="px-3.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 transition-colors"
+                aria-label="Enviar"
+              >
+                <Send className="w-4 h-4" />
+              </button>
             </div>
           </Bloco>
         </>
