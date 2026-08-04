@@ -5,10 +5,11 @@ import { useParams } from 'next/navigation'
 import { iaApi } from '@/lib/api'
 import {
   ArrowLeft, Activity, Calendar, FileText, Brain, ChevronDown, ChevronUp,
-  Users, TrendingUp, AlertTriangle, MessageSquare, BarChart2, Send, Network, Maximize2, Minimize2
+  Users, TrendingUp, AlertTriangle, MessageSquare, BarChart2, Send, Network, Maximize2, Minimize2, GraduationCap
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import InfoTip from '@/components/InfoTip'
+import SupervisaoTab from '@/components/SupervisaoTab'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -306,7 +307,7 @@ export default function MapaLongitudinalPage() {
   const [data, setData] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
-  const [aba, setAba] = useState<'analise' | 'timeline' | 'perguntas' | 'conceitos'>('analise')
+  const [aba, setAba] = useState<'analise' | 'timeline' | 'perguntas' | 'conceitos' | 'supervisao'>('analise')
 
   const [mapaMsg, setMapaMsg] = useState<{ role: 'user'|'assistant'; content: string }[]>([])
   const [mapaPergunta, setMapaPergunta] = useState('')
@@ -402,9 +403,9 @@ export default function MapaLongitudinalPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6">
-        {(['analise','timeline','perguntas','conceitos'] as const).map((key) => {
-          const labels = { analise:'Análise', timeline:'Linha do Tempo', perguntas:'Perguntas', conceitos:'Conceitos' }
-          const IconMap = { analise:BarChart2, timeline:FileText, perguntas:MessageSquare, conceitos:Network }
+        {(['analise','timeline','perguntas','conceitos','supervisao'] as const).map((key) => {
+          const labels = { analise:'Análise', timeline:'Linha do Tempo', perguntas:'Perguntas', conceitos:'Conceitos', supervisao:'Supervisão' }
+          const IconMap = { analise:BarChart2, timeline:FileText, perguntas:MessageSquare, conceitos:Network, supervisao:GraduationCap }
           const TabIcon = IconMap[key]
           return (
             <button key={key} onClick={() => setAba(key)}
@@ -620,6 +621,11 @@ export default function MapaLongitudinalPage() {
       {/* ── ABA: CONCEITOS ── */}
       {aba === 'conceitos' && (
         <ConceptMap analise={analise} paciente={data?.paciente as string | undefined} />
+      )}
+
+      {/* ── ABA: SUPERVISÃO ── */}
+      {aba === 'supervisao' && (
+        <SupervisaoTab pacienteId={id as string} />
       )}
     </div>
   )

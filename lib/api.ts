@@ -361,3 +361,41 @@ export interface Release {
   criado_por?: string
   created_at: string
 }
+
+// ── Supervisão ────────────────────────────────────────────────────────────────
+export interface SupervisaoEvolucao { sessao: string; destaque: string }
+export interface SupervisaoPadrao { tema: string; tendencia: string; sessoes: number[]; observacao: string }
+export interface SupervisaoConteudo {
+  resumo_caso?: string
+  evolucao_recente?: SupervisaoEvolucao[]
+  padroes?: SupervisaoPadrao[]
+  perguntas_supervisao?: string[]
+  pontos_atencao?: string[]
+  _total_sessoes?: number
+  _paciente?: string
+}
+export interface SupervisaoRegistro {
+  id: string
+  conteudo: SupervisaoConteudo
+  notas_psicologo?: string
+  created_at: string
+}
+
+export const supervisaoApi = {
+  gerar: (pacienteId: string, notas_psicologo?: string) =>
+    request<{ id: string | null; paciente: string; total_sessoes: number; conteudo: SupervisaoConteudo; notas_psicologo?: string }>(
+      `/api/v1/pacientes/${pacienteId}/supervisao/gerar`,
+      { method: 'POST', body: JSON.stringify({ notas_psicologo: notas_psicologo || null }) }
+    ),
+
+  salvarNotas: (pacienteId: string, supervisaoId: string, notas_psicologo: string) =>
+    request<{ ok: boolean }>(
+      `/api/v1/pacientes/${pacienteId}/supervisao/${supervisaoId}/notas`,
+      { method: 'PATCH', body: JSON.stringify({ notas_psicologo }) }
+    ),
+
+  historico: (pacienteId: string) =>
+    request<{ supervisoes: SupervisaoRegistro[] }>(
+      `/api/v1/pacientes/${pacienteId}/supervisao/historico`
+    ),
+}
