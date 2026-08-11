@@ -408,3 +408,35 @@ export const supervisaoApi = {
       { method: 'POST', body: JSON.stringify({ pergunta, historico }) }
     ),
 }
+
+// ── Anamnese ──────────────────────────────────────────────────────────────────
+export interface AnamneseBlocoDef { chave: string; titulo: string }
+export interface AnamneseResposta {
+  paciente: string
+  blocos: Record<string, string>
+  estrutura: AnamneseBlocoDef[]
+  updated_at?: string
+  gerada_em?: string
+}
+
+export const anamneseApi = {
+  carregar: (pacienteId: string) =>
+    request<AnamneseResposta>(`/api/v1/pacientes/${pacienteId}/anamnese`),
+
+  salvar: (pacienteId: string, blocos: Record<string, string>) =>
+    request<{ ok: boolean }>(
+      `/api/v1/pacientes/${pacienteId}/anamnese`,
+      { method: 'PUT', body: JSON.stringify({ blocos }) }
+    ),
+
+  gerar: (pacienteId: string) =>
+    request<{ ok: boolean; blocos: Record<string, string>; preenchidos: string[]; total_sessoes: number }>(
+      `/api/v1/pacientes/${pacienteId}/anamnese/gerar`, { method: 'POST' }
+    ),
+
+  organizar: (pacienteId: string, texto: string) =>
+    request<{ blocos: Record<string, string> }>(
+      `/api/v1/pacientes/${pacienteId}/anamnese/organizar`,
+      { method: 'POST', body: JSON.stringify({ texto }) }
+    ),
+}

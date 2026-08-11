@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { pacientesApi, prontuariosApi } from '@/lib/api'
 import { Paciente, Prontuario } from '@/types'
-import { ArrowLeft, Phone, Mail, FileText, Plus, Calendar, TrendingUp, X, Mic, Save, Pencil, FolderInput } from 'lucide-react'
+import { ArrowLeft, Phone, Mail, FileText, Plus, Calendar, TrendingUp, X, Mic, Save, Pencil, FolderInput, ClipboardList } from 'lucide-react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
 import DocumentosPaciente from '@/components/DocumentosPaciente'
@@ -189,14 +189,23 @@ export default function PacienteDetailPage() {
             </Link>
             <h1 className="text-2xl font-bold text-gray-900">{paciente.nome}</h1>
           </div>
-          <Link
-            href={`/pacientes/${id}/mapa`}
-            className="flex items-center gap-2 px-3 py-2 bg-primary-50 text-primary-700 rounded-lg text-sm font-medium hover:bg-primary-100 transition-colors border border-primary-200"
-          >
-            <TrendingUp className="w-4 h-4" />
-            <span className="hidden sm:inline">Mapa Longitudinal</span>
-            <span className="sm:hidden">Mapa</span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/pacientes/${id}/anamnese`}
+              className="flex items-center gap-2 px-3 py-2 bg-white text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors border border-gray-200"
+            >
+              <ClipboardList className="w-4 h-4" />
+              <span className="hidden sm:inline">Anamnese</span>
+            </Link>
+            <Link
+              href={`/pacientes/${id}/mapa`}
+              className="flex items-center gap-2 px-3 py-2 bg-primary-50 text-primary-700 rounded-lg text-sm font-medium hover:bg-primary-100 transition-colors border border-primary-200"
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span className="hidden sm:inline">Mapa Longitudinal</span>
+              <span className="sm:hidden">Mapa</span>
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -229,6 +238,12 @@ export default function PacienteDetailPage() {
                 )}
               </div>
               <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                <Link
+                  href={`/pacientes/${id}/anamnese`}
+                  className="flex items-center gap-2 text-xs text-primary-600 hover:text-primary-800 transition-colors"
+                >
+                  <ClipboardList className="w-3.5 h-3.5" /> Anamnese
+                </Link>
                 <Link
                   href={`/pacientes/${id}/mapa`}
                   className="flex items-center gap-2 text-xs text-primary-600 hover:text-primary-800 transition-colors"
