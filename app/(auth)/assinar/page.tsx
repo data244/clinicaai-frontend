@@ -14,7 +14,7 @@ const PLANOS = {
     destaque: false,
     clinica: false,
     features: [
-      'Agenda com lembretes WhatsApp',
+      'Agenda',
       'Prontuário clínico completo',
       'Mapa longitudinal com IA',
       'Copiloto clínico',
@@ -29,8 +29,6 @@ const PLANOS = {
     clinica: false,
     features: [
       'Tudo do plano Base',
-      'Lembretes automáticos de cobrança',
-      'Régua de inadimplência automática',
       'Dashboard de receita e fluxo de caixa',
       'Relatórios financeiros',
     ],

@@ -355,7 +355,7 @@ export default function LandingPage() {
             Visão completa da sua carteira, com alertas e organização do fluxo de atendimentos.
           </Feature>
           <Feature icon="💳" title="Gestão financeira completa">
-            Cobranças, link de pagamento via Mercado Pago e lembretes automáticos ao paciente.{' '}
+            Cobranças e link de pagamento via Mercado Pago.{' '}
             <strong>Você recebe dos seus pacientes desde o primeiro dia do teste.</strong>
           </Feature>
         </div>
@@ -410,12 +410,12 @@ export default function LandingPage() {
               clínica é sua, sempre.
             </FaqItem>
             <FaqItem q="Quanto custa depois do beta?">
-              R$ 99/mês para a inteligência clínica ou R$ 129/mês com a gestão financeira completa (cobranças, link de
-              pagamento e lembretes). Quem participa do Beta Fundador recebe a oferta de assinatura ao final, sem compromisso.
+              R$ 99/mês para a inteligência clínica ou R$ 129/mês com a gestão financeira completa (cobranças e link de
+              pagamento). Quem participa do Beta Fundador recebe a oferta de assinatura ao final, sem compromisso.
             </FaqItem>
             <FaqItem q="Meus dados ficam seguros?">
               Sim: criptografia, sigilo profissional como princípio de projeto e guarda com padrão arquivístico pelo prazo
-              mínimo que o CFP exige. Você exporta seus registros quando quiser.
+              mínimo que o CFP exige.
             </FaqItem>
             <FaqItem q="Atendo em clínica com outros psicólogos. Tem plano para nós?">
               Tem: R$ 79/mês por psicólogo a partir de 3 profissionais do mesmo CNPJ. Escreva para contato@clinicaai.net.br.

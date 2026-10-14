@@ -489,7 +489,6 @@ function CobrancaSection({ evento }: { evento: Agendamento }) {
                   <ExternalLink size={14} className="text-gray-500" />
                 </a>
               </div>
-              <p className="text-[11px] text-gray-400">O link também será incluído no lembrete D-1 enviado ao paciente.</p>
             </div>
           )}
         </div>

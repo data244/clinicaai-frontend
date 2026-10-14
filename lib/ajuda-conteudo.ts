@@ -130,20 +130,18 @@ Importante: o Copiloto **organiza a informação**; ele não propõe diagnóstic
 - **Visões**: alterne entre *Semana* e *Mês*.
 - **Novo agendamento**: escolha paciente, data e tipo.
 - **Tratamento recorrente**: ao agendar, marque *Repetir* (semanal ou quinzenal) e informe o valor por sessão e o número de sessões no mês. O sistema cria as sessões e gera **uma cobrança mensal adiantada** (valor por sessão × número de sessões).
-- **Lembrete**: o paciente recebe a confirmação no WhatsApp um dia antes.
 - **Encerrar tratamento**: interrompe a geração dos próximos meses; as sessões já criadas permanecem.
 `,
   },
   {
     slug: 'cobrancas',
-    titulo: 'Cobranças e lembretes',
+    titulo: 'Cobranças',
     categoria: 'Agenda & Financeiro',
-    resumo: 'Como gerar cobranças e os lembretes automáticos.',
+    resumo: 'Como gerar cobranças com link de pagamento.',
     conteudo: `
 ## Cobranças
 
 - **Gerar cobrança**: no detalhe de um agendamento, use *Gerar cobrança* para criar uma cobrança vinculada (com link de pagamento, se você tiver o Mercado Pago configurado).
-- **Lembretes automáticos**: cobranças têm lembretes nos marcos D-3, D-1, D0, D+3 e D+7 (disponíveis no plano com módulo financeiro).
 - **Configuração**: o token do Mercado Pago fica em *Configurações › Pagamentos*.
 `,
   },

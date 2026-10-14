@@ -20,7 +20,7 @@ const BENEFICIOS = [
   {
     Icon: Calendar,
     titulo: 'Gestão integrada',
-    desc: 'Agenda, prontuário, cobranças e lembretes automáticos — tudo no mesmo lugar, pensado para psicólogos.',
+    desc: 'Agenda, prontuário e cobranças, tudo no mesmo lugar, pensado para psicólogos.',
   },
 ]
 
