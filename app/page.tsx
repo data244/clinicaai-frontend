@@ -401,9 +401,7 @@ export default function LandingPage() {
           <div className="px-6">
             <FaqItem q="Preciso gravar minhas sessões?">
               Não — e não recomendamos. O Clínica.ai trabalha com o que você já produz: anotações digitadas, coladas,
-              fotografadas ou um memo de voz seu, feito após a sessão. Se algum dia você optar por gravar uma sessão
-              (prática permitida pelo CFP mediante consentimento livre, prévio, informado e por escrito — Resolução CFP 13/2022),
-              a plataforma fornece o modelo de termo de consentimento.
+              fotografadas ou um memo de voz seu, feito após a sessão.
             </FaqItem>
             <FaqItem q="A IA vai interpretar meus casos?">
               Não. Ela organiza, estrutura e devolve o que você registrou — linha do tempo, padrões, evolução. A leitura
@@ -445,7 +443,6 @@ export default function LandingPage() {
             <span className="text-white font-bold text-base">Clínica<span className="text-primary-400">.ai</span></span>
             <div className="flex gap-4">
               <a href="https://instagram.com/clinicaai" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>
-              <a href="https://linkedin.com/company/clinicaai" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">LinkedIn</a>
               <a href="https://youtube.com/@clinicaai" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">YouTube</a>
             </div>
           </div>

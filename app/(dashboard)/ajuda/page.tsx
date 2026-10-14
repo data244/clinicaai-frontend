@@ -40,27 +40,31 @@ export default function AjudaPage() {
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Central de Ajuda</h1>
       </div>
-      <p className="text-sm text-gray-600 mb-5 ml-12">Guias rápidos para tirar o máximo do Clínica.ai.</p>
+      <p className="text-sm text-gray-600 mb-2 ml-12">Guias rápidos para tirar o máximo do Clínica.ai.</p>
+      <p className="text-sm text-gray-600 mb-5 ml-12">
+        Dúvidas ou problema com pagamento? Escreva para{' '}
+        <a href="mailto:contato@clinicaai.net.br" className="text-indigo-600 font-medium hover:underline">contato@clinicaai.net.br</a>.
+      </p>
 
 
       {/* Tour Guiado */}
       <div className="mb-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-1">Tour guiado — conheça o sistema</h2>
+        <h2 className="text-base font-semibold text-gray-900 mb-1">Tour guiado: conheça o sistema</h2>
         <p className="text-xs text-gray-500 mb-4">6 vídeos curtos, um por área. Assista na ordem ou vá direto ao que precisar.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[
-            { id: '5948eJBQ5IA', titulo: '01 — Dashboard', desc: 'Visão geral da sua clínica' },
-            { id: 'mFbRov-HZNw', titulo: '02 — Pacientes e Prontuário', desc: 'Cadastro, sessões e memo de voz' },
-            { id: 'yNL7YGkM0k8', titulo: '03 — Mapa Longitudinal', desc: 'Padrões, emoções e alertas clínicos' },
-            { id: 'kzXtjcyTKpc', titulo: '04 — Copiloto IA', desc: 'DSM-5, CID-11 e suporte clínico' },
-            { id: '_YHedZOv5_0', titulo: '05 — Financeiro', desc: 'Cobranças e links de pagamento' },
-            { id: '2WK9Aau8rEU', titulo: '06 — Configurações', desc: 'WhatsApp, Mercado Pago e perfil' },
+            { id: '5948eJBQ5IA', titulo: '01. Dashboard', desc: 'Visão geral da sua clínica' },
+            { id: 'mFbRov-HZNw', titulo: '02. Pacientes e Prontuário', desc: 'Cadastro, sessões e memo de voz' },
+            { id: 'yNL7YGkM0k8', titulo: '03. Mapa Longitudinal', desc: 'Padrões, emoções e alertas clínicos' },
+            { id: 'kzXtjcyTKpc', titulo: '04. Copiloto IA', desc: 'DSM-5, CID-11 e suporte clínico' },
+            { id: '_YHedZOv5_0', titulo: '05. Financeiro', desc: 'Cobranças e links de pagamento' },
+            { id: '2WK9Aau8rEU', titulo: '06. Configurações', desc: 'Mercado Pago e perfil' },
           ].map(v => (
             <div key={v.id} className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
               <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                 <iframe
                   src={`https://www.youtube.com/embed/${v.id}`}
-                  title={`Clínica.ai — ${v.titulo}`}
+                  title={`Clínica.ai: ${v.titulo}`}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                   className="absolute inset-0 w-full h-full"

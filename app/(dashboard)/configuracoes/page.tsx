@@ -5,7 +5,7 @@ import { perfilApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import { Profissional } from '@/types'
 import {
-  User, MessageCircle, Lock, Save, Eye, EyeOff,
+  User, Lock, Save, Eye, EyeOff,
   CheckCircle, AlertCircle, Loader2, Settings, CreditCard, ExternalLink
 } from 'lucide-react'
 
@@ -164,7 +164,6 @@ export default function ConfiguracoesPage() {
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: 'perfil', label: 'Perfil', icon: User },
-    { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
     { id: 'pagamentos', label: 'Pagamentos', icon: CreditCard },
     { id: 'conta', label: 'Conta', icon: Lock },
   ]
