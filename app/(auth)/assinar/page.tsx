@@ -1,60 +1,29 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { CheckCircle, CreditCard, Loader2, Star, AlertCircle } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { CheckCircle, CreditCard, Loader2, AlertCircle } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://clinicaai-backend-production.up.railway.app'
 
-const PLANOS = {
-  base: {
-    nome: 'Clínica.ai Base',
-    preco: 99,
-    precoPor: null as string | null,
-    destaque: false,
-    clinica: false,
-    features: [
-      'Agenda',
-      'Prontuário clínico completo',
-      'Mapa longitudinal com IA',
-      'Copiloto clínico',
-      'Financeiro básico (cobranças + links de pagamento)',
-    ],
-  },
-  premium: {
-    nome: 'Base + Módulo Financeiro',
-    preco: 129,
-    precoPor: null as string | null,
-    destaque: true,
-    clinica: false,
-    features: [
-      'Tudo do plano Base',
-      'Dashboard de receita e fluxo de caixa',
-      'Relatórios financeiros',
-    ],
-  },
-  clinica: {
-    nome: 'Clínica / Equipe',
-    preco: 237,
-    precoPor: 'R$79/psicólogo' as string | null,
-    destaque: false,
-    clinica: true,
-    features: [
-      'Tudo do plano Base para cada psicólogo',
-      'Mínimo 3 psicólogos do mesmo CNPJ',
-      'R$79/psicólogo/mês',
-      'Você gerencia os acessos da equipe',
-    ],
-  },
+// Só o plano Base está à venda (VENDAS.md, 14/10/2026).
+const PLANO = {
+  nome: 'Clínica.ai Base',
+  preco: 99,
+  features: [
+    'Agenda',
+    'Prontuário clínico completo',
+    'Mapa longitudinal com IA',
+    'Copiloto clínico',
+    'Financeiro básico (cobranças + links de pagamento)',
+  ],
 }
 
 function AssinarContent() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const erroInicial = searchParams.get('status') === 'erro'
 
-  const [planoSelecionado, setPlanoSelecionado] = useState<'base' | 'premium' | 'clinica'>('base')
-  const [step, setStep] = useState<'planos' | 'cadastro'>(erroInicial ? 'cadastro' : 'planos')
+  const [step, setStep] = useState<'plano' | 'cadastro'>(erroInicial ? 'cadastro' : 'plano')
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState(erroInicial ? 'Houve um problema com o pagamento. Tente novamente.' : '')
 
@@ -62,8 +31,6 @@ function AssinarContent() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [especialidade, setEspecialidade] = useState('')
-  const [cnpj, setCnpj] = useState('')
-  const [numPsicologos, setNumPsicologos] = useState(3)
 
   async function handleCadastro(e: React.FormEvent) {
     e.preventDefault()
@@ -79,7 +46,7 @@ function AssinarContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          plano: planoSelecionado,
+          plano: 'base',
           email,
           nome,
           password,
@@ -116,57 +83,22 @@ function AssinarContent() {
           <p className="text-gray-500">Inteligência clínica para profissionais de saúde</p>
         </div>
 
-        {step === 'planos' && (
+        {step === 'plano' && (
           <>
-            <h2 className="text-xl font-semibold text-center text-gray-800 mb-6">Escolha seu plano</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {(Object.entries(PLANOS) as [string, typeof PLANOS.base][]).map(([key, plano]) => (
-                <button
-                  key={key}
-                  onClick={() => setPlanoSelecionado(key as 'base' | 'premium')}
-                  className={`relative text-left rounded-2xl border-2 p-6 transition-all ${
-                    planoSelecionado === key
-                      ? 'border-primary-600 bg-primary-50 shadow-lg'
-                      : 'border-gray-200 bg-white hover:border-primary-300'
-                  }`}
-                >
-                  {plano.destaque && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="bg-primary-600 text-white text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
-                        <Star className="w-3 h-3" /> Mais popular
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{plano.nome}</h3>
-                      <div className="mt-1">
-                        <span className="text-3xl font-bold text-primary-700">R${plano.preco}</span>
-                        <span className="text-gray-500 text-sm">/mês</span>
-                        {plano.precoPor && (
-                          <span className="block text-xs text-primary-600 font-medium mt-0.5">{plano.precoPor}/mês · mínimo 3</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1 ${
-                      planoSelecionado === key ? 'border-primary-600 bg-primary-600' : 'border-gray-300'
-                    }`}>
-                      {planoSelecionado === key && <div className="w-2 h-2 bg-white rounded-full" />}
-                    </div>
-                  </div>
-
-                  <ul className="space-y-2">
-                    {plano.features.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                        <CheckCircle className="w-4 h-4 text-primary-600 shrink-0 mt-0.5" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                </button>
-              ))}
+            <div className="max-w-md mx-auto rounded-2xl border-2 border-primary-600 bg-primary-50 shadow-lg p-6 mb-8">
+              <h3 className="font-semibold text-gray-900">{PLANO.nome}</h3>
+              <div className="mt-1 mb-4">
+                <span className="text-3xl font-bold text-primary-700">R${PLANO.preco}</span>
+                <span className="text-gray-500 text-sm">/mês</span>
+              </div>
+              <ul className="space-y-2">
+                {PLANO.features.map((f, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-primary-600 shrink-0 mt-0.5" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
             </div>
 
             <div className="text-center">
@@ -174,7 +106,7 @@ function AssinarContent() {
                 onClick={() => setStep('cadastro')}
                 className="px-8 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors text-lg"
               >
-                Começar com {PLANOS[planoSelecionado].nome} — R${PLANOS[planoSelecionado].preco}/mês
+                Assinar por R${PLANO.preco}/mês
               </button>
               <p className="text-xs text-gray-400 mt-3">Cancele quando quiser. Sem fidelidade.</p>
             </div>
@@ -189,14 +121,14 @@ function AssinarContent() {
         {step === 'cadastro' && (
           <div className="max-w-md mx-auto bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
             <div className="flex items-center gap-2 mb-1">
-              <button onClick={() => setStep('planos')} className="text-sm text-primary-600 hover:underline">
+              <button onClick={() => setStep('plano')} className="text-sm text-primary-600 hover:underline">
                 ← Voltar
               </button>
             </div>
 
             <div className="bg-primary-50 border border-primary-100 rounded-lg p-3 mb-6 text-sm">
-              <span className="font-medium text-primary-800">Plano selecionado:</span>{' '}
-              <span className="text-primary-700">{PLANOS[planoSelecionado].nome} — R${PLANOS[planoSelecionado].preco}/mês</span>
+              <span className="font-medium text-primary-800">Plano:</span>{' '}
+              <span className="text-primary-700">{PLANO.nome}, R${PLANO.preco}/mês</span>
             </div>
 
             {erro && (
@@ -239,27 +171,6 @@ function AssinarContent() {
                   placeholder="Ex: Psicologia, Nutrição, Fisioterapia..."
                 />
               </div>
-              {planoSelecionado === 'clinica' && (
-                <>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">CNPJ da clínica *</label>
-                    <input
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      value={cnpj} onChange={e => setCnpj(e.target.value)}
-                      placeholder="00.000.000/0001-00" required={planoSelecionado === 'clinica'}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Nº de psicólogos (mínimo 3)</label>
-                    <input
-                      type="number" min={3} max={50}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      value={numPsicologos} onChange={e => setNumPsicologos(Math.max(3, parseInt(e.target.value) || 3))}
-                    />
-                    <p className="text-xs text-gray-400 mt-1">Total: R${numPsicologos * 79}/mês ({numPsicologos} × R$79)</p>
-                  </div>
-                </>
-              )}
 
               <button
                 type="submit" disabled={loading || !nome || !email || !password}
@@ -273,7 +184,7 @@ function AssinarContent() {
               </button>
 
               <p className="text-xs text-center text-gray-400">
-                Você será redirecionado para o Mercado Pago para realizar o primeiro pagamento com segurança.
+                A primeira cobrança, de R${PLANO.preco}, é feita hoje no Mercado Pago. Depois, uma cobrança por mês.
               </p>
             </form>
 

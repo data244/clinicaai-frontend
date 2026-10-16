@@ -1,38 +1,92 @@
 'use client'
 
 import { useState } from 'react'
-import { assinaturaApi, Bloqueio } from '@/lib/api'
+import { createPortal } from 'react-dom'
+import { assinaturaApi, Bloqueio, CheckoutAssinatura } from '@/lib/api'
 import type { AcessoConta } from '@/types'
-import { Eye, Lock, Zap, Loader2 } from 'lucide-react'
-
-// Abre o pagamento da assinatura no Mercado Pago
-export async function irParaAssinatura() {
-  try {
-    const { init_point } = await assinaturaApi.checkoutTrial()
-    window.location.href = init_point
-    return true
-  } catch {
-    alert('Não foi possível abrir o pagamento agora. Tente de novo em instantes.')
-    return false
-  }
-}
-
-function BotaoAssinar({ texto = 'Assinar' }: { texto?: string }) {
-  const [abrindo, setAbrindo] = useState(false)
-  return (
-    <button
-      onClick={async () => { setAbrindo(true); if (!(await irParaAssinatura())) setAbrindo(false) }}
-      disabled={abrindo}
-      className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60"
-    >
-      {abrindo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-      {texto}
-    </button>
-  )
-}
+import { Eye, Lock, Zap, Loader2, CreditCard } from 'lucide-react'
 
 function dataBr(iso: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+}
+
+// Botão Assinar: prepara a assinatura no Mercado Pago e mostra plano, valor e
+// data da primeira cobrança antes de abrir o pagamento.
+export function useAssinar() {
+  const [abrindo, setAbrindo] = useState(false)
+  const [checkout, setCheckout] = useState<CheckoutAssinatura | null>(null)
+
+  const abrir = async () => {
+    setAbrindo(true)
+    try {
+      setCheckout(await assinaturaApi.checkoutTrial())
+    } catch {
+      alert('Não foi possível abrir o pagamento agora. Tente de novo em instantes.')
+    }
+    setAbrindo(false)
+  }
+
+  const janela = checkout && <JanelaAssinatura checkout={checkout} onFechar={() => setCheckout(null)} />
+  return { abrir, abrindo, janela }
+}
+
+function JanelaAssinatura({ checkout, onFechar }: { checkout: CheckoutAssinatura; onFechar: () => void }) {
+  const [indo, setIndo] = useState(false)
+  const valor = (checkout.valor ?? 99).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  const primeira = checkout.primeira_cobranca
+  // Mais de 1 hora à frente: a cobrança fica para o fim do teste
+  const depois = !!primeira && new Date(primeira).getTime() - Date.now() > 60 * 60 * 1000
+
+  return createPortal(
+    <div className="fixed inset-0 bg-black/40 z-[70] flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-2xl mb-4">
+          <CreditCard className="w-6 h-6 text-indigo-600" />
+        </div>
+        <h2 className="text-lg font-bold text-gray-900 mb-1">Assinar o plano Base</h2>
+        <p className="text-2xl font-bold text-indigo-700 mb-4">{valor}<span className="text-sm font-normal text-gray-500">/mês</span></p>
+        <p className="text-sm text-gray-600 mb-1 leading-relaxed">
+          {!primeira
+            ? 'O pagamento é feito no Mercado Pago.'
+            : depois
+              ? `A primeira cobrança será em ${dataBr(primeira)}, quando o seu teste termina.`
+              : 'A primeira cobrança é feita hoje, no Mercado Pago.'}
+        </p>
+        <p className="text-sm text-gray-600 mb-6 leading-relaxed">Depois, uma cobrança por mês.</p>
+        <div className="flex flex-col items-center gap-3">
+          <button
+            onClick={() => { setIndo(true); window.location.href = checkout.init_point }}
+            disabled={indo}
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60"
+          >
+            {indo && <Loader2 className="w-4 h-4 animate-spin" />}
+            Ir para o pagamento
+          </button>
+          <button onClick={onFechar} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+            Agora não
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
+function BotaoAssinar({ texto = 'Assinar' }: { texto?: string }) {
+  const { abrir, abrindo, janela } = useAssinar()
+  return (
+    <>
+      <button
+        onClick={abrir}
+        disabled={abrindo}
+        className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60"
+      >
+        {abrindo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+        {texto}
+      </button>
+      {janela}
+    </>
+  )
 }
 
 // Aviso no topo da página quando a conta não tem acesso completo

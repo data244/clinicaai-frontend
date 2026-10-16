@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Clock, Zap } from 'lucide-react'
-import { irParaAssinatura } from '@/components/AvisoConta'
+import { useAssinar } from '@/components/AvisoConta'
 
 interface TrialBannerProps {
   fimTeste: string
@@ -11,7 +11,6 @@ interface TrialBannerProps {
 }
 
 export default function TrialBanner({ fimTeste, registrosUsados, registrosLimite }: TrialBannerProps) {
-  const [loadingCheckout, setLoadingCheckout] = useState(false)
   const [diasRestantes, setDiasRestantes] = useState<number>(14)
 
   useEffect(() => {
@@ -28,10 +27,7 @@ export default function TrialBanner({ fimTeste, registrosUsados, registrosLimite
   const temLimite = registrosLimite != null && registrosUsados != null
   const urgente = diasRestantes <= 3 || (temLimite && registrosLimite! - registrosUsados! <= 3)
 
-  const assinar = async () => {
-    setLoadingCheckout(true)
-    if (!(await irParaAssinatura())) setLoadingCheckout(false)
-  }
+  const { abrir, abrindo, janela } = useAssinar()
 
   return (
     <div className="flex items-center justify-end gap-2 mb-3 md:mb-0 md:fixed md:top-4 md:right-4 md:z-30">
@@ -50,8 +46,8 @@ export default function TrialBanner({ fimTeste, registrosUsados, registrosLimite
 
       {/* Botão assinar */}
       <button
-        onClick={assinar}
-        disabled={loadingCheckout}
+        onClick={abrir}
+        disabled={abrindo}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm transition-all ${
           urgente
             ? 'bg-red-600 hover:bg-red-700 text-white'
@@ -59,8 +55,9 @@ export default function TrialBanner({ fimTeste, registrosUsados, registrosLimite
         }`}
       >
         <Zap className="w-3 h-3" />
-        {loadingCheckout ? '...' : 'Assinar'}
+        {abrindo ? '...' : 'Assinar'}
       </button>
+      {janela}
     </div>
   )
 }
