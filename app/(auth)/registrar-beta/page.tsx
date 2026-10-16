@@ -135,7 +135,7 @@ function RegistrarBetaForm() {
             <CheckCircle className="w-5 h-5 text-green-400 shrink-0" />
             <p className="text-sm text-gray-300">
               <span className="font-semibold text-white">Convite válido.</span>{' '}
-              30 dias grátis · até 3 pacientes · sem cartão de crédito.
+              30 dias grátis · sem cartão de crédito.
             </p>
           </div>
 

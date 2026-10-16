@@ -1,10 +1,30 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://clinicaai-backend-production.up.railway.app'
 
-class ApiError extends Error {
-  constructor(public status: number, message: string) {
+export class ApiError extends Error {
+  constructor(public status: number, message: string, public codigo?: string) {
     super(message)
     this.name = 'ApiError'
   }
+}
+
+// Modo leitura ou limite do teste: o servidor recusa com 403 e um código.
+// O painel escuta este evento e mostra o aviso com o botão de assinar.
+export const EVENTO_BLOQUEIO = 'clinicaai:bloqueio'
+export type Bloqueio = { codigo: 'MODO_LEITURA' | 'LIMITE_TESTE'; mensagem: string }
+
+function avisarSeBloqueio(status: number, codigo: unknown, mensagem: string) {
+  if (status === 403 && (codigo === 'MODO_LEITURA' || codigo === 'LIMITE_TESTE') && typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent<Bloqueio>(EVENTO_BLOQUEIO, { detail: { codigo, mensagem } }))
+  }
+}
+
+// Para as telas que chamam fetch direto (arquivo, áudio): lê o erro do servidor,
+// avisa o painel se for modo leitura ou limite do teste e devolve a mensagem.
+export async function erroDoServidor(res: Response, padrao: string): Promise<string> {
+  const err = await res.json().catch(() => ({}))
+  const mensagem = typeof err.detail === 'string' ? err.detail : padrao
+  avisarSeBloqueio(res.status, err.codigo, mensagem)
+  return mensagem
 }
 
 function getToken(): string | null {
@@ -38,7 +58,9 @@ export async function request<T>(
       }
     }
     const err = await res.json().catch(() => ({ detail: 'Erro desconhecido' }))
-    throw new ApiError(res.status, err.detail || JSON.stringify(err))
+    const mensagem = typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail ?? err)
+    avisarSeBloqueio(res.status, err.codigo, mensagem)
+    throw new ApiError(res.status, mensagem, err.codigo)
   }
 
   if (res.status === 204) return undefined as T
@@ -47,17 +69,31 @@ export async function request<T>(
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
+export type SessaoLogin = {
+  access_token: string; user_id: string; nome: string; especialidade: string; is_admin: boolean
+}
+
 export const authApi = {
   register: (data: {
     email: string; password: string; nome: string
     especialidade?: string; conselho?: string; numero_conselho?: string; telefone?: string
-  }) => request<{ access_token: string; user_id: string; nome: string }>(
+  }) => request<{ confirmar_email: boolean; email: string }>(
     '/api/v1/auth/register', { method: 'POST', body: JSON.stringify(data) }, false
   ),
 
   login: (email: string, password: string) =>
-    request<{ access_token: string; user_id: string; nome: string; especialidade: string; is_admin: boolean }>(
+    request<SessaoLogin>(
       '/api/v1/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }, false
+    ),
+
+  confirmarEmail: (token: string, password: string) =>
+    request<SessaoLogin>(
+      '/api/v1/auth/confirmar-email', { method: 'POST', body: JSON.stringify({ token, password }) }, false
+    ),
+
+  reenviarConfirmacao: (email: string) =>
+    request<{ ok: boolean; message: string }>(
+      '/api/v1/auth/reenviar-confirmacao', { method: 'POST', body: JSON.stringify({ email }) }, false
     ),
 
   me: () => request<import('@/types').Profissional>('/api/v1/auth/me'),

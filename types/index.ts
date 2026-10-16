@@ -19,7 +19,18 @@ export interface Profissional {
   data_inicio_beta?: string
   plano?: string
   onboarding_completo?: boolean
+  acesso?: AcessoConta
   created_at: string
+}
+
+// Situação da conta calculada pelo servidor (GET /auth/me)
+export interface AcessoConta {
+  completo: boolean
+  situacao: 'admin' | 'ativo' | 'acesso_ate' | 'teste' | 'teste_vencido' | 'pagamento_pendente' | 'leitura'
+  fim_teste: string | null
+  acesso_ate: string | null
+  registros_usados: number | null
+  registros_limite: number | null
 }
 
 export interface Paciente {

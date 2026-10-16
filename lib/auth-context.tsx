@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
-import { authApi } from './api'
+import { authApi, SessaoLogin } from './api'
 
 interface AuthContextType {
   token: string | null
@@ -13,6 +13,7 @@ interface AuthContextType {
   isAdmin: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
+  entrarComSessao: (res: SessaoLogin, email?: string) => void
   logout: () => void
 }
 
@@ -39,8 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }, [])
 
-  const login = async (emailInput: string, password: string) => {
-    const res = await authApi.login(emailInput, password)
+  const entrarComSessao = (res: SessaoLogin, emailInput = '') => {
     const adminFlag = res.is_admin ?? false
     localStorage.setItem('clinicaai_token', res.access_token)
     localStorage.setItem('clinicaai_user_id', res.user_id)
@@ -57,6 +57,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/dashboard')
   }
 
+  const login = async (emailInput: string, password: string) => {
+    const res = await authApi.login(emailInput, password)
+    entrarComSessao(res, emailInput)
+  }
+
   const logout = () => {
     localStorage.removeItem('clinicaai_token')
     localStorage.removeItem('clinicaai_user_id')
@@ -70,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, userId, nome, especialidade, email, isAdmin, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ token, userId, nome, especialidade, email, isAdmin, isLoading, login, entrarComSessao, logout }}>
       {children}
     </AuthContext.Provider>
   )

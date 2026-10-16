@@ -6,6 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
+import { ApiError } from '@/lib/api'
+import ReenviarConfirmacao from '@/components/ReenviarConfirmacao'
 import { Loader2, Clock } from 'lucide-react'
 
 const schema = z.object({
@@ -18,22 +20,25 @@ export default function LoginPage() {
   const { login } = useAuth()
   const [error, setError] = useState('')
   const [expirado, setExpirado] = useState(false)
+  const [semConfirmar, setSemConfirmar] = useState('')
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('expirado') === '1') setExpirado(true)
   }, [])
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, getValues, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
   })
 
   const onSubmit = async (data: FormData) => {
     setError('')
     setExpirado(false)
+    setSemConfirmar('')
     try {
       await login(data.email, data.password)
     } catch (e: unknown) {
+      if (e instanceof ApiError && e.codigo === 'EMAIL_NAO_CONFIRMADO') setSemConfirmar(getValues('email'))
       setError(e instanceof Error ? e.message : 'Erro ao fazer login')
     }
   }
@@ -63,6 +68,7 @@ export default function LoginPage() {
             {error}
           </div>
         )}
+        {semConfirmar && <ReenviarConfirmacao email={semConfirmar} />}
         <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2" disabled={isSubmitting}>
           {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Entrando...</> : 'Entrar'}
         </button>

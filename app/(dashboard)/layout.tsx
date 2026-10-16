@@ -1,66 +1,90 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
-import { perfilApi, assinaturaApi } from '@/lib/api'
+import { perfilApi, EVENTO_BLOQUEIO, Bloqueio } from '@/lib/api'
+import type { AcessoConta } from '@/types'
 import { useRouter, usePathname } from 'next/navigation'
 import Sidebar from '@/components/layout/Sidebar'
 import TrialBanner from '@/components/TrialBanner'
+import { AvisoModoLeitura, ModalBloqueio } from '@/components/AvisoConta'
 import OnboardingWizard from '@/components/OnboardingWizard'
 import MarinaHelper from '@/components/MarinaHelper'
-import { Loader2, Clock, Zap } from 'lucide-react'
+import { Loader2, AlertCircle } from 'lucide-react'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { token, isLoading, logout } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
-  const [acesso, setAcesso] = useState<'verificando' | 'liberado' | 'bloqueado' | 'trial_expirado'>('verificando')
-  const [trialExpiresAt, setTrialExpiresAt] = useState<string | null>(null)
-  const [loadingAssinar, setLoadingAssinar] = useState(false)
+  // Situação da conta vem do servidor (GET /auth/me). Quem grava é o servidor que decide;
+  // aqui só mostramos o aviso certo.
+  const [acesso, setAcesso] = useState<AcessoConta | null>(null)
+  const [falhou, setFalhou] = useState(false)
+  const [tentativa, setTentativa] = useState(0)
+  const [bloqueio, setBloqueio] = useState<Bloqueio | null>(null)
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false)
   const [nomeUsuario, setNomeUsuario] = useState<string | undefined>()
+  const primeiraLeitura = useRef(true)
 
   useEffect(() => {
     if (!isLoading && !token) router.push('/login')
   }, [token, isLoading, router])
 
-  // Portão de acesso: conta precisa estar liberada (ativo/trial) para usar o app.
+  // Lê a situação da conta ao entrar e a cada troca de página (o contador de registros muda).
   useEffect(() => {
     let vivo = true
     if (token) {
       perfilApi.get()
         .then(p => {
           if (!vivo) return
-          if (p.status_conta === 'ativo') {
-            setNomeUsuario(p.nome)
-            if (!p.onboarding_completo) setMostrarOnboarding(true)
-            setAcesso('liberado')
-          } else if (p.status_conta === 'trial') {
-            // Calcular expiração: prefer trial_expires_at; fallback: data_inicio_beta + 30d
-            let expDate: Date | null = null
-            if (p.trial_expires_at) {
-              expDate = new Date(p.trial_expires_at)
-            } else if (p.data_inicio_beta) {
-              expDate = new Date(new Date(p.data_inicio_beta).getTime() + 30 * 24 * 60 * 60 * 1000)
-            }
-            if (expDate && expDate < new Date()) {
-              setAcesso('trial_expirado')
-            } else {
-              setNomeUsuario(p.nome)
-              if (!p.onboarding_completo) setMostrarOnboarding(true)
-              setTrialExpiresAt(expDate ? expDate.toISOString() : null)
-              setAcesso('liberado')
-            }
-          } else {
-            setAcesso('bloqueado')
+          const a: AcessoConta = p.acesso ?? {
+            completo: false, situacao: 'leitura', fim_teste: null, acesso_ate: null,
+            registros_usados: null, registros_limite: null,
           }
+          setNomeUsuario(p.nome)
+          // Boas-vindas só na primeira leitura e só para quem pode criar
+          if (primeiraLeitura.current && a.completo && !p.onboarding_completo) setMostrarOnboarding(true)
+          primeiraLeitura.current = false
+          setAcesso(a)
+          setFalhou(false)
         })
-        .catch(() => { if (vivo) setAcesso('liberado') }) // fail-open: erro transitório não bloqueia
+        // Sem resposta do servidor, não abre o painel: mostra a tela de tentar de novo
+        .catch(() => { if (vivo) setFalhou(true) })
     }
     return () => { vivo = false }
-  }, [token])
+  }, [token, pathname, tentativa])
 
-  if (isLoading || (token && acesso === 'verificando')) {
+  // O servidor recusou uma gravação: mostra o aviso e relê a situação
+  useEffect(() => {
+    const aoBloquear = (e: Event) => {
+      setBloqueio((e as CustomEvent<Bloqueio>).detail)
+      setTentativa(n => n + 1)
+    }
+    window.addEventListener(EVENTO_BLOQUEIO, aoBloquear)
+    return () => window.removeEventListener(EVENTO_BLOQUEIO, aoBloquear)
+  }, [])
+
+  if (token && !acesso && falhou) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="card max-w-sm text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 rounded-2xl mb-4">
+            <AlertCircle className="w-6 h-6 text-amber-600" />
+          </div>
+          <h1 className="text-lg font-bold text-gray-900 mb-2">Não foi possível carregar sua conta</h1>
+          <p className="text-sm text-gray-600 mb-6">Verifique a internet e tente de novo em instantes.</p>
+          <button onClick={() => { setFalhou(false); setTentativa(n => n + 1) }} className="btn-primary w-full mb-3">
+            Tentar de novo
+          </button>
+          <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+            Sair
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (isLoading || (token && !acesso)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
@@ -83,70 +107,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/pacientes')
   }
 
-  const assinarAgora = async () => {
-    setLoadingAssinar(true)
-    try {
-      const { init_point } = await assinaturaApi.checkoutTrial()
-      window.location.href = init_point
-    } catch {
-      alert('Não foi possível iniciar o checkout. Tente novamente.')
-    } finally {
-      setLoadingAssinar(false)
-    }
-  }
-
-  if (acesso === 'trial_expirado') {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-indigo-50 to-blue-100">
-        <div className="card max-w-md text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-indigo-100 rounded-2xl mb-4">
-            <Clock className="w-7 h-7 text-indigo-600" />
-          </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Seu período beta encerrou</h1>
-          <p className="text-sm text-gray-600 leading-relaxed mb-6">
-            Obrigado por fazer parte da fase beta do Clínica.ai! Seus pacientes e histórico estão preservados.
-            Assine para continuar com acesso completo e ilimitado.
-          </p>
-          <button
-            onClick={assinarAgora}
-            disabled={loadingAssinar}
-            className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors mb-3"
-          >
-            <Zap className="w-4 h-4" />
-            {loadingAssinar ? 'Aguarde...' : 'Assinar o Clínica.ai'}
-          </button>
-          <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
-            Sair
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (acesso === 'bloqueado') {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-primary-50 to-blue-100">
-        <div className="card max-w-md text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-100 rounded-2xl mb-4">
-            <Clock className="w-7 h-7 text-primary-600" />
-          </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Conta em análise</h1>
-          <p className="text-sm text-gray-600 leading-relaxed mb-6">
-            Recebemos seu cadastro! Seu acesso ao Clínica.ai está sendo liberado — avisaremos assim que estiver pronto. Obrigado pelo interesse.
-          </p>
-          <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
-            Sair
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <>
     {mostrarOnboarding && (
       <OnboardingWizard nomeUsuario={nomeUsuario} onClose={fecharOnboarding} />
     )}
+    {bloqueio && <ModalBloqueio bloqueio={bloqueio} onFechar={() => setBloqueio(null)} />}
     <div className="flex min-h-screen">
       {/* Fundo da aplicação: foto sutil + overlay claro */}
       <div className="fixed inset-0 -z-10" aria-hidden>
@@ -155,7 +121,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       <div className="flex flex-col flex-1 min-w-0">
-        {trialExpiresAt && <TrialBanner trialExpiresAt={trialExpiresAt} />}
         <div className="flex flex-1">
           <Sidebar />
           <main className="
@@ -163,6 +128,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             md:p-8
             p-4 pt-[calc(3.5rem+1rem)] pb-[calc(3.5rem+1rem)]
           ">
+            {/* No celular o aviso do teste fica acima do título; no computador, fixo no canto */}
+            {acesso?.completo && acesso.situacao === 'teste' && acesso.fim_teste && (
+              <TrialBanner
+                fimTeste={acesso.fim_teste}
+                registrosUsados={acesso.registros_usados}
+                registrosLimite={acesso.registros_limite}
+              />
+            )}
+            {acesso && <AvisoModoLeitura acesso={acesso} />}
             {children}
           </main>
         </div>

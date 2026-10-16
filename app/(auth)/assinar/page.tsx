@@ -62,7 +62,6 @@ function AssinarContent() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [especialidade, setEspecialidade] = useState('')
-  const [telefone, setTelefone] = useState('')
   const [cnpj, setCnpj] = useState('')
   const [numPsicologos, setNumPsicologos] = useState(3)
 
@@ -85,7 +84,6 @@ function AssinarContent() {
           nome,
           password,
           especialidade: especialidade || undefined,
-          telefone: telefone || undefined,
         }),
       })
 
@@ -239,14 +237,6 @@ function AssinarContent() {
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                   value={especialidade} onChange={e => setEspecialidade(e.target.value)}
                   placeholder="Ex: Psicologia, Nutrição, Fisioterapia..."
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">WhatsApp</label>
-                <input
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  value={telefone} onChange={e => setTelefone(e.target.value)}
-                  placeholder="(11) 99999-9999"
                 />
               </div>
               {planoSelecionado === 'clinica' && (

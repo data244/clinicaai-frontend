@@ -5,9 +5,9 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { authApi } from '@/lib/api'
-import { Loader2 } from 'lucide-react'
+import ReenviarConfirmacao from '@/components/ReenviarConfirmacao'
+import { Loader2, MailCheck } from 'lucide-react'
 
 const schema = z.object({
   nome: z.string().min(3, 'Nome muito curto'),
@@ -20,8 +20,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export default function CadastroPage() {
-  const router = useRouter()
   const [error, setError] = useState('')
+  const [enviadoPara, setEnviadoPara] = useState('')
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -30,22 +30,42 @@ export default function CadastroPage() {
   const onSubmit = async (data: FormData) => {
     setError('')
     try {
+      // A conta só entra depois de confirmar o e-mail pelo link
       const res = await authApi.register(data)
-      localStorage.setItem('clinicaai_token', res.access_token)
-      localStorage.setItem('clinicaai_user_id', res.user_id)
-      localStorage.setItem('clinicaai_nome', res.nome || '')
-      localStorage.setItem('clinicaai_especialidade', data.especialidade || '')
-      // recarrega de verdade para o contexto de auth captar o token;
-      // o portão então mostra "Conta em análise" enquanto a conta não é liberada
-      window.location.href = '/dashboard'
+      setEnviadoPara(res.email || data.email)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro ao cadastrar')
     }
   }
 
+  if (enviadoPara) {
+    return (
+      <div className="card text-center">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 rounded-2xl mb-4">
+          <MailCheck className="w-6 h-6 text-primary-600" />
+        </div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Confirme seu e-mail</h2>
+        <p className="text-sm text-gray-600 leading-relaxed mb-1">
+          Enviamos um link para <strong className="text-gray-900">{enviadoPara}</strong>.
+          Abra o e-mail e clique no link para entrar.
+        </p>
+        <p className="text-sm text-gray-600 leading-relaxed mb-6">
+          Os 14 dias de teste começam quando você confirmar.
+        </p>
+        <p className="text-xs text-gray-500 mb-3">Não chegou em alguns minutos? Veja a caixa de spam ou peça outro link.</p>
+        <ReenviarConfirmacao email={enviadoPara} />
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Já confirmou?{' '}
+          <Link href="/login" className="text-primary-600 font-medium hover:underline">Entrar</Link>
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="card">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Criar conta gratuita</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-1">Criar conta gratuita</h2>
+      <p className="text-sm text-gray-500 mb-6">14 dias grátis, sem cartão.</p>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label className="label">Nome completo *</label>

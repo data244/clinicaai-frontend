@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { pacientesApi, prontuariosApi, iaApi } from '@/lib/api'
+import { pacientesApi, prontuariosApi, iaApi, erroDoServidor } from '@/lib/api'
 import { Paciente } from '@/types'
 import { ArrowLeft, Mic, MicOff, Square, Save, Loader2, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
@@ -70,7 +70,7 @@ export default function NovoProntuarioAudioPage() {
           headers: { Authorization: `Bearer ${localStorage.getItem('clinicaai_token')}` },
           body: formData,
         })
-        if (!res.ok) throw new Error('Erro na transcrição')
+        if (!res.ok) throw new Error(await erroDoServidor(res, 'Erro na transcrição'))
         const data = await res.json()
         const texto = data.transcricao || data.texto || ''
         setTranscricao(texto)

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { X, Upload, FileText, Camera, HelpCircle, Loader2, ChevronDown, ChevronUp, AlertTriangle, Check, Trash2 } from 'lucide-react'
+import { erroDoServidor } from '@/lib/api'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://clinicaai-backend-production.up.railway.app'
 const token = () => typeof window !== 'undefined' ? localStorage.getItem('clinicaai_token') ?? '' : ''
@@ -119,10 +120,7 @@ export default function ImportarHistorico({ pacienteId, pacienteNome, onClose, o
         headers: { Authorization: `Bearer ${token()}` },
         body: fd,
       })
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.detail ?? 'Erro ao processar')
-      }
+      if (!res.ok) throw new Error(await erroDoServidor(res, 'Erro ao processar'))
       const data: Preview = await res.json()
       setPreview(data)
       setSessoes(data.sessoes)
@@ -147,7 +145,7 @@ export default function ImportarHistorico({ pacienteId, pacienteNome, onClose, o
         },
         body: JSON.stringify({ sessoes }),
       })
-      if (!res.ok) throw new Error('Erro ao salvar')
+      if (!res.ok) throw new Error(await erroDoServidor(res, 'Erro ao salvar'))
       onConcluido()
     } catch (e: unknown) {
       setErro(e instanceof Error ? e.message : 'Erro ao salvar')

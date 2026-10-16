@@ -7,7 +7,7 @@ import {
   ArrowLeft, ClipboardList, Loader2, Sparkles, Mic, Square, Check,
   ChevronDown, ChevronUp, Info,
 } from 'lucide-react'
-import { anamneseApi, AnamneseBlocoDef } from '@/lib/api'
+import { anamneseApi, AnamneseBlocoDef, erroDoServidor } from '@/lib/api'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://clinicaai-backend-production.up.railway.app'
 
@@ -98,7 +98,7 @@ export default function AnamnesePage() {
           headers: { Authorization: `Bearer ${localStorage.getItem('clinicaai_token')}` },
           body: fd,
         })
-        if (!res.ok) throw new Error('Erro na transcrição')
+        if (!res.ok) throw new Error(await erroDoServidor(res, 'Erro na transcrição'))
         const data = await res.json()
         const texto = (data.transcricao || data.texto || '').trim()
         if (texto) {

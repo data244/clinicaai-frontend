@@ -2,45 +2,40 @@
 
 import { useState, useEffect } from 'react'
 import { Clock, Zap } from 'lucide-react'
-import { assinaturaApi } from '@/lib/api'
-import Link from 'next/link'
+import { irParaAssinatura } from '@/components/AvisoConta'
 
 interface TrialBannerProps {
-  trialExpiresAt: string
+  fimTeste: string
+  registrosUsados?: number | null
+  registrosLimite?: number | null
 }
 
-export default function TrialBanner({ trialExpiresAt }: TrialBannerProps) {
+export default function TrialBanner({ fimTeste, registrosUsados, registrosLimite }: TrialBannerProps) {
   const [loadingCheckout, setLoadingCheckout] = useState(false)
-  const [diasRestantes, setDiasRestantes] = useState<number>(30)
+  const [diasRestantes, setDiasRestantes] = useState<number>(14)
 
   useEffect(() => {
     const calcular = () => {
-      const exp = new Date(trialExpiresAt).getTime()
+      const exp = new Date(fimTeste).getTime()
       const diff = Math.ceil((exp - Date.now()) / (1000 * 60 * 60 * 24))
       setDiasRestantes(Math.max(0, diff))
     }
     calcular()
     const id = setInterval(calcular, 60_000)
     return () => clearInterval(id)
-  }, [trialExpiresAt])
+  }, [fimTeste])
 
-  const urgente = diasRestantes <= 5
+  const temLimite = registrosLimite != null && registrosUsados != null
+  const urgente = diasRestantes <= 3 || (temLimite && registrosLimite! - registrosUsados! <= 3)
 
   const assinar = async () => {
     setLoadingCheckout(true)
-    try {
-      const { init_point } = await assinaturaApi.checkoutTrial()
-      window.location.href = init_point
-    } catch {
-      alert('Não foi possível iniciar o checkout. Tente novamente.')
-    } finally {
-      setLoadingCheckout(false)
-    }
+    if (!(await irParaAssinatura())) setLoadingCheckout(false)
   }
 
   return (
-    <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
-      {/* Chip de dias */}
+    <div className="flex items-center justify-end gap-2 mb-3 md:mb-0 md:fixed md:top-4 md:right-4 md:z-30">
+      {/* Chip do teste: dias e registros */}
       <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium shadow-sm border ${
         urgente
           ? 'bg-red-50 border-red-200 text-red-700'
@@ -48,7 +43,8 @@ export default function TrialBanner({ trialExpiresAt }: TrialBannerProps) {
       }`}>
         <Clock className={`w-3 h-3 ${urgente ? 'text-red-500' : 'text-gray-400'}`} />
         <span>
-          {diasRestantes === 0 ? 'Beta encerra hoje' : `Beta · ${diasRestantes}d`}
+          {diasRestantes === 0 ? 'Teste termina hoje' : `Teste · ${diasRestantes} ${diasRestantes === 1 ? 'dia' : 'dias'}`}
+          {temLimite && ` · ${registrosUsados} de ${registrosLimite} registros`}
         </span>
       </div>
 

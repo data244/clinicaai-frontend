@@ -1,4 +1,4 @@
-import { request } from './api'
+import { request, erroDoServidor } from './api'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://clinicaai-backend-production.up.railway.app'
 
@@ -32,10 +32,7 @@ export const documentosApi = {
       headers: t ? { Authorization: `Bearer ${t}` } : {},
       body: fd,
     })
-    if (!res.ok) {
-      const e = await res.json().catch(() => ({ detail: 'Erro ao enviar' }))
-      throw new Error(e.detail || 'Erro ao enviar documento')
-    }
+    if (!res.ok) throw new Error(await erroDoServidor(res, 'Erro ao enviar documento'))
     return res.json()
   },
 
