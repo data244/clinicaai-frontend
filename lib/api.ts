@@ -77,6 +77,7 @@ export const authApi = {
   register: (data: {
     email: string; password: string; nome: string
     especialidade?: string; conselho?: string; numero_conselho?: string; telefone?: string
+    aceite_termos?: boolean; termos_versao?: string
   }) => request<{ confirmar_email: boolean; email: string }>(
     '/api/v1/auth/register', { method: 'POST', body: JSON.stringify(data) }, false
   ),
@@ -374,6 +375,7 @@ export const convitesApi = {
   registrarBeta: (data: {
     token_convite: string; email: string; password: string; nome: string
     especialidade?: string; telefone?: string
+    aceite_termos?: boolean; termos_versao?: string
   }) =>
     request<{ access_token: string; user_id: string; nome: string; status_conta: string; trial_expires_at: string }>(
       '/api/v1/auth/registrar-beta', { method: 'POST', body: JSON.stringify(data) }, false

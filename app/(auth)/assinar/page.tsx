@@ -3,6 +3,8 @@
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { CheckCircle, CreditCard, Loader2, AlertCircle } from 'lucide-react'
+import AceiteTermos from '@/components/AceiteTermos'
+import { camposAceite, MSG_ACEITE } from '@/lib/termos'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://clinicaai-backend-production.up.railway.app'
 
@@ -31,11 +33,16 @@ function AssinarContent() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [especialidade, setEspecialidade] = useState('')
+  const [aceite, setAceite] = useState(false)
 
   async function handleCadastro(e: React.FormEvent) {
     e.preventDefault()
     if (password.length < 8) {
       setErro('Senha deve ter pelo menos 8 caracteres.')
+      return
+    }
+    if (!aceite) {
+      setErro(MSG_ACEITE)
       return
     }
     setLoading(true)
@@ -51,6 +58,7 @@ function AssinarContent() {
           nome,
           password,
           especialidade: especialidade || undefined,
+          ...camposAceite(),
         }),
       })
 
@@ -171,6 +179,8 @@ function AssinarContent() {
                   placeholder="Ex: Psicologia, Nutrição, Fisioterapia..."
                 />
               </div>
+
+              <AceiteTermos marcado={aceite} onChange={setAceite} />
 
               <button
                 type="submit" disabled={loading || !nome || !email || !password}

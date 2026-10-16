@@ -441,7 +441,9 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <span className="text-white font-bold text-base">Clínica<span className="text-primary-400">.ai</span></span>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-4">
+              <a href="/termos" className="hover:text-white transition-colors">Termos de Uso</a>
+              <a href="/privacidade" className="hover:text-white transition-colors">Privacidade</a>
               <a href="https://instagram.com/clinicaai" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>
               <a href="https://youtube.com/@clinicaai" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">YouTube</a>
             </div>

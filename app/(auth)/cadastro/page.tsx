@@ -7,6 +7,8 @@ import { z } from 'zod'
 import Link from 'next/link'
 import { authApi } from '@/lib/api'
 import ReenviarConfirmacao from '@/components/ReenviarConfirmacao'
+import AceiteTermos from '@/components/AceiteTermos'
+import { camposAceite, MSG_ACEITE } from '@/lib/termos'
 import { Loader2, MailCheck } from 'lucide-react'
 
 const schema = z.object({
@@ -22,6 +24,7 @@ type FormData = z.infer<typeof schema>
 export default function CadastroPage() {
   const [error, setError] = useState('')
   const [enviadoPara, setEnviadoPara] = useState('')
+  const [aceite, setAceite] = useState(false)
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -29,9 +32,10 @@ export default function CadastroPage() {
 
   const onSubmit = async (data: FormData) => {
     setError('')
+    if (!aceite) { setError(MSG_ACEITE); return }
     try {
       // A conta só entra depois de confirmar o e-mail pelo link
-      const res = await authApi.register(data)
+      const res = await authApi.register({ ...data, ...camposAceite() })
       setEnviadoPara(res.email || data.email)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro ao cadastrar')
@@ -104,6 +108,7 @@ export default function CadastroPage() {
           <label className="label">Especialidade</label>
           <input className="input" placeholder="Psicologia, Clínica Geral..." {...register('especialidade')} />
         </div>
+        <AceiteTermos marcado={aceite} onChange={setAceite} />
         {error && (
           <div className="bg-red-50 text-red-700 text-sm px-3 py-2 rounded-lg border border-red-200">
             {error}
