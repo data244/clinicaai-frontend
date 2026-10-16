@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react'
 import { perfilApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import { Profissional } from '@/types'
+import MinhaAssinatura from '@/components/MinhaAssinatura'
 import {
   User, Lock, Save, Eye, EyeOff,
-  CheckCircle, AlertCircle, Loader2, Settings, CreditCard, ExternalLink
+  CheckCircle, AlertCircle, Loader2, Settings, CreditCard, ExternalLink, Receipt
 } from 'lucide-react'
 
-type Tab = 'perfil' | 'whatsapp' | 'pagamentos' | 'conta'
+type Tab = 'perfil' | 'assinatura' | 'whatsapp' | 'pagamentos' | 'conta'
 
 function Alert({ type, msg }: { type: 'success' | 'error'; msg: string }) {
   const cls = type === 'success'
@@ -57,6 +58,8 @@ export default function ConfiguracoesPage() {
   const [showSenha, setShowSenha] = useState(false)
 
   useEffect(() => {
+    // Configurações?aba=assinatura abre direto na assinatura
+    if (new URLSearchParams(window.location.search).get('aba') === 'assinatura') setTab('assinatura')
     perfilApi.get().then((p) => {
       setPerfil(p)
       setNome(p.nome || '')
@@ -164,6 +167,7 @@ export default function ConfiguracoesPage() {
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: 'perfil', label: 'Perfil', icon: User },
+    { id: 'assinatura', label: 'Minha assinatura', icon: Receipt },
     { id: 'pagamentos', label: 'Pagamentos', icon: CreditCard },
     { id: 'conta', label: 'Conta', icon: Lock },
   ]
@@ -252,6 +256,8 @@ export default function ConfiguracoesPage() {
               </button>
             </form>
           )}
+
+          {tab === 'assinatura' && perfil && <MinhaAssinatura acesso={perfil.acesso} />}
 
           {tab === 'whatsapp' && (
             <form onSubmit={salvarWhatsApp} className="space-y-4">

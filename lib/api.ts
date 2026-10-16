@@ -290,17 +290,26 @@ export const perfilApi = {
 // Assinatura criada no Mercado Pago, ainda sem pagamento: link e data da primeira cobrança
 export type CheckoutAssinatura = { init_point: string; plano: string; valor?: number; primeira_cobranca?: string }
 
+// Assinatura da conta logada (aba Minha assinatura)
+export type StatusAssinatura = {
+  plano: string
+  status_conta: string
+  plano_expiracao: string | null
+  ultima_assinatura: Record<string, unknown> | null
+  detalhes_plano: { nome?: string; valor?: number } | null
+  proxima_cobranca?: string | null
+  valor?: number
+  pode_cancelar?: boolean
+}
+
 export const assinaturaApi = {
   planos: () => request<{ planos: Record<string, unknown> }>('/api/v1/assinatura/planos', {}, false),
 
-  status: () => request<{
-    plano: string
-    status_conta: string
-    plano_expiracao: string | null
-    ultima_assinatura: Record<string, unknown> | null
-    detalhes_plano: Record<string, unknown>
-    proxima_cobranca?: string | null
-  }>('/api/v1/assinatura/status'),
+  status: () => request<StatusAssinatura>('/api/v1/assinatura/status'),
+
+  cancelar: () => request<{ ok: boolean; acesso_ate: string | null; mensagem: string }>(
+    '/api/v1/assinatura/cancelar', { method: 'POST' }
+  ),
 
   retomar: () => request<CheckoutAssinatura>('/api/v1/assinatura/retomar', { method: 'POST' }),
 

@@ -72,7 +72,7 @@ function JanelaAssinatura({ checkout, onFechar }: { checkout: CheckoutAssinatura
   )
 }
 
-function BotaoAssinar({ texto = 'Assinar' }: { texto?: string }) {
+export function BotaoAssinar({ texto = 'Assinar' }: { texto?: string }) {
   const { abrir, abrindo, janela } = useAssinar()
   return (
     <>
