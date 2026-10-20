@@ -6,11 +6,11 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(iso?: string): string {
-  if (!iso) return '—'
+  if (!iso) return '-'
   return new Date(iso).toLocaleDateString('pt-BR')
 }
 
 export function formatPhone(phone?: string): string {
-  if (!phone) return '—'
+  if (!phone) return '-'
   return phone
 }

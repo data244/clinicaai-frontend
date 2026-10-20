@@ -294,7 +294,7 @@ export default function ConfiguracoesPage() {
             <form onSubmit={salvarPagamentos} className="space-y-4">
               <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-4 text-sm text-emerald-800">
                 <p className="font-medium mb-2">Conecte sua conta do Mercado Pago</p>
-                <p className="text-emerald-700 mb-3">Os pagamentos dos seus pacientes vão direto para a sua conta — sem intermediários.</p>
+                <p className="text-emerald-700 mb-3">Os pagamentos dos seus pacientes vão direto para a sua conta, sem intermediários.</p>
                 <a href="https://www.mercadopago.com.br/developers/pt/docs/credentials" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-emerald-700 font-medium hover:text-emerald-900 underline text-xs">
                   Como obter o Access Token <ExternalLink className="w-3 h-3" />
                 </a>

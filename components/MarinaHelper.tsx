@@ -15,26 +15,26 @@ function getMensagem(pathname: string): MensagemMarina | null {
   if (pathname.startsWith('/pacientes/novo')) {
     return {
       titulo: 'Cadastro do paciente',
-      texto: 'Preencha nome e data de nascimento — o resto pode vir depois. Depois de salvar, vamos importar o histórico clínico.',
+      texto: 'Preencha nome e data de nascimento. O resto pode vir depois. Depois de salvar, vamos importar o histórico clínico.',
     }
   }
   // /mapa deve ser testado ANTES de /pacientes/[id]
   if (/\/pacientes\/[^/]+\/mapa/.test(pathname)) {
     return {
-      titulo: 'Mapa longitudinal',
-      texto: 'Aqui está o caso organizado. Explore a **Análise** e o **Mapa de Conceitos** — depois vá ao **Copiloto IA** para fazer perguntas clínicas sobre este paciente.',
+      titulo: 'Análise Longitudinal',
+      texto: 'Aqui está o caso organizado. Explore a **Análise** e o **Mapa de Conceitos**. Depois vá ao **Copiloto IA** para fazer perguntas clínicas sobre este paciente.',
     }
   }
   if (/^\/pacientes\/[^/]+$/.test(pathname)) {
     return {
       titulo: 'Prontuário do paciente',
-      texto: 'Aqui ficam todos os registros do caso. Clique em **Mapa Longitudinal** para ver padrões, evolução e o mapa de conceitos — é lá que a análise acontece.',
+      texto: 'Aqui ficam todos os registros do caso. Clique em **Análise Longitudinal** para ver padrões, evolução e o mapa de conceitos. É lá que a análise acontece.',
     }
   }
   if (pathname.startsWith('/copiloto')) {
     return {
       titulo: 'Copiloto Clínico',
-      texto: 'Selecione um paciente e me faça qualquer pergunta — hipóteses, DSM-5, estratégias. Sou seu **supervisor clínico** aqui.\n\n✓ Jornada básica completa! Se precisar de mim, é só clicar.',
+      texto: 'Selecione um paciente e pergunte sobre o histórico do caso: o que se repete, o que mudou, o que já foi dito.\n\n✓ Jornada básica completa! Se precisar de mim, é só clicar.',
     }
   }
   return null
@@ -131,7 +131,7 @@ export default function MarinaHelper({ pathname }: Props) {
       <button
         onClick={toggleBalloon}
         className="w-14 h-14 rounded-full overflow-hidden border-2 border-indigo-500 shadow-lg hover:scale-105 transition-transform focus:outline-none"
-        title="Marina — assistente do Clínica.ai"
+        title="Marina, assistente do Clínica.ai"
       >
         <img src="/marina.png" alt="Marina" className="w-full h-full object-cover object-top" />
       </button>

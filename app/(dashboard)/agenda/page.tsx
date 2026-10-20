@@ -214,7 +214,7 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onSaveSerie, onD
               value={form.paciente_id}
               onChange={e => setForm(f => ({ ...f, paciente_id: e.target.value }))}
             >
-              <option value="">— Sem paciente vinculado —</option>
+              <option value="">Sem paciente vinculado</option>
               {pacientes.map(p => (
                 <option key={p.id} value={p.id}>{p.nome}</option>
               ))}
@@ -248,7 +248,7 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onSaveSerie, onD
             </div>
           </div>
 
-          {/* Repetir (tratamento recorrente) — apenas em novo agendamento */}
+          {/* Repetir (tratamento recorrente): apenas em novo agendamento */}
           {isNew && (
             <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-3 space-y-3">
               <label className="flex items-center gap-2 text-sm font-medium text-indigo-800">
@@ -776,7 +776,7 @@ export default function AgendaPage() {
                             )}
                             <div className="text-[10px] opacity-60 mt-0.5">
                               {fmtHoraBR(ev.data_hora_inicio)}
-                              {' – '}
+                              {' às '}
                               {fmtHoraBR(ev.data_hora_fim)}
                             </div>
                           </div>
@@ -831,7 +831,7 @@ export default function AgendaPage() {
               <div className="flex items-center gap-2">
                 <Clock size={14} className="text-gray-400" />
                 {fmtDataHoraBR(eventoClick.data_hora_inicio)}
-                {' – '}
+                {' às '}
                 {fmtHoraBR(eventoClick.data_hora_fim)}
               </div>
               {eventoClick.pacientes && (
@@ -852,10 +852,10 @@ export default function AgendaPage() {
               </div>
             </div>
 
-            {/* Gerar cobrança avulsa — apenas para sessões NÃO recorrentes */}
+            {/* Gerar cobrança avulsa: apenas para sessões NÃO recorrentes */}
             {!serieIdEvento && <CobrancaSection evento={eventoClick} />}
 
-            {/* Encerrar tratamento — apenas para sessões de uma série ativa */}
+            {/* Encerrar tratamento: apenas para sessões de uma série ativa */}
             {serieIdEvento && eventoClick.status !== 'cancelado' && (
               <div className="mt-4 pt-4 border-t">
                 <button

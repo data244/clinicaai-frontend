@@ -100,7 +100,7 @@ export default function AudioRecorder({ onTranscricao, disabled }: AudioRecorder
               <Upload className="w-4 h-4" /> Upload áudio
             </button>
           </div>
-          <p className="text-xs text-gray-400">MP3, MP4, WAV, OGG, WebM — máx 25 MB</p>
+          <p className="text-xs text-gray-400">MP3, MP4, WAV, OGG, WebM, até 25 MB</p>
           <input
             ref={fileInputRef}
             type="file"

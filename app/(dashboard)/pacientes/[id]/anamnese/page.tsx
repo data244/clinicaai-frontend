@@ -144,7 +144,7 @@ export default function AnamnesePage() {
       <div className="flex gap-2.5 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 my-5">
         <Info className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-gray-500 leading-relaxed">
-          Nada aqui é obrigatório. Preencha o que fizer sentido, do jeito que preferir —
+          Nada aqui é obrigatório. Preencha o que fizer sentido, do jeito que preferir:
           falando, escrevendo, ou deixando que o sistema recolha o que já foi dito nas sessões.
           A anamnese continua aberta o tempo todo.
         </p>

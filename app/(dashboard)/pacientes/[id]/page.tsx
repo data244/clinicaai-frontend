@@ -202,7 +202,7 @@ export default function PacienteDetailPage() {
               className="flex items-center gap-2 px-3 py-2 bg-primary-50 text-primary-700 rounded-lg text-sm font-medium hover:bg-primary-100 transition-colors border border-primary-200"
             >
               <TrendingUp className="w-4 h-4" />
-              <span className="hidden sm:inline">Mapa Longitudinal</span>
+              <span className="hidden sm:inline">Análise Longitudinal</span>
               <span className="sm:hidden">Mapa</span>
             </Link>
           </div>
@@ -248,7 +248,7 @@ export default function PacienteDetailPage() {
                   href={`/pacientes/${id}/mapa`}
                   className="flex items-center gap-2 text-xs text-primary-600 hover:text-primary-800 transition-colors"
                 >
-                  <TrendingUp className="w-3.5 h-3.5" /> Ver mapa longitudinal
+                  <TrendingUp className="w-3.5 h-3.5" /> Ver Análise Longitudinal
                 </Link>
                 <button
                   onClick={handleDelete}

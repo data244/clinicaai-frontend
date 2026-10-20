@@ -55,7 +55,7 @@ export default function AjudaPage() {
           {[
             { id: '5948eJBQ5IA', titulo: '01. Dashboard', desc: 'Visão geral da sua clínica' },
             { id: 'mFbRov-HZNw', titulo: '02. Pacientes e Prontuário', desc: 'Cadastro, sessões e memo de voz' },
-            { id: 'yNL7YGkM0k8', titulo: '03. Mapa Longitudinal', desc: 'Padrões, emoções e alertas clínicos' },
+            { id: 'yNL7YGkM0k8', titulo: '03. Análise Longitudinal', desc: 'Padrões, emoções e alertas clínicos' },
             { id: 'kzXtjcyTKpc', titulo: '04. Copiloto IA', desc: 'DSM-5, CID-11 e suporte clínico' },
             { id: '_YHedZOv5_0', titulo: '05. Financeiro', desc: 'Cobranças e links de pagamento' },
             { id: '2WK9Aau8rEU', titulo: '06. Configurações', desc: 'Mercado Pago e perfil' },

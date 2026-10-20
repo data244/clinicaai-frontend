@@ -133,10 +133,10 @@ export default function CopilotoPage() {
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <Brain className="w-6 h-6 text-purple-600" />
               Copiloto Clínico
-              <InfoTip title="Copiloto Clínico" text="Pergunte sobre o histórico do paciente em linguagem natural. Ele organiza a informação e cita as sessões — não propõe diagnóstico nem conduta. Selecione um paciente antes de perguntar." />
+              <InfoTip title="Copiloto Clínico" text="Pergunte sobre o histórico do paciente em linguagem natural. Ele organiza a informação e cita as sessões. Não propõe diagnóstico nem conduta. Selecione um paciente antes de perguntar." />
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              Leitura inteligente do histórico do paciente — padrões, evolução e o que tende a vir a seguir
+              Leitura inteligente do histórico do paciente: padrões, evolução e o que tende a vir a seguir
             </p>
           </div>
           <select
@@ -202,7 +202,7 @@ export default function CopilotoPage() {
                         {msg.fontes.map((f, fi) => (
                           <div key={fi} className="text-xs bg-purple-50 border border-purple-100 rounded-lg px-3 py-2">
                             <div className="flex items-center justify-between mb-0.5">
-                              <span className="font-medium text-purple-700 capitalize">{f.tipo} — {f.data}</span>
+                              <span className="font-medium text-purple-700 capitalize">{f.tipo} · {f.data}</span>
                               {f.similaridade > 0 && <span className="text-purple-400">{(f.similaridade * 100).toFixed(0)}% similar</span>}
                             </div>
                             <p className="text-gray-600 truncate">{f.queixa || 'Sem queixa registrada'}</p>
@@ -259,7 +259,7 @@ export default function CopilotoPage() {
         </div>
 
         <p className="text-center text-xs text-gray-300 mt-2 flex items-center justify-center gap-1">
-          <Sparkles className="w-3 h-3" /> Apoio ao raciocínio clínico com base no histórico do paciente — não substitui o julgamento profissional
+          <Sparkles className="w-3 h-3" /> Apoio ao raciocínio clínico com base no histórico do paciente. Não substitui o julgamento profissional
         </p>
       </div>
 
@@ -270,13 +270,13 @@ export default function CopilotoPage() {
           <Plus className="w-4 h-4" /> Nova conversa
         </button>
 
-        {/* Atalho para o Mapa Longitudinal do paciente */}
+        {/* Atalho para a Análise Longitudinal do paciente */}
         {selectedPaciente && (
           <Link href={`/pacientes/${selectedPaciente}/mapa`}
             className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary-600 to-indigo-700 text-white p-3 group">
             <div className="relative z-10">
               <p className="text-[10px] uppercase tracking-wide text-white/70">Mesma inteligência</p>
-              <p className="text-sm font-semibold flex items-center gap-1.5"><TrendingUp className="w-4 h-4" /> Mapa Longitudinal</p>
+              <p className="text-sm font-semibold flex items-center gap-1.5"><TrendingUp className="w-4 h-4" /> Análise Longitudinal</p>
               <p className="text-[11px] text-white/80 mt-0.5">Padrões, conceitos e tendências de {nomePaciente(selectedPaciente)} →</p>
             </div>
             <svg viewBox="0 0 120 50" className="absolute right-0 bottom-0 w-24 opacity-30" fill="none">

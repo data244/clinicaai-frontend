@@ -12,7 +12,7 @@ export default function OnboardingWizard({ nomeUsuario, onClose }: Props) {
   const [step, setStep] = useState(0)
   const primeiroNome = (nomeUsuario || '').split(' ')[0] || ''
 
-  // Tela 0 — Boas-vindas
+  // Tela 0: Boas-vindas
   if (step === 0) return (
     <Overlay>
       <button
@@ -38,10 +38,10 @@ export default function OnboardingWizard({ nomeUsuario, onClose }: Props) {
           <p className="text-gray-600 leading-relaxed mb-2">
             Uma coisa importante antes de começar:{' '}
             <strong className="text-gray-900">nada aqui grava suas sessões.</strong>{' '}
-            O registro é seu — feito por você, depois do atendimento, do jeito que preferir.
+            O registro é seu, feito por você, depois do atendimento, do jeito que preferir.
           </p>
           <p className="text-gray-600 leading-relaxed mb-6">
-            Quero te mostrar o caminho completo — do primeiro registro até o mapa do caso. Leva uns 5 minutos e você vai entender tudo.
+            Quero te mostrar o caminho completo, do primeiro registro até a Análise Longitudinal. Leva uns 5 minutos e você vai entender tudo.
           </p>
           <button
             onClick={() => setStep(1)}
@@ -54,7 +54,7 @@ export default function OnboardingWizard({ nomeUsuario, onClose }: Props) {
     </Overlay>
   )
 
-  // Tela 1 — Resumo da jornada
+  // Tela 1: Resumo da jornada
   return (
     <Overlay>
       <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
@@ -62,9 +62,9 @@ export default function OnboardingWizard({ nomeUsuario, onClose }: Props) {
         <ol className="space-y-4 mb-6">
           {[
             { n: '1', titulo: 'Crie um paciente', desc: 'Nome e data de nascimento já bastam para começar.' },
-            { n: '2', titulo: 'Importe o histórico', desc: 'Texto, arquivo ou foto do caderno — eu organizo tudo.' },
-            { n: '3', titulo: 'Veja o mapa do caso', desc: 'Padrões, linha do tempo, evolução e conceitos conectados.' },
-            { n: '4', titulo: 'Converse com o Copiloto', desc: 'Pergunte qualquer coisa sobre o paciente — como um supervisor.' },
+            { n: '2', titulo: 'Importe o histórico', desc: 'Texto, arquivo ou foto do caderno. Eu organizo tudo.' },
+            { n: '3', titulo: 'Veja a Análise Longitudinal', desc: 'Padrões, linha do tempo, evolução e conceitos conectados.' },
+            { n: '4', titulo: 'Converse com o Copiloto', desc: 'Pergunte sobre o histórico do paciente.' },
           ].map(s => (
             <li key={s.n} className="flex gap-3">
               <span className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -78,7 +78,7 @@ export default function OnboardingWizard({ nomeUsuario, onClose }: Props) {
           ))}
         </ol>
         <p className="text-xs text-gray-400 mb-4 text-center">
-          Estarei do seu lado em cada tela — pode dispensar quando quiser.
+          Estarei do seu lado em cada tela. Pode dispensar quando quiser.
         </p>
         <button
           onClick={onClose}

@@ -323,7 +323,7 @@ function CobrancaCard({ c, onAtualizar }: { c: Cobranca; onAtualizar: () => void
                 className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-green-600 text-white text-xs font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
-                {ehRecorrente ? 'Pago — gerar próxima' : 'Marcar como pago'}
+                {ehRecorrente ? 'Pago, gerar próxima' : 'Marcar como pago'}
               </button>
               {!c.link_pagamento && (
                 <button

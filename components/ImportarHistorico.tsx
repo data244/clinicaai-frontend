@@ -40,7 +40,7 @@ const AJUDA = `Como preparar suas anotações para importação:
 
 📝 TEXTO DIGITADO
 Cole diretamente suas anotações. Quanto mais contexto, melhor.
-Inclua datas quando possível (ex: "15/03/2024 — paciente relatou...")
+Inclua datas quando possível (ex: "15/03/2024: paciente relatou...")
 
 📄 ARQUIVO
 Formatos aceitos: .txt e .pdf
@@ -52,7 +52,7 @@ Letras legíveis ajudam muito na transcrição.
 
 💡 DICA
 A IA organiza em sessões separadas, identifica padrões e sinaliza
-o que não ficou claro — você revisa tudo antes de salvar.`
+o que não ficou claro. Você revisa tudo antes de salvar.`
 
 export default function ImportarHistorico({ pacienteId, pacienteNome, onClose, onConcluido }: Props) {
   const [aba, setAba] = useState<Aba>('texto')
@@ -202,7 +202,7 @@ export default function ImportarHistorico({ pacienteId, pacienteNome, onClose, o
                   value={texto}
                   onChange={e => setTexto(e.target.value)}
                   rows={10}
-                  placeholder={"Cole ou digite as anotações clínicas do paciente...\n\nExemplo:\n15/03/2024 — Raquel relatou dificuldades de sono. Ansiedade elevada.\nTrabalhou-se TCC, técnica de reestruturação cognitiva...\n\n22/03/2024 — Melhora parcial. Paciente identificou gatilhos..."}
+                  placeholder={"Cole ou digite as anotações clínicas do paciente...\n\nExemplo:\n15/03/2024: Raquel relatou dificuldades de sono. Ansiedade elevada.\nTrabalhou-se TCC, técnica de reestruturação cognitiva...\n\n22/03/2024: Melhora parcial. Paciente identificou gatilhos..."}
                   className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 />
               )}
@@ -248,7 +248,7 @@ export default function ImportarHistorico({ pacienteId, pacienteNome, onClose, o
                 className="mt-5 w-full btn-primary flex items-center justify-center gap-2 py-2.5 disabled:opacity-60">
                 {processando ? <><Loader2 className="w-4 h-4 animate-spin" /> Analisando com IA...</> : '✦ Analisar anotações'}
               </button>
-              <p className="text-center text-xs text-gray-400 mt-2">A IA organiza as sessões — você revisa antes de salvar.</p>
+              <p className="text-center text-xs text-gray-400 mt-2">A IA organiza as sessões, e você revisa antes de salvar.</p>
             </>
           )}
 

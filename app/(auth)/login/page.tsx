@@ -81,7 +81,7 @@ export default function LoginPage() {
       <p className="text-center text-sm text-gray-500 mt-6">
         Não tem conta?{' '}
         <Link href="/cadastro" className="text-primary-600 font-medium hover:underline">
-          Cadastre-se grátis
+          Começar 14 dias grátis
         </Link>
       </p>
     </div>

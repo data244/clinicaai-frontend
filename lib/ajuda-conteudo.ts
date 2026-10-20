@@ -32,7 +32,7 @@ Cada atendimento que você registra vira parte de um histórico que se constrói
 
 É o que chamamos de **olhar longitudinal**: ver a trajetória, não o instante. Você cuida do paciente; o registro e a leitura se organizam ao seu redor.
 
-> A inteligência **organiza e destaca** a informação. A conduta clínica é sempre sua — a plataforma não propõe diagnóstico nem tratamento.
+> A inteligência **organiza e destaca** a informação. A conduta clínica é sempre sua: a plataforma não propõe diagnóstico nem tratamento.
 `,
   },
   {
@@ -45,8 +45,8 @@ Cada atendimento que você registra vira parte de um histórico que se constrói
 
 1. **Cadastre um paciente** em *Pacientes › Novo paciente*.
 2. **Registre a primeira sessão** abrindo o paciente e criando um prontuário (você pode digitar ou usar o registro por áudio).
-3. Repita a cada atendimento — o histórico se constrói sozinho.
-4. Depois de algumas sessões, abra o **Mapa Longitudinal** do paciente para ver a evolução e os padrões.
+3. Repita a cada atendimento: o histórico se constrói sozinho.
+4. Depois de algumas sessões, abra a **Análise Longitudinal** do paciente para ver a evolução e os padrões.
 5. Use o **Copiloto** para perguntar coisas sobre o histórico.
 
 Dica: quanto mais sessões registradas, mais rica fica a leitura longitudinal.
@@ -63,7 +63,7 @@ Dica: quanto mais sessões registradas, mais rica fica a leitura longitudinal.
 Em **Pacientes** você cadastra e acompanha cada pessoa atendida.
 
 - **Novo paciente**: clique em *Novo paciente* e preencha os dados básicos.
-- **Ficha do paciente**: abra um paciente para ver os dados, o histórico de sessões e os atalhos para o Mapa Longitudinal e os Documentos.
+- **Ficha do paciente**: abra um paciente para ver os dados, o histórico de sessões e os atalhos para a Análise Longitudinal e os Documentos.
 - **Documentos**: anexe exames e laudos na ficha; eles passam a fazer parte do prontuário consolidado.
 `,
   },
@@ -78,7 +78,7 @@ Em **Pacientes** você cadastra e acompanha cada pessoa atendida.
 Cada atendimento vira um registro no prontuário do paciente.
 
 - **Por texto**: abra o paciente e crie um novo prontuário preenchendo os campos da sessão.
-- **Por áudio**: use o *Registro por áudio* para gravar a consulta — a fala é transcrita e vira o ponto de partida do registro, que você revisa antes de salvar.
+- **Por áudio**: use o *Registro por áudio* para gravar o seu resumo, depois do atendimento: a fala é transcrita e vira o ponto de partida do registro, que você revisa antes de salvar.
 - **Prontuário consolidado**: o histórico se acumula em um documento único, cronológico e versionado, com os exames anexados como páginas.
 
 Você sempre revisa o conteúdo antes de salvar.
@@ -86,18 +86,18 @@ Você sempre revisa o conteúdo antes de salvar.
   },
   {
     slug: 'mapa-longitudinal',
-    titulo: 'Mapa Longitudinal e Mapa de Conceitos',
+    titulo: 'Análise Longitudinal e Mapa de Conceitos',
     categoria: 'Inteligência',
     resumo: 'A evolução do caso e a teia dos temas do tratamento.',
     conteudo: `
-## Mapa Longitudinal
+## Análise Longitudinal
 
 É a leitura do caso por inteiro, a partir de todas as sessões registradas. Tem quatro visões:
 
 - **Análise**: padrões, o que se repete, o que mudou e para onde o caso parece caminhar.
 - **Linha do Tempo**: a trajetória do paciente em ordem cronológica.
 - **Perguntas**: faça perguntas sobre o histórico; as perguntas feitas ficam no painel à direita.
-- **Mapa de Conceitos**: os temas centrais do tratamento conectados em uma teia — útil para ver o caso de relance. Abra em **tela cheia** para uma visão melhor.
+- **Mapa de Conceitos**: os temas centrais do tratamento conectados em uma teia, útil para ver o caso de relance. Abra em **tela cheia** para uma visão melhor.
 
 Quanto mais sessões, mais consistente a análise.
 `,

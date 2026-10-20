@@ -208,7 +208,7 @@ export default function AdminPage() {
         <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
           <ShieldCheck className="w-5 h-5 text-white" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">Admin — Contas</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Admin · Contas</h1>
       </div>
       <p className="text-sm text-gray-600 mb-5 ml-12">Libere o acesso de novos profissionais ou redefina a senha de alguém.</p>
 
@@ -249,7 +249,7 @@ export default function AdminPage() {
               return (
                 <div key={c.id} className="flex items-center gap-3 px-5 py-3.5">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-900 truncate">{c.nome || '—'}</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">{c.nome || '-'}</p>
                     <p className="text-xs text-gray-500 truncate">{c.email}</p>
                   </div>
                   <div className="hidden md:block text-xs text-gray-400 w-24 shrink-0">{fmtData(c.created_at)}</div>

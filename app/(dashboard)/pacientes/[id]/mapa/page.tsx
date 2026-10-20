@@ -379,7 +379,7 @@ export default function MapaLongitudinalPage() {
         <div>
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-indigo-500" />
-            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">Mapa Longitudinal<InfoTip title="Mapa Longitudinal" text="A leitura do caso por inteiro, a partir de todas as sessões: padrões, evolução, perguntas ao histórico e o mapa de temas. Quanto mais sessões registradas, mais consistente." /></h1>
+            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">Análise Longitudinal<InfoTip title="Análise Longitudinal" text="A leitura do caso por inteiro, a partir de todas as sessões: padrões, evolução, perguntas ao histórico e o mapa de temas. Quanto mais sessões registradas, mais consistente." /></h1>
           </div>
           {data?.paciente != null && <p className="text-sm text-gray-500 ml-7">{data.paciente as string}</p>}
         </div>

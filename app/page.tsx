@@ -1,46 +1,50 @@
-'use client'
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { TrendingUp, Clock, Network, Check, ShieldCheck, MicOff, UserCheck, Lock } from 'lucide-react'
+import DataCobranca from '@/components/DataCobranca'
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+// Página inicial (Rascunho_Pagina_e_Emails_v2.md, seção 1, aprovado pelo Leo em 20/10).
+// Cada chave abaixo liga um trecho que só pode aparecer quando for verdade no sistema.
+
+// A Raquel, paciente fictícia, pronta em toda conta nova (item 3 do prompt de 20/10)
+const RAQUEL_NA_CONTA = false
+// As três telas da Raquel, com "Paciente fictícia" escrito na imagem, em /public/home
+const TELAS_RAQUEL: { src: string; legenda: string }[] = []
+// Coluna acesso_ate no banco de produção: quem cancela depois de pagar usa até o fim do mês pago
+const ACESSO_ATE_NO_BANCO = false
+// SQL de segurança de 17/10 rodado e compartilhamento de dados desligado na OpenAI e na Groq
+const SIGILO_CONFERIDO = false
+// contato@clinicaai.net.br recebendo e-mail
+const CONTATO_RECEBE = false
+// Termos de Uso e Política de Privacidade no ar (Etapa 5)
+const TERMOS_NO_AR = false
+
+export const metadata: Metadata = {
+  title: 'Clínica.ai · O prontuário que lê o caso inteiro para você',
+  description:
+    'O Clínica.ai relê todas as sessões do paciente e mostra o que se repete, o que mudou e onde o caso está, antes do próximo atendimento. 14 dias grátis, depois R$ 99 por mês.',
+}
 
 // ---------------------------------------------------------------------------
-// Schema do formulário
-// ---------------------------------------------------------------------------
-
-const schema = z.object({
-  nome: z.string().min(2, 'Informe seu nome completo'),
-  email: z.string().email('E-mail inválido'),
-  whatsapp: z.string().min(10, 'Informe o WhatsApp com DDD'),
-  crp: z.string().optional(),
-  num_pacientes: z.enum(['ate_10', '11_20', '21_35', 'mais_35'], {
-    required_error: 'Selecione uma opção',
-  }),
-  como_conheceu: z.enum(['instagram', 'linkedin', 'indicacao', 'outro'], {
-    required_error: 'Selecione uma opção',
-  }),
-})
-
-type FormData = z.infer<typeof schema>
-
-// ---------------------------------------------------------------------------
-// Helpers de UI
+// Peças da página
 // ---------------------------------------------------------------------------
 
 function Section({ children, className = '', id }: { children: React.ReactNode; className?: string; id?: string }) {
   return (
-    <section id={id} className={`py-16 px-4 ${className}`}>
-      <div className="max-w-3xl mx-auto">{children}</div>
+    <section id={id} className={`py-16 sm:py-20 px-4 scroll-mt-16 ${className}`}>
+      <div className="max-w-5xl mx-auto">{children}</div>
     </section>
   )
 }
 
-function Quote({ children }: { children: React.ReactNode }) {
+function Comecar({ className = '' }: { className?: string }) {
   return (
-    <blockquote className="border-l-4 border-primary-500 pl-5 py-2 my-6 bg-primary-50 rounded-r-lg">
-      <p className="text-slate-700 font-medium leading-relaxed">{children}</p>
-    </blockquote>
+    <Link
+      href="/cadastro"
+      className={`inline-block bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors shadow-md ${className}`}
+    >
+      Começar 14 dias grátis
+    </Link>
   )
 }
 
@@ -58,414 +62,332 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
   )
 }
 
-function Feature({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
+function Item({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="flex gap-4">
-      <span className="text-2xl flex-shrink-0 mt-0.5">{icon}</span>
-      <div>
-        <h3 className="font-semibold text-slate-800 mb-1">{title}</h3>
-        <p className="text-slate-600 text-sm leading-relaxed">{children}</p>
-      </div>
+    <li className="flex gap-3">
+      <Check className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
+      <span className="text-slate-700 leading-relaxed"><strong className="text-slate-900">{title}</strong> {children}</span>
+    </li>
+  )
+}
+
+function Confianca({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 p-6">
+      <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center mb-4">{icon}</div>
+      <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
+      <p className="text-slate-600 text-sm leading-relaxed">{children}</p>
     </div>
   )
 }
 
 function FaqItem({ q, children }: { q: string; children: React.ReactNode }) {
-  const [open, setOpen] = useState(false)
   return (
-    <div className="border-b border-gray-200 last:border-0">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full text-left py-4 flex justify-between items-start gap-4 hover:text-primary-700 transition-colors"
-      >
+    <details className="group border-b border-slate-200 last:border-0">
+      <summary className="list-none cursor-pointer py-4 flex justify-between items-start gap-4 hover:text-primary-700 transition-colors [&::-webkit-details-marker]:hidden">
         <span className="font-medium text-slate-800">{q}</span>
-        <span className="text-primary-600 text-xl flex-shrink-0 mt-0.5">{open ? '−' : '+'}</span>
-      </button>
-      {open && (
-        <div className="pb-5 text-slate-600 leading-relaxed text-sm">{children}</div>
-      )}
-    </div>
+        <span className="text-primary-600 text-xl leading-none flex-shrink-0 mt-0.5 transition-transform group-open:rotate-45">+</span>
+      </summary>
+      <div className="pb-5 text-slate-600 leading-relaxed text-sm">{children}</div>
+    </details>
   )
 }
 
-function CtaButton({ onClick, className = '' }: { onClick?: () => void; className?: string }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors shadow-md ${className}`}
-    >
-      Quero participar do Beta Fundador — 100 vagas gratuitas
-    </button>
-  )
-}
+// O que a Análise Longitudinal monta para cada paciente (seção 1.3)
+const LEITURAS = [
+  { Icon: TrendingUp, titulo: 'Análise Longitudinal', texto: 'os temas que se repetem ao longo das sessões, com frequência e tendência.' },
+  { Icon: Clock, titulo: 'Linha do tempo', texto: 'o que aconteceu no caso, sessão a sessão.' },
+  { Icon: Network, titulo: 'Mapa de conceitos', texto: 'como os temas do caso se ligam.' },
+]
 
 // ---------------------------------------------------------------------------
-// Formulário
-// ---------------------------------------------------------------------------
-
-function FormularioInscricao() {
-  const [enviado, setEnviado] = useState(false)
-  const [erroEnvio, setErroEnvio] = useState('')
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) })
-
-  async function onSubmit(data: FormData) {
-    setErroEnvio('')
-    try {
-      const res = await fetch('/api/beta-inscricao', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      const json = await res.json()
-      if (json.ok) {
-        setEnviado(true)
-      } else {
-        setErroEnvio(json.mensagem ?? 'Erro ao enviar. Tente novamente.')
-      }
-    } catch {
-      setErroEnvio('Erro de conexão. Verifique sua internet e tente novamente.')
-    }
-  }
-
-  if (enviado) {
-    return (
-      <div className="bg-primary-50 border border-primary-200 rounded-2xl p-8 text-center">
-        <div className="text-5xl mb-4">✓</div>
-        <h3 className="text-xl font-bold text-primary-700 mb-2">Inscrição recebida!</h3>
-        <p className="text-slate-600">
-          Entraremos em contato em até 24h para confirmar sua vaga e enviar o acesso.
-          <br />Fique de olho no seu e-mail (incluindo a caixa de spam).
-        </p>
-      </div>
-    )
-  }
-
-  const inputCls = 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm placeholder-gray-400 bg-white'
-  const labelCls = 'block text-sm font-medium text-slate-700 mb-1'
-  const errorCls = 'text-red-500 text-xs mt-1'
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
-      <div className="grid sm:grid-cols-2 gap-5">
-        <div>
-          <label className={labelCls}>Nome completo *</label>
-          <input {...register('nome')} placeholder="Dra. Maria Souza" className={inputCls} />
-          {errors.nome && <p className={errorCls}>{errors.nome.message}</p>}
-        </div>
-        <div>
-          <label className={labelCls}>E-mail *</label>
-          <input {...register('email')} type="email" placeholder="você@email.com" className={inputCls} />
-          {errors.email && <p className={errorCls}>{errors.email.message}</p>}
-        </div>
-        <div>
-          <label className={labelCls}>WhatsApp (com DDD) *</label>
-          <input {...register('whatsapp')} placeholder="(11) 99999-9999" className={inputCls} />
-          {errors.whatsapp && <p className={errorCls}>{errors.whatsapp.message}</p>}
-        </div>
-        <div>
-          <label className={labelCls}>CRP <span className="text-gray-400 font-normal">(opcional — verificado no onboarding)</span></label>
-          <input {...register('crp')} placeholder="06/123456" className={inputCls} />
-        </div>
-      </div>
-
-      <div>
-        <label className={labelCls}>Quantos pacientes você acompanha hoje? *</label>
-        <select {...register('num_pacientes')} className={inputCls}>
-          <option value="">Selecione...</option>
-          <option value="ate_10">Até 10 pacientes</option>
-          <option value="11_20">11 a 20 pacientes</option>
-          <option value="21_35">21 a 35 pacientes</option>
-          <option value="mais_35">Mais de 35 pacientes</option>
-        </select>
-        {errors.num_pacientes && <p className={errorCls}>{errors.num_pacientes.message}</p>}
-      </div>
-
-      <div>
-        <label className={labelCls}>Como conheceu o Clínica.ai? *</label>
-        <select {...register('como_conheceu')} className={inputCls}>
-          <option value="">Selecione...</option>
-          <option value="instagram">Instagram</option>
-          <option value="linkedin">LinkedIn</option>
-          <option value="indicacao">Indicação de colega</option>
-          <option value="outro">Outro</option>
-        </select>
-        {errors.como_conheceu && <p className={errorCls}>{errors.como_conheceu.message}</p>}
-      </div>
-
-      {erroEnvio && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 text-sm">
-          {erroEnvio}
-        </div>
-      )}
-
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full bg-primary-600 hover:bg-primary-700 active:bg-primary-800 disabled:opacity-60 text-white font-bold py-4 rounded-xl text-lg transition-colors shadow-md"
-      >
-        {isSubmitting ? 'Enviando...' : 'Quero minha vaga no Beta Fundador'}
-      </button>
-      <p className="text-center text-slate-400 text-xs">Sem compromisso. Resposta em até 24h.</p>
-    </form>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Página principal
+// Página
 // ---------------------------------------------------------------------------
 
 export default function LandingPage() {
-  function scrollToForm() {
-    document.getElementById('formulario')?.scrollIntoView({ behavior: 'smooth' })
-  }
+  const telaAbertura = TELAS_RAQUEL[0]
 
   return (
-    <div className="bg-white text-slate-800">
+    <div className="min-h-screen bg-white font-sans">
 
-      {/* ── NAV ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-slate-700">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-          <span className="text-white font-bold text-lg tracking-tight">Clínica<span className="text-primary-400">.ai</span></span>
-          <button
-            onClick={scrollToForm}
-            className="bg-primary-600 hover:bg-primary-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-          >
-            Quero minha vaga
-          </button>
+      {/* Barra do topo */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200">
+        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
+          <Link href="/" className="text-slate-900 font-bold text-lg tracking-tight">
+            Clínica<span className="text-primary-600">.ai</span>
+          </Link>
+          <nav className="flex items-center gap-3 sm:gap-5 text-sm">
+            {RAQUEL_NA_CONTA && (
+              <a href="#raquel" className="hidden md:inline text-slate-600 hover:text-slate-900 transition-colors">Ver o caso da Raquel</a>
+            )}
+            <Link href="/login" className="text-slate-600 hover:text-slate-900 font-medium transition-colors">Entrar</Link>
+            <Link
+              href="/cadastro"
+              className="bg-primary-600 hover:bg-primary-700 text-white font-semibold px-3 sm:px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+            >
+              Começar 14 dias grátis
+            </Link>
+          </nav>
         </div>
       </header>
 
-      {/* ── HERO ── */}
+      {/* 1.1 Abertura */}
       <div className="bg-slate-900 text-white pt-28 pb-20 px-4">
-        <div className="max-w-3xl mx-auto text-center">
-          <p className="text-primary-400 text-sm font-semibold uppercase tracking-widest mb-4">Beta Fundador · 100 vagas gratuitas</p>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-6">
-            Você sabe por que os pacientes abandonam a terapia?
-          </h1>
-          <p className="text-slate-300 text-lg sm:text-xl leading-relaxed mb-10 max-w-2xl mx-auto">
-            A pesquisa surpreende: quase metade vai embora — e o motivo principal não é o diagnóstico.
-            É não perceber a própria evolução. O Clínica.ai transforma seus registros de sessão em
-            memória clínica viva, para que você enxergue — e mostre — o caminho que cada paciente está fazendo.
-          </p>
-          <CtaButton onClick={scrollToForm} />
-          <p className="text-slate-400 text-sm mt-4">30 dias grátis · acesso completo</p>
-        </div>
-      </div>
-
-      {/* ── STATS BAR ── */}
-      <div className="bg-primary-600 text-white py-6 px-4">
-        <div className="max-w-3xl mx-auto grid grid-cols-3 gap-4 text-center">
+        <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <p className="text-2xl font-bold">38–49%</p>
-            <p className="text-primary-100 text-xs mt-1">taxa de abandono em estudos brasileiros</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-6">
+              O prontuário que lê o caso inteiro para você.
+            </h1>
+            <p className="text-slate-300 text-lg sm:text-xl leading-relaxed mb-10">
+              Um prontuário comum guarda o que você escreveu. O Clínica.ai relê todas as sessões do paciente e mostra
+              o que se repete, o que mudou e onde o caso está, antes do próximo atendimento.
+            </p>
+            <Comecar />
+            <p className="text-slate-400 text-sm mt-4">14 dias grátis. Depois, R$ 99 por mês. Cancele no teste e não paga nada.</p>
+            {RAQUEL_NA_CONTA && (
+              <a href="#raquel" className="inline-block text-primary-300 hover:text-primary-200 text-sm font-medium mt-6 underline underline-offset-4">
+                Ver o caso da Raquel (paciente fictícia)
+              </a>
+            )}
           </div>
-          <div>
-            <p className="text-2xl font-bold">−20%</p>
-            <p className="text-primary-100 text-xs mt-1">de abandono com monitoramento de progresso</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold">58</p>
-            <p className="text-primary-100 text-xs mt-1">estudos na meta-análise de referência</p>
-          </div>
-        </div>
-      </div>
-
-      {/* ── DOR ── */}
-      <Section>
-        <h2 className="text-2xl font-bold text-slate-900 mb-6">Sexta-feira, 19h, oitavo atendimento do dia.</h2>
-        <p className="text-slate-600 leading-relaxed mb-4">
-          Amanhã você não vai lembrar metade do que ouviu hoje. E tudo bem — nenhuma memória humana sustenta
-          20 trajetórias em paralelo. O problema é que suas anotações também não ajudam: ficam guardadas,
-          caso a caso, sessão a sessão, e nunca mais são lidas.
-        </p>
-        <p className="text-slate-600 leading-relaxed mb-4">Enquanto isso, os números da profissão são duros:</p>
-        <Quote>
-          Estudos brasileiros apontam que entre 38% e 49% dos pacientes abandonam o tratamento. E a meta-análise
-          internacional de referência (Swift & Greenberg, 2012) mostra que o abandono está mais ligado a fatores
-          como expectativa e percepção de progresso do que ao diagnóstico.
-        </Quote>
-        <p className="text-slate-600 leading-relaxed">
-          Paciente que não enxerga o próprio caminhar vai embora — mesmo quando está caminhando.
-        </p>
-      </Section>
-
-      {/* ── LENTE ── */}
-      <Section className="bg-slate-50">
-        <h2 className="text-2xl font-bold text-slate-900 mb-4">
-          Cada sessão que você registra é uma foto. O caso do seu paciente é um filme.
-        </h2>
-        <p className="text-slate-600 leading-relaxed mb-6">
-          Você já produz o material mais valioso da sua prática: o registro de cada sessão. O que nunca existiu
-          foi um jeito de assistir ao filme — ver os temas que se repetem, a linha do tempo do caso, o que mudou
-          desde o terceiro mês, o que merece atenção agora.
-        </p>
-        <p className="text-slate-600 leading-relaxed mb-6">
-          O Clínica.ai é essa lente. Não é um prontuário com IA. É uma camada de inteligência sobre o que você
-          já escreve: memória clínica estruturada, padrões recorrentes, mapa de evolução e um copiloto que conhece
-          o histórico inteiro do caso — para você decidir melhor, com o seu olhar clínico no centro.
-        </p>
-        <Quote>
-          Acompanhar o progresso sistematicamente reduz o abandono em cerca de 20% e acelera a melhora
-          (De Jong et al., 2021 — meta-análise de 58 estudos).
-        </Quote>
-      </Section>
-
-      {/* ── COMO FUNCIONA ── */}
-      <Section>
-        <h2 className="text-2xl font-bold text-slate-900 mb-8">Como funciona</h2>
-        <div className="space-y-8">
-          <Step n={1} title="Registre do seu jeito.">
-            Digite, cole suas anotações, fotografe o caderno — ou simplesmente <strong>fale por 3 minutos</strong> depois
-            da sessão, na pausa entre atendimentos. Sem gravar sessão, sem mudar seu método: o registro é seu, sobre a sessão.
-          </Step>
-          <Step n={2} title="A memória do caso se constrói sozinha.">
-            Cada registro alimenta a linha do tempo, os padrões e o mapa de evolução do paciente. O histórico antigo entra
-            também: importe anotações de anos de acompanhamento em minutos.
-          </Step>
-          <Step n={3} title="Prepare cada sessão com o caso inteiro na mão.">
-            Antes do paciente entrar, você revê em 2 minutos onde o caso está, o que se repete e o que evoluiu — e
-            consegue mostrar esse caminho a quem mais precisa vê-lo: o próprio paciente.
-          </Step>
-        </div>
-      </Section>
-
-      {/* ── O QUE RECEBE ── */}
-      <Section className="bg-primary-50">
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">O que você recebe no Beta — tudo incluído</h2>
-        <p className="text-slate-500 text-sm mb-8">Acesso completo desde o primeiro dia. Sem versão capada.</p>
-        <div className="space-y-6">
-          <Feature icon="📊" title="Análise longitudinal">
-            Padrões, temas centrais, linha do tempo e mapa de evolução de cada caso — sem você precisar procurar.
-          </Feature>
-          <Feature icon="🤖" title="Copiloto clínico">
-            Pergunte sobre o histórico do caso e prepare sessões com apoio do contexto completo. Seu olhar clínico continua no centro.
-          </Feature>
-          <Feature icon="🎙️" title="Memo de voz pós-sessão">
-            Fale 3 minutos e o registro está feito, transcrito e organizado. Sem gravar a sessão, sem voz do paciente.
-          </Feature>
-          <Feature icon="📁" title="Importação de histórico">
-            Texto, arquivo ou foto das anotações antigas. Anos de acompanhamento entram na plataforma em minutos.
-          </Feature>
-          <Feature icon="📅" title="Agenda e mapa de pacientes">
-            Visão completa da sua carteira, com alertas e organização do fluxo de atendimentos.
-          </Feature>
-          <Feature icon="💳" title="Gestão financeira completa">
-            Cobranças e link de pagamento via Mercado Pago.{' '}
-            <strong>Você recebe dos seus pacientes desde o primeiro dia do teste.</strong>
-          </Feature>
-        </div>
-
-        <div className="mt-10 bg-white border-2 border-primary-200 rounded-2xl p-6">
-          <h3 className="font-bold text-slate-800 mb-3">Beta Fundador</h3>
-          <ul className="space-y-2 text-slate-600 text-sm">
-            <li>✓ <strong>100 vagas por ciclo</strong> — limite intencional para acompanhamento próximo</li>
-            <li>✓ <strong>30 dias gratuitos</strong></li>
-            <li>✓ <strong>Acesso por convite</strong> — confirmamos em até 24h</li>
-            <li>✓ <strong>Fila de espera</strong> para quem não entrar neste ciclo</li>
-            <li>✓ <strong>Chance real de moldar o produto</strong> com seu feedback</li>
-          </ul>
-        </div>
-      </Section>
-
-      {/* ── CONFIANÇA ── */}
-      <Section>
-        <h2 className="text-2xl font-bold text-slate-900 mb-8">Feito para a realidade — e para as regras — da prática clínica.</h2>
-        <div className="space-y-7">
-          <Feature icon="📂" title="Seus registros, guardados como devem ser.">
-            O CFP exige registro documental da evolução de cada trabalho, com guarda mínima de 5 anos (Resolução CFP nº 001/2009).
-            No Clínica.ai, seus registros ficam armazenados com padrão arquivístico e sigilo — pelo prazo que a profissão exige,
-            sem depender de caderno, gaveta ou arquivo solto.
-          </Feature>
-          <Feature icon="🔇" title="Nada de gravar sessões.">
-            O áudio do Clínica.ai é o seu memo, sobre a sessão, gravado por você. A voz do paciente não entra na plataforma.
-          </Feature>
-          <Feature icon="🧠" title="Psicólogo no centro. IA como apoio.">
-            A plataforma não diagnostica, não interpreta por você e não substitui o olhar clínico. Ela organiza a informação
-            para que o SEU raciocínio trabalhe melhor.
-          </Feature>
-          <Feature icon="🔒" title="Sigilo e segurança.">
-            Dados criptografados, acesso restrito a você, e seus dados nunca são usados para treinar modelos.
-          </Feature>
-        </div>
-      </Section>
-
-      {/* ── FAQ ── */}
-      <Section className="bg-slate-50">
-        <h2 className="text-2xl font-bold text-slate-900 mb-6">Perguntas frequentes</h2>
-        <div className="bg-white rounded-2xl border border-gray-200 divide-y divide-gray-200 overflow-hidden">
-          <div className="px-6">
-            <FaqItem q="Preciso gravar minhas sessões?">
-              Não — e não recomendamos. O Clínica.ai trabalha com o que você já produz: anotações digitadas, coladas,
-              fotografadas ou um memo de voz seu, feito após a sessão.
-            </FaqItem>
-            <FaqItem q="A IA vai interpretar meus casos?">
-              Não. Ela organiza, estrutura e devolve o que você registrou — linha do tempo, padrões, evolução. A leitura
-              clínica é sua, sempre.
-            </FaqItem>
-            <FaqItem q="Quanto custa depois do beta?">
-              R$ 99/mês para a inteligência clínica ou R$ 129/mês com a gestão financeira completa (cobranças e link de
-              pagamento). Quem participa do Beta Fundador recebe a oferta de assinatura ao final, sem compromisso.
-            </FaqItem>
-            <FaqItem q="Meus dados ficam seguros?">
-              Sim: criptografia, sigilo profissional como princípio de projeto e guarda com padrão arquivístico pelo prazo
-              mínimo que o CFP exige.
-            </FaqItem>
-            <FaqItem q="Atendo em clínica com outros psicólogos. Tem plano para nós?">
-              Tem: R$ 79/mês por psicólogo a partir de 3 profissionais do mesmo CNPJ. Escreva para contato@clinicaai.net.br.
-            </FaqItem>
-          </div>
-        </div>
-      </Section>
-
-      {/* ── CTA + FORMULÁRIO ── */}
-      <Section id="formulario">
-        <h2 className="text-2xl font-bold text-slate-900 mb-2 text-center">
-          As 100 vagas do Beta Fundador estão abertas.
-        </h2>
-        <p className="text-slate-500 text-center mb-10 leading-relaxed">
-          Psicólogos clínicos, selecionados por convite, com acesso completo e gratuito por 30 dias —
-          para testar, usar de verdade e moldar a plataforma conosco.
-        </p>
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8">
-          <FormularioInscricao />
-        </div>
-      </Section>
-
-      {/* ── FOOTER ── */}
-      <footer className="bg-slate-900 text-slate-400 py-10 px-4 text-sm">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <span className="text-white font-bold text-base">Clínica<span className="text-primary-400">.ai</span></span>
-            <div className="flex gap-4">
-              <a href="https://instagram.com/clinicaai" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>
-              <a href="https://youtube.com/@clinicaai" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">YouTube</a>
+          {telaAbertura ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={telaAbertura.src} alt={telaAbertura.legenda} className="w-full rounded-2xl shadow-2xl ring-1 ring-white/10" />
+          ) : (
+            <div className="space-y-4">
+              {LEITURAS.map(({ Icon, titulo, texto }) => (
+                <div key={titulo} className="flex gap-4 bg-white/5 ring-1 ring-white/10 rounded-2xl p-5">
+                  <div className="w-11 h-11 rounded-xl bg-primary-500/20 text-primary-300 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <p className="text-slate-300 leading-relaxed">
+                    <strong className="text-white block">{titulo}</strong>
+                    {texto.charAt(0).toUpperCase() + texto.slice(1)}
+                  </p>
+                </div>
+              ))}
             </div>
-          </div>
-          <p className="mb-2">
-            contato@clinicaai.net.br · Inteligência clínica longitudinal
+          )}
+        </div>
+      </div>
+
+      {/* 1.2 O problema */}
+      <Section>
+        <div className="max-w-3xl">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6">O caso está todo anotado. Falta alguém ler.</h2>
+          <p className="text-slate-600 text-lg leading-relaxed mb-4">
+            Depois de 20 sessões, tudo o que importa está no prontuário, espalhado em 20 registros. Para lembrar o que
+            mudou desde o terceiro mês, você teria que reler tudo. E ninguém tem esse tempo entre um atendimento e outro.
           </p>
-          <p className="text-slate-500 text-xs leading-relaxed">
-            Clínica.ai é uma plataforma de apoio à organização de registros clínicos. Não realiza diagnóstico nem
-            substitui o julgamento profissional do psicólogo.
+          <p className="text-slate-600 text-lg leading-relaxed">
+            O Clínica.ai faz essa leitura por você e entrega o caso organizado. A interpretação clínica continua sendo sua.
+          </p>
+        </div>
+      </Section>
+
+      {/* 1.3 O caso da Raquel */}
+      {RAQUEL_NA_CONTA && (
+        <Section id="raquel" className="bg-slate-50">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4">Veja o que o Clínica.ai faz com um caso inteiro.</h2>
+          <p className="text-slate-600 text-lg leading-relaxed mb-6 max-w-3xl">
+            A Raquel é uma paciente fictícia, criada para mostrar o sistema. Nenhum dado real. A partir das sessões dela,
+            o Clínica.ai monta:
+          </p>
+          <ul className="space-y-3 mb-10 max-w-3xl">
+            {LEITURAS.map(({ titulo, texto }) => <Item key={titulo} title={`${titulo}:`}>{texto}</Item>)}
+          </ul>
+          {TELAS_RAQUEL.length > 0 && (
+            <div className="grid md:grid-cols-3 gap-6 mb-10">
+              {TELAS_RAQUEL.map(t => (
+                <figure key={t.src}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={t.src} alt={t.legenda} className="w-full rounded-xl shadow-lg ring-1 ring-slate-200" />
+                  <figcaption className="text-sm text-slate-500 mt-2">{t.legenda}</figcaption>
+                </figure>
+              ))}
+            </div>
+          )}
+          <p className="text-slate-700 font-medium mb-6">
+            A Raquel já vem pronta na sua conta. Entre, abra o caso dela e veja tudo isso antes do seu primeiro registro.
+          </p>
+          <Comecar />
+        </Section>
+      )}
+
+      {/* 1.4 Como funciona */}
+      <Section className={RAQUEL_NA_CONTA ? '' : 'bg-slate-50'}>
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-10">Como funciona</h2>
+        <div className="space-y-8 max-w-3xl">
+          <Step n={1} title="Registre do seu jeito.">
+            Digite, cole suas anotações, mande a foto do caderno ou fale por 3 minutos depois do atendimento.
+            O áudio é o seu resumo, sobre a sessão.
+          </Step>
+          <Step n={2} title="Traga o histórico.">
+            Anotações antigas entram por texto, arquivo .txt ou .pdf, ou foto. O caso já começa com o que você tem.
+          </Step>
+          <Step n={3} title="Abra o caso antes do atendimento.">
+            A cada registro, a Análise Longitudinal relê o caso inteiro. Veja os temas que se repetem, a linha do tempo
+            e o que mudou. Se quiser, pergunte ao Copiloto sobre o histórico do paciente.
+          </Step>
+        </div>
+      </Section>
+
+      {/* 1.5 Plano e preço */}
+      <Section id="preco" className={RAQUEL_NA_CONTA ? 'bg-slate-50' : ''}>
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-10">Um plano, tudo incluído: R$ 99 por mês.</h2>
+        <div className="grid lg:grid-cols-5 gap-8 items-start">
+          <ul className="lg:col-span-3 space-y-4">
+            <Item title="Prontuário:">registros por texto, foto ou áudio seu.</Item>
+            <Item title="Análise Longitudinal">de cada paciente: temas que se repetem, linha do tempo e mapa de conceitos.</Item>
+            <Item title="Copiloto:">perguntas sobre o histórico do caso, com resposta baseada no que você registrou.</Item>
+            <Item title="Preparação para a supervisão:">o caso organizado para você levar ao seu supervisor.</Item>
+            <Item title="Anamnese">preenchida com o que já foi dito nas sessões, para você revisar.</Item>
+            <Item title="Importação de histórico:">texto, arquivo .txt ou .pdf, ou foto de anotações à mão.</Item>
+            <Item title="Agenda">dos seus atendimentos.</Item>
+            <Item title="Cobrança por link de pagamento">do Mercado Pago, na sua própria conta.</Item>
+          </ul>
+          <div className="lg:col-span-2 bg-slate-900 text-white rounded-2xl p-7 shadow-xl">
+            <p className="text-4xl font-bold mb-1">R$ 99<span className="text-lg font-medium text-slate-400"> por mês</span></p>
+            <p className="text-primary-300 font-semibold mb-5">14 dias grátis</p>
+            <p className="text-slate-300 text-sm leading-relaxed mb-6">
+              No cadastro, você informa o cartão pelo Mercado Pago. Nada é cobrado no teste. A primeira cobrança, de
+              R$ 99, acontece <DataCobranca />, e você recebe um aviso por e-mail 3 dias antes. Cancele antes, em
+              &quot;Minha assinatura&quot;, e não paga nada. No teste, você faz até 20 registros.
+              {RAQUEL_NA_CONTA && ' A Raquel não conta.'}
+            </p>
+            <Link
+              href="/cadastro"
+              className="block text-center bg-primary-600 hover:bg-primary-500 text-white font-semibold px-6 py-3.5 rounded-xl transition-colors"
+            >
+              Começar 14 dias grátis
+            </Link>
+          </div>
+        </div>
+      </Section>
+
+      {/* 1.6 Confiança */}
+      <Section className="bg-slate-50">
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-10">Feito para as regras da profissão.</h2>
+        <div className={`grid sm:grid-cols-2 ${SIGILO_CONFERIDO ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-6`}>
+          <Confianca icon={<ShieldCheck className="w-5 h-5" />} title="Guarda do prontuário.">
+            A Resolução CFP nº 001/2009 pede o registro documental do atendimento e a guarda por no mínimo 5 anos.
+            No Clínica.ai, nada é apagado automaticamente: seus registros ficam guardados mesmo se você deixar de assinar.
+          </Confianca>
+          <Confianca icon={<MicOff className="w-5 h-5" />} title="Sem gravar a sessão.">
+            O áudio do Clínica.ai é o seu memo, gravado por você depois do atendimento, sobre a sessão.
+          </Confianca>
+          <Confianca icon={<UserCheck className="w-5 h-5" />} title="A IA apoia, você decide.">
+            O Clínica.ai não faz diagnóstico e não substitui o seu julgamento clínico. Ele organiza o que você registrou.
+          </Confianca>
+          {SIGILO_CONFERIDO && (
+            <Confianca icon={<Lock className="w-5 h-5" />} title="Sigilo.">
+              Acesso só com o seu login, cada conta vê só os próprios dados, e os serviços de IA que usamos não usam
+              seus registros para treinar modelos.
+            </Confianca>
+          )}
+        </div>
+      </Section>
+
+      {/* 1.7 Perguntas frequentes */}
+      <Section>
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6">Perguntas frequentes</h2>
+        <div className="max-w-3xl">
+          <FaqItem q="Por que vocês pedem o cartão no teste?">
+            Para o seu acesso continuar sem interrupção quando os 14 dias acabarem. Nada é cobrado durante o teste.
+            A primeira cobrança, de R$ 99, acontece no 15º dia, e você recebe um aviso por e-mail 3 dias antes.
+            Cancele antes, em &quot;Minha assinatura&quot;, e não paga nada.
+          </FaqItem>
+          <FaqItem q="O que acontece no fim dos 14 dias?">
+            Se você não cancelou, o Mercado Pago cobra R$ 99 e você continua usando, sem perder nada. Depois, todo mês
+            no mesmo dia. Se cancelou durante o teste, nada é cobrado e sua conta fica em modo leitura: você continua
+            vendo tudo o que registrou, mas não faz registros novos nem usa a IA.
+          </FaqItem>
+          <FaqItem q="Como cancelo?">
+            Em &quot;Minha assinatura&quot;, dentro do sistema, a qualquer momento. Cancelou no teste, não paga nada.
+            {ACESSO_ATE_NO_BANCO && ' Cancelou depois, usa até o fim do mês já pago.'}
+          </FaqItem>
+          {RAQUEL_NA_CONTA && (
+            <FaqItem q="Quem é a Raquel?">
+              Uma paciente fictícia que já vem na sua conta, com sessões registradas e o caso lido pelo Clínica.ai.
+              Serve para você ver o sistema funcionando antes do seu primeiro registro. Ela tem o selo &quot;Paciente
+              fictícia&quot;, não conta no limite do teste e você pode apagá-la quando quiser.
+            </FaqItem>
+          )}
+          <FaqItem q="Preciso gravar minhas sessões?">
+            Não. O Clínica.ai trabalha com o que você já produz: anotações digitadas, coladas, fotografadas ou um memo
+            de voz seu, feito depois do atendimento. Se um dia você decidir gravar uma sessão, a Resolução CFP 13/2022
+            (art. 11) exige o consentimento livre, prévio, informado e por escrito do paciente.
+          </FaqItem>
+          <FaqItem q="A IA faz diagnóstico?">
+            Não. Ela organiza o que você registrou: temas, linha do tempo e mudanças ao longo do caso. A leitura clínica é sua.
+          </FaqItem>
+          <FaqItem q="Posso trazer minhas anotações antigas?">
+            Sim: por texto, arquivo .txt ou .pdf, ou foto de anotações à mão.
+          </FaqItem>
+          <FaqItem q="Atendo em clínica com outros psicólogos. Tem plano para equipe?">
+            Ainda não. Por enquanto, cada psicólogo tem a própria conta, por R$ 99 por mês.
+          </FaqItem>
+          {SIGILO_CONFERIDO && (
+            <FaqItem q="Meus dados ficam seguros?">
+              Seus registros ficam protegidos por login, cada conta vê só os próprios dados, e os serviços de IA que
+              usamos não usam seus registros para treinar modelos.
+            </FaqItem>
+          )}
+          {CONTATO_RECEBE && (
+            <FaqItem q="Preciso de ajuda. Onde encontro?">
+              Dentro do sistema, a Ajuda tem vídeos curtos de cada parte. Se precisar, escreva para
+              contato@clinicaai.net.br. Respondemos em dias úteis.
+            </FaqItem>
+          )}
+        </div>
+      </Section>
+
+      {/* 1.8 Chamada final */}
+      <div className="bg-primary-700 text-white py-16 sm:py-20 px-4">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4">
+            {RAQUEL_NA_CONTA
+              ? 'Abra o caso da Raquel hoje. Teste com os seus pacientes por 14 dias.'
+              : 'Teste com os seus pacientes por 14 dias.'}
+          </h2>
+          <p className="text-primary-100 text-lg leading-relaxed mb-8">
+            {RAQUEL_NA_CONTA
+              ? 'Sem reunião. Crie a conta, veja o caso da Raquel pronto e faça o seu primeiro registro. Cancele no teste e não paga nada.'
+              : 'Sem reunião. Crie a conta e faça o seu primeiro registro. Cancele no teste e não paga nada.'}
+          </p>
+          <Link
+            href="/cadastro"
+            className="inline-block bg-white hover:bg-primary-50 text-primary-700 font-semibold px-8 py-4 rounded-xl text-lg transition-colors shadow-md"
+          >
+            Começar 14 dias grátis
+          </Link>
+        </div>
+      </div>
+
+      {/* 1.9 Rodapé */}
+      <footer className="bg-slate-900 text-slate-400 py-10 px-4 text-sm">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-5">
+            <span className="text-white font-bold">Clínica<span className="text-primary-400">.ai</span></span>
+            {CONTATO_RECEBE && (
+              <a href="mailto:contato@clinicaai.net.br" className="hover:text-white transition-colors">contato@clinicaai.net.br</a>
+            )}
+            <a href="https://instagram.com/clinicaai.app" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              Instagram (@clinicaai.app)
+            </a>
+            {TERMOS_NO_AR && (
+              <>
+                <Link href="/termos" className="hover:text-white transition-colors">Termos de Uso</Link>
+                <Link href="/privacidade" className="hover:text-white transition-colors">Política de Privacidade</Link>
+              </>
+            )}
+          </div>
+          <p className="text-slate-500 text-xs leading-relaxed max-w-3xl">
+            O Clínica.ai é um sistema de apoio à organização de registros clínicos. Não faz diagnóstico nem substitui o
+            julgamento profissional do psicólogo.
           </p>
         </div>
       </footer>
-
-      {/* ── CTA FIXO MOBILE ── */}
-      <div className="fixed bottom-0 left-0 right-0 sm:hidden bg-white border-t border-gray-200 p-3 shadow-lg z-40">
-        <button
-          onClick={scrollToForm}
-          className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl transition-colors"
-        >
-          Quero minha vaga
-        </button>
-      </div>
-
     </div>
   )
 }

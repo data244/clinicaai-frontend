@@ -36,7 +36,7 @@ function Bloco({ icon: Icon, titulo, children }: {
 
 function montarTexto(c: SupervisaoConteudo, notas: string): string {
   const l: string[] = []
-  l.push(`PREPARAÇÃO PARA SUPERVISÃO — ${c._paciente || 'Paciente'}`)
+  l.push(`PREPARAÇÃO PARA SUPERVISÃO: ${c._paciente || 'Paciente'}`)
   l.push(`${c._total_sessoes ?? 0} sessões registradas`)
   l.push('')
   if (c.resumo_caso) {

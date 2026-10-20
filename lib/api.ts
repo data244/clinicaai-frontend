@@ -132,7 +132,7 @@ export const prontuariosApi = {
     request<import('@/types').Prontuario>(`/api/v1/prontuarios/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 }
 
-// ── IA — Transcrição, Resumo, Embeddings ────────────────────────────────────
+// ── IA: Transcrição, Resumo, Embeddings ────────────────────────────────────
 
 export const iaApi = {
   transcrever: async (audioFile: File, prontuarioId?: string): Promise<{ transcricao: string; idioma: string; prontuario_id?: string }> => {

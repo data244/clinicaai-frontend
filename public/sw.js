@@ -1,4 +1,4 @@
-// Clínica.ai — Service Worker v1.2
+// Clínica.ai: Service Worker v1.2
 const CACHE_NAME = 'clinicaai-v2'
 const API_ORIGIN = 'https://clinicaai-backend-production.up.railway.app'
 

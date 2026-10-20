@@ -15,7 +15,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Clínica.ai — Inteligência Clínica',
+  title: 'Clínica.ai · Inteligência Clínica',
   description: 'Prontuário eletrônico com IA para profissionais de saúde',
   manifest: '/manifest.json',
   appleWebApp: {
