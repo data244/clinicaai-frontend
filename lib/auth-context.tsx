@@ -13,7 +13,7 @@ interface AuthContextType {
   isAdmin: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
-  entrarComSessao: (res: SessaoLogin, email?: string) => void
+  entrarComSessao: (res: SessaoLogin, email?: string, destino?: string) => void
   logout: () => void
 }
 
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }, [])
 
-  const entrarComSessao = (res: SessaoLogin, emailInput = '') => {
+  const entrarComSessao = (res: SessaoLogin, emailInput = '', destino = '/dashboard') => {
     const adminFlag = res.is_admin ?? false
     localStorage.setItem('clinicaai_token', res.access_token)
     localStorage.setItem('clinicaai_user_id', res.user_id)
@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setEspecialidade(res.especialidade)
     setEmail(emailInput)
     setIsAdmin(adminFlag)
-    router.push('/dashboard')
+    router.push(destino)
   }
 
   const login = async (emailInput: string, password: string) => {

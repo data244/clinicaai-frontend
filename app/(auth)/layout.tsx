@@ -26,7 +26,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <h2 className="text-3xl font-bold leading-tight">Do registro ao que vem a seguir.</h2>
           <p className="mt-4 text-white/80 leading-relaxed">
             Cada atendimento vira dado. A inteligência longitudinal revela padrões e antecipa
-            tendências — para você cuidar da causa, não só do sintoma.
+            tendências, para você cuidar da causa, não só do sintoma.
           </p>
 
           {/* Gráfico: passado (sólido) -> hoje -> predição (tracejado, subindo) */}

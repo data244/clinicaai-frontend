@@ -23,7 +23,8 @@ function ConfirmarEmailContent() {
     setErro('')
     try {
       const res = await authApi.confirmarEmail(token, senha)
-      entrarComSessao(res)
+      // Conta nova: o próximo passo é o cartão (a tela manda ao painel quem já tem teste)
+      entrarComSessao(res, '', '/cartao?passo=cartao')
     } catch (e: unknown) {
       setCodigo(e instanceof ApiError ? e.codigo || '' : '')
       setErro(e instanceof Error ? e.message : 'Não foi possível confirmar agora. Tente de novo em instantes.')

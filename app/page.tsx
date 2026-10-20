@@ -210,7 +210,7 @@ function FormularioInscricao() {
       >
         {isSubmitting ? 'Enviando...' : 'Quero minha vaga no Beta Fundador'}
       </button>
-      <p className="text-center text-slate-400 text-xs">Sem cartão. Sem compromisso. Resposta em até 24h.</p>
+      <p className="text-center text-slate-400 text-xs">Sem compromisso. Resposta em até 24h.</p>
     </form>
   )
 }
@@ -253,7 +253,7 @@ export default function LandingPage() {
             memória clínica viva, para que você enxergue — e mostre — o caminho que cada paciente está fazendo.
           </p>
           <CtaButton onClick={scrollToForm} />
-          <p className="text-slate-400 text-sm mt-4">30 dias grátis · sem cartão de crédito · acesso completo</p>
+          <p className="text-slate-400 text-sm mt-4">30 dias grátis · acesso completo</p>
         </div>
       </div>
 
@@ -364,7 +364,7 @@ export default function LandingPage() {
           <h3 className="font-bold text-slate-800 mb-3">Beta Fundador</h3>
           <ul className="space-y-2 text-slate-600 text-sm">
             <li>✓ <strong>100 vagas por ciclo</strong> — limite intencional para acompanhamento próximo</li>
-            <li>✓ <strong>30 dias gratuitos</strong>, sem cartão de crédito</li>
+            <li>✓ <strong>30 dias gratuitos</strong></li>
             <li>✓ <strong>Acesso por convite</strong> — confirmamos em até 24h</li>
             <li>✓ <strong>Fila de espera</strong> para quem não entrar neste ciclo</li>
             <li>✓ <strong>Chance real de moldar o produto</strong> com seu feedback</li>

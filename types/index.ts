@@ -26,11 +26,14 @@ export interface Profissional {
 // Situação da conta calculada pelo servidor (GET /auth/me)
 export interface AcessoConta {
   completo: boolean
-  situacao: 'admin' | 'ativo' | 'acesso_ate' | 'teste' | 'teste_vencido' | 'pagamento_pendente' | 'leitura'
+  situacao: 'admin' | 'ativo' | 'acesso_ate' | 'teste' | 'teste_vencido' | 'pagamento_pendente' | 'falta_cartao' | 'leitura'
   fim_teste: string | null
   acesso_ate: string | null
   registros_usados: number | null
   registros_limite: number | null
+  // Teste com o cartão aprovado: a primeira cobrança é no dia em que o teste termina
+  cartao?: boolean | null
+  primeira_cobranca?: string | null
 }
 
 export interface Paciente {
@@ -47,6 +50,8 @@ export interface Paciente {
   numero_convenio?: string
   observacoes?: string
   ativo: boolean
+  // Paciente de exemplo (a Raquel) que toda conta nova recebe
+  ficticia?: boolean
   created_at: string
   updated_at: string
 }

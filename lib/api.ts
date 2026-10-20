@@ -288,7 +288,7 @@ export const perfilApi = {
 // ── Assinaturas ───────────────────────────────────────────────────────────────
 
 // Assinatura criada no Mercado Pago, ainda sem pagamento: link e data da primeira cobrança
-export type CheckoutAssinatura = { init_point: string; plano: string; valor?: number; primeira_cobranca?: string }
+export type CheckoutAssinatura = { init_point: string; plano: string; valor?: number; primeira_cobranca?: string; sandbox?: boolean }
 
 // Assinatura da conta logada (aba Minha assinatura)
 export type StatusAssinatura = {
@@ -300,6 +300,7 @@ export type StatusAssinatura = {
   proxima_cobranca?: string | null
   valor?: number
   pode_cancelar?: boolean
+  teste_com_cartao?: boolean
 }
 
 export const assinaturaApi = {
@@ -371,13 +372,6 @@ export const adminApi = {
 export const convitesApi = {
   validar: (token: string) =>
     request<{ valido: boolean; motivo?: string }>(`/api/v1/convites/validar/${token}`, {}, false),
-  registrarBeta: (data: {
-    token_convite: string; email: string; password: string; nome: string
-    especialidade?: string; telefone?: string
-  }) =>
-    request<{ access_token: string; user_id: string; nome: string; status_conta: string; trial_expires_at: string }>(
-      '/api/v1/auth/registrar-beta', { method: 'POST', body: JSON.stringify(data) }, false
-    ),
   gerar: () =>
     request<{ token: string; link: string; expires_at: string }>('/api/v1/convites/gerar', { method: 'POST' }),
   listar: () =>

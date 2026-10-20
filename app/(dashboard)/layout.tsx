@@ -41,6 +41,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             completo: false, situacao: 'leitura', fim_teste: null, acesso_ate: null,
             registros_usados: null, registros_limite: null,
           }
+          // Antes do cartão aprovado a conta não entra no painel: vai para a tela "Falta o cartão"
+          if (a.situacao === 'falta_cartao') { router.replace('/cartao'); return }
           setNomeUsuario(p.nome)
           // Boas-vindas só na primeira leitura e só para quem pode criar
           if (primeiraLeitura.current && a.completo && !p.onboarding_completo) setMostrarOnboarding(true)
@@ -52,7 +54,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .catch(() => { if (vivo) setFalhou(true) })
     }
     return () => { vivo = false }
-  }, [token, pathname, tentativa])
+  }, [token, pathname, tentativa, router])
 
   // O servidor recusou uma gravação: mostra o aviso e relê a situação
   useEffect(() => {
@@ -134,6 +136,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 fimTeste={acesso.fim_teste}
                 registrosUsados={acesso.registros_usados}
                 registrosLimite={acesso.registros_limite}
+                cartao={!!acesso.cartao}
               />
             )}
             {acesso && <AvisoModoLeitura acesso={acesso} />}

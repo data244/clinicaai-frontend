@@ -55,6 +55,14 @@ export default function MinhaAssinatura({ acesso }: { acesso?: AcessoConta }) {
   let botao: 'assinar' | 'concluir' | 'cancelar' | null = null
   if (cancelada) {
     texto = cancelada
+  } else if (status.teste_com_cartao) {
+    texto = proximaFutura
+      ? `Você está no teste grátis até ${dataBr(proxima!)}. A primeira cobrança, de ${reais(valor)}, é nesse dia, no Mercado Pago. Cancele antes e não paga nada.`
+      : 'Seu teste terminou. A primeira cobrança está em processamento no Mercado Pago.'
+    if (acesso?.registros_limite) {
+      texto += ` Registros usados: ${acesso.registros_usados ?? 0} de ${acesso.registros_limite}.`
+    }
+    botao = 'cancelar'
   } else if (status.pode_cancelar) {
     texto = proximaFutura
       ? `Assinatura ativa. Próxima cobrança: ${dataBr(proxima!)}, no Mercado Pago.`
@@ -126,6 +134,7 @@ export default function MinhaAssinatura({ acesso }: { acesso?: AcessoConta }) {
       {confirmando && (
         <JanelaCancelar
           ate={proximaFutura ? proxima! : null}
+          noTeste={!!status.teste_com_cartao}
           onFechar={() => setConfirmando(false)}
           onCancelada={(mensagem) => { setConfirmando(false); setCancelada(mensagem); carregar() }}
         />
@@ -134,8 +143,9 @@ export default function MinhaAssinatura({ acesso }: { acesso?: AcessoConta }) {
   )
 }
 
-function JanelaCancelar({ ate, onFechar, onCancelada }: {
+function JanelaCancelar({ ate, noTeste, onFechar, onCancelada }: {
   ate: string | null
+  noTeste: boolean
   onFechar: () => void
   onCancelada: (mensagem: string) => void
 }) {
@@ -162,9 +172,13 @@ function JanelaCancelar({ ate, onFechar, onCancelada }: {
         </div>
         <h2 className="text-lg font-bold text-gray-900 mb-2">Cancelar a assinatura?</h2>
         <p className="text-sm text-gray-600 mb-2 leading-relaxed">
-          {ate
-            ? `Não haverá nova cobrança. Você continua com acesso completo até ${dataBr(ate)}.`
-            : 'Não haverá nova cobrança.'}
+          {noTeste
+            ? ate
+              ? `Nada será cobrado. Você continua no teste até ${dataBr(ate)}.`
+              : 'Nada será cobrado.'
+            : ate
+              ? `Não haverá nova cobrança. Você continua com acesso completo até ${dataBr(ate)}.`
+              : 'Não haverá nova cobrança.'}
         </p>
         <p className="text-sm text-gray-600 mb-6 leading-relaxed">
           Depois disso a conta fica em modo leitura: você vê tudo o que registrou, mas não cria nem altera nada.
