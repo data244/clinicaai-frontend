@@ -7,8 +7,20 @@ import type { AcessoConta } from '@/types'
 import { BotaoAssinar } from '@/components/AvisoConta'
 import { AlertCircle, CheckCircle, Loader2, XCircle } from 'lucide-react'
 
-function dataBr(iso: string) {
+function dataBr(iso: string | number) {
   return new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+}
+
+// Dia no calendário de Brasília (AAAA-MM-DD), para comparar datas sem a hora
+function diaBr(iso: string | number) {
+  return new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
+}
+
+// No teste com cartão, o último dia é a véspera da primeira cobrança, como nos e-mails.
+// No próprio dia da cobrança, o acesso segue até a hora dela: "hoje".
+function ultimoDiaDoTeste(cobranca: string) {
+  const t = new Date(cobranca).getTime()
+  return diaBr(t) <= diaBr(Date.now()) ? 'hoje' : dataBr(t - 86_400_000)
 }
 
 function reais(v: number) {
@@ -56,8 +68,8 @@ export default function MinhaAssinatura({ acesso }: { acesso?: AcessoConta }) {
   if (cancelada) {
     texto = cancelada
   } else if (status.teste_com_cartao) {
-    texto = proximaFutura
-      ? `Você está no teste grátis até ${dataBr(proxima!)}. A primeira cobrança, de ${reais(valor)}, é nesse dia, no Mercado Pago. Cancele antes e não paga nada.`
+    texto = proximaFutura && diaBr(proxima!) > diaBr(Date.now())
+      ? `Você está no teste grátis até ${ultimoDiaDoTeste(proxima!)}. A primeira cobrança, de ${reais(valor)}, é em ${dataBr(proxima!)}, no Mercado Pago. Cancele antes e não paga nada.`
       : 'Seu teste terminou. A primeira cobrança está em processamento no Mercado Pago.'
     if (acesso?.registros_limite) {
       texto += ` Registros usados: ${acesso.registros_usados ?? 0} de ${acesso.registros_limite}.`
@@ -174,7 +186,7 @@ function JanelaCancelar({ ate, noTeste, onFechar, onCancelada }: {
         <p className="text-sm text-gray-600 mb-2 leading-relaxed">
           {noTeste
             ? ate
-              ? `Nada será cobrado. Você continua no teste até ${dataBr(ate)}.`
+              ? `Nada será cobrado. Você continua no teste até ${ultimoDiaDoTeste(ate)}.`
               : 'Nada será cobrado.'
             : ate
               ? `Não haverá nova cobrança. Você continua com acesso completo até ${dataBr(ate)}.`

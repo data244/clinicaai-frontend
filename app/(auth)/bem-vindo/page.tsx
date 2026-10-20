@@ -17,6 +17,11 @@ function dataBr(iso: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
 }
 
+// Último dia do teste: a véspera da primeira cobrança, como nos e-mails
+function vesperaBr(iso: string) {
+  return new Date(new Date(iso).getTime() - 86_400_000).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+}
+
 function BemVindoContent() {
   const router = useRouter()
   const { nome } = useAuth()
@@ -103,7 +108,7 @@ function BemVindoContent() {
               {primeiroNome ? `Tudo pronto, ${primeiroNome}.` : 'Tudo pronto.'}
             </h1>
             <p className="text-gray-500 mb-2">
-              {proxima && <>Seu teste vai até {dataBr(proxima)}. </>}
+              {proxima && <>Seu teste vai até {vesperaBr(proxima)}. </>}
               {raquelId && 'A Raquel, uma paciente fictícia, já está na sua lista com o caso pronto. Comece por ela para ver o Clínica.ai trabalhando.'}
             </p>
             {raquelId

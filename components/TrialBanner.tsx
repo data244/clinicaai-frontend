@@ -4,6 +4,13 @@ import { useState, useEffect } from 'react'
 import { Clock, Zap } from 'lucide-react'
 import { useAssinar } from '@/components/AvisoConta'
 
+const DIA = 1000 * 60 * 60 * 24
+
+// Dia no calendário de Brasília (AAAA-MM-DD)
+function diaBr(t: number) {
+  return new Date(t).toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
+}
+
 interface TrialBannerProps {
   fimTeste: string
   registrosUsados?: number | null
@@ -18,14 +25,22 @@ export default function TrialBanner({ fimTeste, registrosUsados, registrosLimite
   useEffect(() => {
     const calcular = () => {
       const exp = new Date(fimTeste).getTime()
-      const diff = Math.ceil((exp - Date.now()) / (1000 * 60 * 60 * 24))
+      if (cartao) {
+        // Com cartão, fimTeste é a primeira cobrança e o último dia do teste é a véspera,
+        // como nos e-mails. Conta os dias que faltam, hoje incluído; no último, "termina hoje".
+        const dias = Math.round((Date.parse(diaBr(exp)) - Date.parse(diaBr(Date.now()))) / DIA)
+        setDiasRestantes(dias <= 1 ? 0 : dias)
+        setEncerrado(dias <= 0 || exp <= Date.now())
+        return
+      }
+      const diff = Math.ceil((exp - Date.now()) / DIA)
       setDiasRestantes(Math.max(0, diff))
       setEncerrado(exp <= Date.now())
     }
     calcular()
     const id = setInterval(calcular, 60_000)
     return () => clearInterval(id)
-  }, [fimTeste])
+  }, [fimTeste, cartao])
 
   const temLimite = registrosLimite != null && registrosUsados != null
   const urgente = diasRestantes <= 3 || (temLimite && registrosLimite! - registrosUsados! <= 3)
