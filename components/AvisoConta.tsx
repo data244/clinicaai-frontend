@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { assinaturaApi, Bloqueio, CheckoutAssinatura } from '@/lib/api'
+import { ApiError, assinaturaApi, Bloqueio, CheckoutAssinatura } from '@/lib/api'
 import type { AcessoConta } from '@/types'
 import { Eye, Lock, Zap, Loader2, CreditCard } from 'lucide-react'
 
@@ -12,28 +12,32 @@ function dataBr(iso: string) {
 
 // Botão Assinar: prepara a assinatura no Mercado Pago e mostra plano, valor e
 // data da primeira cobrança antes de abrir o pagamento.
-export function useAssinar() {
+// agora: primeira cobrança hoje ("Começar a assinatura agora" e "Concluir pagamento").
+// refazer: pagamento recusado de quem já assina; a cobrança de hoje é a do mês.
+export function useAssinar(agora = false, refazer = false) {
   const [abrindo, setAbrindo] = useState(false)
   const [checkout, setCheckout] = useState<CheckoutAssinatura | null>(null)
 
   const abrir = async () => {
     setAbrindo(true)
     try {
-      setCheckout(await assinaturaApi.checkoutTrial())
-    } catch {
-      alert('Não foi possível abrir o pagamento agora. Tente de novo em instantes.')
+      setCheckout(await (agora ? assinaturaApi.comecarAgora() : assinaturaApi.checkoutTrial()))
+    } catch (e) {
+      alert(agora && e instanceof ApiError && e.status === 400 && e.message
+        ? e.message
+        : 'Não foi possível abrir o pagamento agora. Tente de novo em instantes.')
     }
     setAbrindo(false)
   }
 
-  const janela = checkout && <JanelaAssinatura checkout={checkout} onFechar={() => setCheckout(null)} />
+  const janela = checkout && <JanelaAssinatura checkout={checkout} agora={agora} refazer={refazer} onFechar={() => setCheckout(null)} />
   return { abrir, abrindo, janela }
 }
 
-function JanelaAssinatura({ checkout, onFechar }: { checkout: CheckoutAssinatura; onFechar: () => void }) {
+function JanelaAssinatura({ checkout, agora, refazer, onFechar }: { checkout: CheckoutAssinatura; agora: boolean; refazer: boolean; onFechar: () => void }) {
   const [indo, setIndo] = useState(false)
   const valor = (checkout.valor ?? 99).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-  const primeira = checkout.primeira_cobranca
+  const primeira = agora ? new Date().toISOString() : checkout.primeira_cobranca
   // Mais de 1 hora à frente: a cobrança fica para o fim do teste
   const depois = !!primeira && new Date(primeira).getTime() - Date.now() > 60 * 60 * 1000
 
@@ -46,7 +50,9 @@ function JanelaAssinatura({ checkout, onFechar }: { checkout: CheckoutAssinatura
         <h2 className="text-lg font-bold text-gray-900 mb-1">Assinar o plano Base</h2>
         <p className="text-2xl font-bold text-indigo-700 mb-4">{valor}<span className="text-sm font-normal text-gray-500">/mês</span></p>
         <p className="text-sm text-gray-600 mb-1 leading-relaxed">
-          {!primeira
+          {refazer
+            ? 'A cobrança deste mês é feita hoje, no Mercado Pago.'
+            : !primeira
             ? 'O pagamento é feito no Mercado Pago.'
             : depois
               ? `A primeira cobrança será em ${dataBr(primeira)}, quando o seu teste termina.`
@@ -72,8 +78,8 @@ function JanelaAssinatura({ checkout, onFechar }: { checkout: CheckoutAssinatura
   )
 }
 
-export function BotaoAssinar({ texto = 'Assinar' }: { texto?: string }) {
-  const { abrir, abrindo, janela } = useAssinar()
+export function BotaoAssinar({ texto = 'Assinar', agora = false, refazer = false }: { texto?: string; agora?: boolean; refazer?: boolean }) {
+  const { abrir, abrindo, janela } = useAssinar(agora, refazer)
   return (
     <>
       <button
@@ -133,7 +139,9 @@ export function ModalBloqueio({ bloqueio, onFechar }: { bloqueio: Bloqueio; onFe
         <h2 className="text-lg font-bold text-gray-900 mb-2">{titulo}</h2>
         <p className="text-sm text-gray-600 mb-6 leading-relaxed">{bloqueio.mensagem}</p>
         <div className="flex flex-col items-center gap-3">
-          <BotaoAssinar />
+          {bloqueio.codigo === 'LIMITE_TESTE'
+            ? <BotaoAssinar texto="Começar a assinatura agora" agora />
+            : <BotaoAssinar />}
           <button onClick={onFechar} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
             Agora não
           </button>

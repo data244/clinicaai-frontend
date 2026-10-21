@@ -8,6 +8,9 @@ import { CreditCard, Loader2, AlertCircle } from 'lucide-react'
 
 // Tela de assinatura (Rascunho v2, item 1.11): para quem já tem conta e quer voltar
 // (cancelou ou está em modo leitura). Quem chega sem conta vai para o cadastro.
+// ?agora=1 (botão "Começar a assinatura agora" do E8): primeira cobrança hoje, também
+// para quem já deu o cartão no teste; a cobrança do fim do teste é cancelada quando
+// o Mercado Pago aprovar a nova.
 function dataBr(iso: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
 }
@@ -16,6 +19,9 @@ export default function AssinarPage() {
   const router = useRouter()
   const { token, isLoading, logout } = useAuth()
   const [pronto, setPronto] = useState(false)
+  const [agora, setAgora] = useState(false)
+  // Cartão dado no teste: a cobrança marcada para o fim dele sai quando a nova for aprovada
+  const [comCartao, setComCartao] = useState(false)
   // Ainda no teste: a cobrança fica para o dia em que ele termina
   const [noFimDoTeste, setNoFimDoTeste] = useState<string | null>(null)
   const [concordo, setConcordo] = useState(false)
@@ -24,11 +30,23 @@ export default function AssinarPage() {
 
   useEffect(() => {
     if (isLoading) return
-    if (!token) { router.replace('/cadastro'); return }
+    const ja = new URLSearchParams(window.location.search).get('agora') === '1'
+    setAgora(ja)
+    if (!token) {
+      router.replace(ja ? `/login?depois=${encodeURIComponent('/assinar?agora=1')}` : '/cadastro')
+      return
+    }
     perfilApi.get()
       .then(p => {
         const a = p.acesso
         if (a?.situacao === 'falta_cartao') { router.replace('/cartao'); return }
+        if (ja) {
+          // Assinatura paga em dia: nada a começar
+          if (a?.situacao === 'ativo' || a?.situacao === 'admin') { router.replace('/configuracoes?aba=assinatura'); return }
+          setComCartao(!!a?.cartao)
+          setPronto(true)
+          return
+        }
         // Cartão já cadastrado no teste: nada a assinar, a cobrança já está marcada
         if (a?.cartao) { router.replace('/configuracoes?aba=assinatura'); return }
         if (a?.situacao === 'teste' && !a.cartao && a.fim_teste
@@ -44,7 +62,7 @@ export default function AssinarPage() {
     setIndo(true)
     setErro('')
     try {
-      const checkout = await assinaturaApi.checkoutTrial()
+      const checkout = await (agora ? assinaturaApi.comecarAgora() : assinaturaApi.checkoutTrial())
       window.location.href = checkout.init_point
     } catch (e: unknown) {
       setErro(e instanceof Error && e.message ? e.message : 'Não foi possível abrir o Mercado Pago agora. Tente de novo em instantes.')
@@ -70,6 +88,11 @@ export default function AssinarPage() {
       <p className="text-sm text-gray-600 leading-relaxed mb-2">
         R$ 99 por mês, no cartão, pelo Mercado Pago. Primeira cobrança: {data ?? 'hoje'}. Depois, todo mês no mesmo dia.
       </p>
+      {comCartao && (
+        <p className="text-sm text-gray-600 leading-relaxed mb-2">
+          A cobrança marcada para o fim do teste é cancelada: você paga uma vez por mês.
+        </p>
+      )}
       <p className="text-sm text-gray-600 leading-relaxed mb-5">
         Para cancelar: em &quot;Minha assinatura&quot;, a qualquer momento.
       </p>

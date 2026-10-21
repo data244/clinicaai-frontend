@@ -301,12 +301,17 @@ export type StatusAssinatura = {
   valor?: number
   pode_cancelar?: boolean
   teste_com_cartao?: boolean
+  // Cobrança da assinatura recusada no Mercado Pago, ainda sem pagamento novo
+  pagamento_recusado?: boolean
 }
 
 export const assinaturaApi = {
   planos: () => request<{ planos: Record<string, unknown> }>('/api/v1/assinatura/planos', {}, false),
 
-  status: () => request<StatusAssinatura>('/api/v1/assinatura/status'),
+  // preapproval_id: volta do Mercado Pago com a assinatura, para aplicar sem esperar o aviso
+  status: (preapprovalId?: string | null) => request<StatusAssinatura>(
+    '/api/v1/assinatura/status' + (preapprovalId ? `?preapproval_id=${encodeURIComponent(preapprovalId)}` : '')
+  ),
 
   cancelar: () => request<{ ok: boolean; acesso_ate: string | null; mensagem: string }>(
     '/api/v1/assinatura/cancelar', { method: 'POST' }
@@ -316,6 +321,10 @@ export const assinaturaApi = {
 
   checkoutTrial: () =>
     request<CheckoutAssinatura>('/api/v1/assinatura/checkout-trial', { method: 'POST' }),
+
+  // Primeira cobrança hoje: limite do teste (E8) e cobrança recusada ("Concluir pagamento")
+  comecarAgora: () =>
+    request<CheckoutAssinatura>('/api/v1/assinatura/comecar-agora', { method: 'POST' }),
 
   upgrade: (novo_plano: string) => request<{ init_point: string; novo_plano: string }>(
     '/api/v1/assinatura/upgrade', { method: 'POST', body: JSON.stringify({ novo_plano }) }

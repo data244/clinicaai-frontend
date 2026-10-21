@@ -12,7 +12,7 @@ interface AuthContextType {
   email: string | null
   isAdmin: boolean
   isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string, destino?: string) => Promise<void>
   entrarComSessao: (res: SessaoLogin, email?: string, destino?: string) => void
   logout: () => void
 }
@@ -57,9 +57,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push(destino)
   }
 
-  const login = async (emailInput: string, password: string) => {
+  const login = async (emailInput: string, password: string, destino?: string) => {
     const res = await authApi.login(emailInput, password)
-    entrarComSessao(res, emailInput)
+    entrarComSessao(res, emailInput, destino)
   }
 
   const logout = () => {

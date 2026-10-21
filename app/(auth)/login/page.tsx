@@ -21,10 +21,14 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [expirado, setExpirado] = useState(false)
   const [semConfirmar, setSemConfirmar] = useState('')
+  // Para onde ir depois de entrar (ex.: botão do e-mail). Só endereço deste site.
+  const [depois, setDepois] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('expirado') === '1') setExpirado(true)
+    const d = params.get('depois')
+    if (d && /^\/(?![\/\\])/.test(d)) setDepois(d)
   }, [])
 
   const { register, handleSubmit, getValues, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -36,7 +40,7 @@ export default function LoginPage() {
     setExpirado(false)
     setSemConfirmar('')
     try {
-      await login(data.email, data.password)
+      await login(data.email, data.password, depois)
     } catch (e: unknown) {
       if (e instanceof ApiError && e.codigo === 'EMAIL_NAO_CONFIRMADO') setSemConfirmar(getValues('email'))
       setError(e instanceof Error ? e.message : 'Erro ao fazer login')

@@ -8,6 +8,8 @@ import { useAuth } from '@/lib/auth-context'
 
 // Volta do Mercado Pago. O endereço de retorno é o mesmo com ou sem pagamento,
 // então a situação vem do servidor, não da URL.
+// agora=1: assinatura com a primeira cobrança hoje. Só confirma quando ela virar a da
+// conta; até lá, "Pagamento em processamento" (o cartão antigo do teste ainda aparece).
 // Conta nova com o cartão aprovado: cadastro, tela 3 (Rascunho v2, item 1.10).
 type Situacao = 'carregando' | 'teste' | 'confirmada' | 'aguardando' | 'sem_login'
 
@@ -15,6 +17,11 @@ const TENTATIVAS = 12 // uma por 5 segundos: 1 minuto esperando o aviso do Merca
 
 function dataBr(iso: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+}
+
+// Dia no calendário de Brasília (AAAA-MM-DD), para comparar datas sem a hora
+function diaBr(iso: string) {
+  return new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
 }
 
 // Último dia do teste: a véspera da primeira cobrança, como nos e-mails
@@ -32,19 +39,32 @@ function BemVindoContent() {
   // Conta que ainda espera o cartão (cadastro novo) ou que voltou a assinar
   const [semCartao, setSemCartao] = useState(false)
   const [raquelId, setRaquelId] = useState<string | null>(null)
+  const [agora, setAgora] = useState(false)
 
   useEffect(() => {
     let logado = false
     try { logado = !!localStorage.getItem('clinicaai_token') } catch {}
     if (!logado) { setSituacao('sem_login'); return }
 
+    const params = new URLSearchParams(window.location.search)
+    const agora = params.get('agora') === '1'
+    const preapprovalId = params.get('preapproval_id')
+    setAgora(agora)
+
     let parar = false
     let tentativa = 0
     const consultar = async () => {
       try {
-        const s = await assinaturaApi.status()
+        const s = await assinaturaApi.status(preapprovalId)
         if (parar) return
-        if (s.teste_com_cartao) {
+        if (agora) {
+          if (s.status_conta === 'ativo' && !s.pagamento_recusado) {
+            setProxima(s.proxima_cobranca ?? null)
+            setPlano(s.plano)
+            setSituacao('confirmada')
+            return
+          }
+        } else if (s.teste_com_cartao) {
           setProxima(s.proxima_cobranca ?? null)
           setSituacao('teste')
           // A paciente fictícia que toda conta nova recebe
@@ -53,13 +73,13 @@ function BemVindoContent() {
             .catch(() => {})
           return
         }
-        if (s.status_conta === 'ativo' || s.proxima_cobranca) {
+        if (!agora && (s.status_conta === 'ativo' || s.proxima_cobranca)) {
           setProxima(s.proxima_cobranca ?? null)
           setPlano(s.plano)
           setSituacao('confirmada')
           return
         }
-        setSemCartao(s.status_conta === 'pendente_pagamento')
+        setSemCartao(!agora && s.status_conta === 'pendente_pagamento')
       } catch {
         if (parar) return
       }
@@ -130,7 +150,8 @@ function BemVindoContent() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Assinatura confirmada</h1>
             {plano === 'base' && <p className="text-gray-500 mb-2">Plano Base, R$99/mês.</p>}
-            {proxima && (
+            {/* Primeira cobrança de hoje ainda em processamento: a próxima vem com o pagamento */}
+            {proxima && !(agora && diaBr(proxima) <= diaBr(new Date().toISOString())) && (
               <p className="text-gray-500 mb-2">Próxima cobrança: {dataBr(proxima)}.</p>
             )}
             {botao('Ir para o painel', '/dashboard')}
@@ -160,7 +181,7 @@ function BemVindoContent() {
                 Se não concluiu, use o botão abaixo para tentar de novo.
               </p>
             )}
-            {!esperando && (semCartao ? botao('Informar o cartão', '/cartao') : botao('Assinar', '/assinar'))}
+            {!esperando && (semCartao ? botao('Informar o cartão', '/cartao') : botao('Assinar', agora ? '/assinar?agora=1' : '/assinar'))}
             {botaoSecundario('Ir para o painel', '/dashboard')}
           </>
         )}

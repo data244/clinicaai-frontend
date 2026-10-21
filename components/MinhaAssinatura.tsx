@@ -64,9 +64,13 @@ export default function MinhaAssinatura({ acesso }: { acesso?: AcessoConta }) {
 
   // Texto da situação e botão de cada caso
   let texto = ''
-  let botao: 'assinar' | 'concluir' | 'cancelar' | null = null
+  let botao: 'assinar' | 'concluir' | 'recusado' | 'cancelar' | null = null
   if (cancelada) {
     texto = cancelada
+  } else if (status.pagamento_recusado) {
+    // Cobrança recusada: assinatura nova com o cartão, primeira cobrança hoje (e-mail T2)
+    texto = 'O último pagamento não foi aprovado no Mercado Pago. Clique em "Concluir pagamento" e informe o cartão.'
+    botao = 'recusado'
   } else if (status.teste_com_cartao) {
     texto = proximaFutura && diaBr(proxima!) > diaBr(Date.now())
       ? `Você está no teste grátis até ${ultimoDiaDoTeste(proxima!)}. A primeira cobrança, de ${reais(valor)}, é em ${dataBr(proxima!)}, no Mercado Pago. Cancele antes e não paga nada.`
@@ -105,6 +109,16 @@ export default function MinhaAssinatura({ acesso }: { acesso?: AcessoConta }) {
     botao = 'assinar'
   }
 
+  const botaoCancelar = (
+    <button
+      onClick={() => setConfirmando(true)}
+      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 text-sm font-medium transition-colors"
+    >
+      <XCircle className="w-4 h-4" />
+      Cancelar assinatura
+    </button>
+  )
+
   return (
     <div className="space-y-5">
       <div className="flex items-start justify-between gap-4 pb-4 border-b border-gray-100">
@@ -129,15 +143,13 @@ export default function MinhaAssinatura({ acesso }: { acesso?: AcessoConta }) {
 
       {botao === 'assinar' && <BotaoAssinar />}
       {botao === 'concluir' && <BotaoAssinar texto="Concluir pagamento" />}
-      {botao === 'cancelar' && (
-        <button
-          onClick={() => setConfirmando(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 text-sm font-medium transition-colors"
-        >
-          <XCircle className="w-4 h-4" />
-          Cancelar assinatura
-        </button>
+      {botao === 'recusado' && (
+        <div className="flex flex-wrap items-center gap-3">
+          <BotaoAssinar texto="Concluir pagamento" agora refazer />
+          {status.pode_cancelar && botaoCancelar}
+        </div>
       )}
+      {botao === 'cancelar' && botaoCancelar}
 
       <p className="text-xs text-gray-400">
         Dúvidas sobre cobrança: <a href="mailto:contato@clinicaai.net.br" className="underline hover:text-gray-600">contato@clinicaai.net.br</a>
