@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/lib/auth-context'
 import SwRegister from '@/components/SwRegister'
+import Medicao from '@/components/Medicao'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </AuthProvider>
         <SwRegister />
+        <Medicao />
       </body>
     </html>
   )

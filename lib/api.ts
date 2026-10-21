@@ -77,6 +77,8 @@ export const authApi = {
   register: (data: {
     email: string; password: string; nome: string
     especialidade?: string; conselho?: string; numero_conselho?: string; telefone?: string
+    utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_content?: string
+    meta_aceitou?: boolean; meta_fbp?: string; meta_fbc?: string
   }) => request<{ confirmar_email: boolean; email: string }>(
     '/api/v1/auth/register', { method: 'POST', body: JSON.stringify(data) }, false
   ),

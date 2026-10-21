@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Link from 'next/link'
 import { authApi } from '@/lib/api'
+import { dadosDeMedicao } from '@/lib/origem'
 import ReenviarConfirmacao from '@/components/ReenviarConfirmacao'
 import { Loader2, MailCheck } from 'lucide-react'
 
@@ -32,7 +33,9 @@ export default function CadastroPage() {
     try {
       // A conta só entra depois de confirmar o e-mail pelo link
       const numero = crp?.trim()
-      const res = await authApi.register(numero ? { ...data, conselho: 'CRP', numero_conselho: numero } : data)
+      // Origem da visita (UTM) e, só com os cookies aceitos, os identificadores da Meta
+      const conta = { ...data, ...dadosDeMedicao() }
+      const res = await authApi.register(numero ? { ...conta, conselho: 'CRP', numero_conselho: numero } : conta)
       setEnviadoPara(res.email || data.email)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro ao cadastrar')
