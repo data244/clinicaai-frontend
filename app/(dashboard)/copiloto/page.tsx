@@ -136,7 +136,7 @@ export default function CopilotoPage() {
               <InfoTip title="Copiloto Clínico" text="Pergunte sobre o histórico do paciente em linguagem natural. Ele organiza a informação e cita as sessões. Não propõe diagnóstico nem conduta. Selecione um paciente antes de perguntar." />
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              Leitura inteligente do histórico do paciente: padrões, evolução e o que tende a vir a seguir
+              Leitura inteligente do histórico do paciente: padrões, evolução e o que pode merecer atenção na próxima sessão
             </p>
           </div>
           <select

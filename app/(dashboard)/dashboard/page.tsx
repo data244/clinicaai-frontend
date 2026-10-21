@@ -36,7 +36,7 @@ export default function DashboardPage() {
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 to-indigo-700 text-white p-6 mb-8">
         <div className="relative z-10 max-w-2xl">
           <p className="text-[11px] uppercase tracking-widest text-white/70 mb-1">Inteligência longitudinal</p>
-          <h2 className="text-xl font-bold leading-snug">Do histórico à predição: enxergue o que vem a seguir</h2>
+          <h2 className="text-xl font-bold leading-snug">Do histórico ao padrão: enxergue o que se repete no caso.</h2>
           <p className="text-sm text-white/80 mt-2 leading-relaxed">
             Cada atendimento alimenta uma leitura que revela padrões e antecipa tendências. Abra a
             <span className="font-semibold"> Análise Longitudinal</span> de um paciente para ver a análise, ou converse com o
