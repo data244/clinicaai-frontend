@@ -8,6 +8,7 @@ import { iaApi, pacientesApi } from '@/lib/api'
 import { Paciente } from '@/types'
 import { Brain, Send, Loader2, Sparkles, FileText, User, Bot, ChevronDown, Plus, TrendingUp, MessageSquare } from 'lucide-react'
 import InfoTip from '@/components/InfoTip'
+import { rotuloPaciente } from '@/components/SeloFicticia'
 
 type Fonte = { id: string; data: string; tipo: string; queixa: string; similaridade: number }
 type Mensagem = { role: 'user' | 'assistant'; content: string; fontes?: Fonte[] }
@@ -145,7 +146,7 @@ export default function CopilotoPage() {
             onChange={e => { setSelectedPaciente(e.target.value); setMensagens([]); setConversaId(null); setError('') }}
           >
             <option value="" disabled>Selecione um paciente</option>
-            {pacientes.map(p => (<option key={p.id} value={p.id}>{p.nome}</option>))}
+            {pacientes.map(p => (<option key={p.id} value={p.id}>{rotuloPaciente(p)}</option>))}
           </select>
         </div>
 

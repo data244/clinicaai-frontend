@@ -5,6 +5,7 @@ import { pacientesApi, prontuariosApi, iaApi, erroDoServidor } from '@/lib/api'
 import { Paciente } from '@/types'
 import { ArrowLeft, Mic, MicOff, Square, Save, Loader2, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
+import SeloFicticia from '@/components/SeloFicticia'
 
 type Fase = 'idle' | 'gravando' | 'processando' | 'revisao' | 'salvo'
 
@@ -117,7 +118,7 @@ export default function NovoProntuarioAudioPage() {
         </Link>
         <div>
           <h1 className="text-xl font-bold text-gray-900">Registro por áudio</h1>
-          {paciente && <p className="text-sm text-gray-500">{paciente.nome}</p>}
+          {paciente && <p className="text-sm text-gray-500 flex items-center gap-2">{paciente.nome}{paciente.ficticia && <SeloFicticia />}</p>}
         </div>
       </div>
 

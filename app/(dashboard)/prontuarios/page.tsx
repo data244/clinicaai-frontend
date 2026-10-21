@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { prontuariosApi, pacientesApi, iaApi } from '@/lib/api'
 import { Paciente, Prontuario } from '@/types'
 import AudioRecorder from '@/components/ia/AudioRecorder'
+import { rotuloPaciente } from '@/components/SeloFicticia'
 import { Loader2, Sparkles, FileText, ChevronDown, ChevronUp, Mic } from 'lucide-react'
 
 type FormData = {
@@ -128,7 +129,7 @@ export default function ProntuariosPage() {
                 >
                   <option value="">Selecione um paciente</option>
                   {pacientes.map(p => (
-                    <option key={p.id} value={p.id}>{p.nome}</option>
+                    <option key={p.id} value={p.id}>{rotuloPaciente(p)}</option>
                   ))}
                 </select>
                 {errors.paciente_id && <p className="text-red-500 text-xs mt-1">Campo obrigatório</p>}
@@ -249,7 +250,7 @@ export default function ProntuariosPage() {
             onChange={e => setSelectedPaciente(e.target.value)}
           >
             <option value="">Todos os pacientes</option>
-            {pacientes.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+            {pacientes.map(p => <option key={p.id} value={p.id}>{rotuloPaciente(p)}</option>)}
           </select>
         </div>
 

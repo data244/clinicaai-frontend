@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
 import DocumentosPaciente from '@/components/DocumentosPaciente'
 import ImportarHistorico from '@/components/ImportarHistorico'
+import SeloFicticia from '@/components/SeloFicticia'
 
 const TIPOS = ['consulta', 'retorno', 'exame', 'evolucao', 'anamnese'] as const
 
@@ -188,6 +189,7 @@ export default function PacienteDetailPage() {
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <h1 className="text-2xl font-bold text-gray-900">{paciente.nome}</h1>
+            {paciente.ficticia && <SeloFicticia />}
           </div>
           <div className="flex items-center gap-2">
             <Link

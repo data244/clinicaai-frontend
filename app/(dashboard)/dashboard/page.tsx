@@ -6,6 +6,7 @@ import { pacientesApi } from '@/lib/api'
 import { Paciente } from '@/types'
 import { Users, FileText, Calendar, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
+import SeloFicticia from '@/components/SeloFicticia'
 
 export default function DashboardPage() {
   const { nome } = useAuth()
@@ -106,7 +107,7 @@ export default function DashboardPage() {
                   <span className="text-primary-700 font-semibold text-sm">{p.nome.charAt(0)}</span>
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{p.nome}</p>
+                  <p className="text-sm font-medium text-gray-900 truncate flex items-center gap-2">{p.nome}{p.ficticia && <SeloFicticia />}</p>
                   <p className="text-xs text-gray-400">{p.telefone ?? p.email ?? 'Sem contato'}</p>
                 </div>
               </Link>

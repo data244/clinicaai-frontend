@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { request } from '@/lib/api'
+import { rotuloPaciente } from '@/components/SeloFicticia'
 import {
   DollarSign, Plus, CheckCircle, Clock, AlertCircle, XCircle,
   ChevronDown, ChevronUp, Loader2, Trash2, Search, ExternalLink, Link2,
@@ -125,7 +126,7 @@ function ModalNovaCobranca({
               className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-400"
             >
               <option value="">Selecione...</option>
-              {pacientes.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+              {pacientes.map(p => <option key={p.id} value={p.id}>{rotuloPaciente(p)}</option>)}
             </select>
           </div>
           <div>

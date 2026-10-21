@@ -7,7 +7,8 @@ import {
   ArrowLeft, ClipboardList, Loader2, Sparkles, Mic, Square, Check,
   ChevronDown, ChevronUp, Info,
 } from 'lucide-react'
-import { anamneseApi, AnamneseBlocoDef, erroDoServidor } from '@/lib/api'
+import { anamneseApi, AnamneseBlocoDef, erroDoServidor, pacientesApi } from '@/lib/api'
+import SeloFicticia from '@/components/SeloFicticia'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://clinicaai-backend-production.up.railway.app'
 
@@ -15,6 +16,7 @@ export default function AnamnesePage() {
   const { id } = useParams<{ id: string }>()
 
   const [paciente, setPaciente] = useState('')
+  const [ficticia, setFicticia] = useState(false)
   const [estrutura, setEstrutura] = useState<AnamneseBlocoDef[]>([])
   const [blocos, setBlocos] = useState<Record<string, string>>({})
   const [carregando, setCarregando] = useState(true)
@@ -35,6 +37,7 @@ export default function AnamnesePage() {
     try {
       const r = await anamneseApi.carregar(id as string)
       setPaciente(r.paciente)
+      pacientesApi.get(id as string).then(p => setFicticia(!!p.ficticia)).catch(() => {})
       setEstrutura(r.estrutura)
       setBlocos(r.blocos)
     } catch (e: unknown) {
@@ -137,7 +140,7 @@ export default function AnamnesePage() {
             <ClipboardList className="w-5 h-5 text-indigo-500" />
             <h1 className="text-xl font-bold text-gray-900">Anamnese</h1>
           </div>
-          {paciente && <p className="text-sm text-gray-500 ml-7">{paciente}</p>}
+          {paciente && <p className="text-sm text-gray-500 ml-7 flex items-center gap-2">{paciente}{ficticia && <SeloFicticia />}</p>}
         </div>
       </div>
 

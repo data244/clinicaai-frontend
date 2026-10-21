@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { iaApi } from '@/lib/api'
+import { iaApi, pacientesApi } from '@/lib/api'
 import {
   ArrowLeft, Activity, Calendar, FileText, Brain, ChevronDown, ChevronUp,
   Users, TrendingUp, AlertTriangle, MessageSquare, BarChart2, Send, Network, Maximize2, Minimize2, GraduationCap
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import InfoTip from '@/components/InfoTip'
+import SeloFicticia from '@/components/SeloFicticia'
 import SupervisaoTab from '@/components/SupervisaoTab'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
@@ -308,6 +309,7 @@ export default function MapaLongitudinalPage() {
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   const [aba, setAba] = useState<'analise' | 'timeline' | 'perguntas' | 'conceitos' | 'supervisao'>('analise')
+  const [ficticia, setFicticia] = useState(false)
 
   const [mapaMsg, setMapaMsg] = useState<{ role: 'user'|'assistant'; content: string }[]>([])
   const [mapaPergunta, setMapaPergunta] = useState('')
@@ -315,6 +317,7 @@ export default function MapaLongitudinalPage() {
   const mapaEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { if (id) load() }, [id])
+  useEffect(() => { if (id) pacientesApi.get(id as string).then(p => setFicticia(!!p.ficticia)).catch(() => {}) }, [id])
   useEffect(() => { mapaEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [mapaMsg])
 
   async function load() {
@@ -381,7 +384,7 @@ export default function MapaLongitudinalPage() {
             <Activity className="w-5 h-5 text-indigo-500" />
             <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">Análise Longitudinal<InfoTip title="Análise Longitudinal" text="A leitura do caso por inteiro, a partir de todas as sessões: padrões, evolução, perguntas ao histórico e o mapa de temas. Quanto mais sessões registradas, mais consistente." /></h1>
           </div>
-          {data?.paciente != null && <p className="text-sm text-gray-500 ml-7">{data.paciente as string}</p>}
+          {data?.paciente != null && <p className="text-sm text-gray-500 ml-7 flex items-center gap-2">{data.paciente as string}{ficticia && <SeloFicticia />}</p>}
         </div>
       </div>
 

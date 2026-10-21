@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { ChevronLeft, ChevronRight, Plus, X, Clock, User, FileText, AlertCircle, DollarSign, Copy, Check, ExternalLink, Repeat } from 'lucide-react'
 import { agendaApi, pacientesApi, Agendamento } from '@/lib/api'
 import { seriesApi } from '@/lib/series-api'
+import { rotuloPaciente } from '@/components/SeloFicticia'
 
 // ── Helpers de data ────────────────────────────────────────────────────────────
 
@@ -216,7 +217,7 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onSaveSerie, onD
             >
               <option value="">Sem paciente vinculado</option>
               {pacientes.map(p => (
-                <option key={p.id} value={p.id}>{p.nome}</option>
+                <option key={p.id} value={p.id}>{rotuloPaciente(p)}</option>
               ))}
             </select>
           </div>
