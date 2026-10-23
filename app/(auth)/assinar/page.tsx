@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { perfilApi, assinaturaApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import { CreditCard, Loader2, AlertCircle } from 'lucide-react'
+import { FalarComSuporte } from '@/components/Suporte'
 
 // Tela de assinatura (Rascunho v2, item 1.11): para quem já tem conta e quer voltar
 // (cancelou ou está em modo leitura). Quem chega sem conta vai para o cadastro.
@@ -86,6 +87,7 @@ export default function AssinarPage() {
           {erro}
         </div>
       )}
+      {erro && <div className="mb-4"><FalarComSuporte pagina="assinar" /></div>}
       <button
         onClick={assinar} disabled={!concordo || indo}
         className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-60"

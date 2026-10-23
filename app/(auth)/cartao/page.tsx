@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { perfilApi, assinaturaApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import { CreditCard, Loader2, AlertCircle } from 'lucide-react'
+import { FalarComSuporte } from '@/components/Suporte'
 
 // Cadastro, tela 2 (Rascunho v2, item 1.10): o cartão no Mercado Pago antes do teste.
 // Quem volta depois sem ter informado o cartão vê antes o "Falta o cartão".
@@ -110,6 +111,7 @@ function CartaoContent() {
       {erro && (
         <div className="bg-red-50 text-red-700 text-sm px-3 py-2 rounded-lg border border-red-200 mb-4">{erro}</div>
       )}
+      {erro && <div className="mb-4"><FalarComSuporte pagina="cartao" /></div>}
       <button
         onClick={informarCartao} disabled={!concordo || indo}
         className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-60"
