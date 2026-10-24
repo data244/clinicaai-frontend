@@ -1,3 +1,5 @@
+import { EnderecoSuporte } from '@/components/Suporte'
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const Logo = (
     <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,6 +63,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <p className="text-sm text-gray-500 mt-1">Inteligência clínica longitudinal</p>
           </div>
           {children}
+          <div className="mt-6"><EnderecoSuporte /></div>
         </div>
       </div>
     </div>

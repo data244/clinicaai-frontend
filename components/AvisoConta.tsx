@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ApiError, assinaturaApi, Bloqueio, CheckoutAssinatura } from '@/lib/api'
 import type { AcessoConta } from '@/types'
-import { Eye, Lock, Zap, Loader2, CreditCard } from 'lucide-react'
+import { Eye, Lock, Zap, Loader2, CreditCard, AlertCircle } from 'lucide-react'
+import { EnderecoSuporte, FalarComSuporte } from '@/components/Suporte'
 
 function dataBr(iso: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
@@ -17,21 +18,48 @@ function dataBr(iso: string) {
 export function useAssinar(agora = false, refazer = false) {
   const [abrindo, setAbrindo] = useState(false)
   const [checkout, setCheckout] = useState<CheckoutAssinatura | null>(null)
+  const [falhou, setFalhou] = useState(false)
 
   const abrir = async () => {
     setAbrindo(true)
     try {
       setCheckout(await (agora ? assinaturaApi.comecarAgora() : assinaturaApi.checkoutTrial()))
     } catch (e) {
-      alert(agora && e instanceof ApiError && e.status === 400 && e.message
-        ? e.message
-        : 'Não foi possível abrir o pagamento agora. Tente de novo em instantes.')
+      if (agora && e instanceof ApiError && e.status === 400 && e.message) alert(e.message)
+      else setFalhou(true)
     }
     setAbrindo(false)
   }
 
-  const janela = checkout && <JanelaAssinatura checkout={checkout} agora={agora} refazer={refazer} onFechar={() => setCheckout(null)} />
+  const janela = checkout
+    ? <JanelaAssinatura checkout={checkout} agora={agora} refazer={refazer} onFechar={() => setCheckout(null)} />
+    : falhou && <JanelaFalhaPagamento onFechar={() => setFalhou(false)} />
   return { abrir, abrindo, janela }
+}
+
+// Suporte (Leo, 23/10): se o pagamento não abre, a pessoa já fala com o suporte dali
+function JanelaFalhaPagamento({ onFechar }: { onFechar: () => void }) {
+  return createPortal(
+    <div className="fixed inset-0 bg-black/40 z-[70] flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-red-100 rounded-2xl mb-4">
+          <AlertCircle className="w-6 h-6 text-red-600" />
+        </div>
+        <h2 className="text-lg font-bold text-gray-900 mb-2">O pagamento não abriu</h2>
+        <p className="text-sm text-gray-600 mb-5 leading-relaxed">
+          Não foi possível abrir o pagamento agora. Tente de novo em instantes. Se continuar, fale com o suporte.
+        </p>
+        <div className="flex flex-col items-center gap-4">
+          <FalarComSuporte pagina="painel" />
+          <EnderecoSuporte texto="Ou escreva para" />
+          <button onClick={onFechar} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  )
 }
 
 function JanelaAssinatura({ checkout, agora, refazer, onFechar }: { checkout: CheckoutAssinatura; agora: boolean; refazer: boolean; onFechar: () => void }) {

@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Search, LifeBuoy } from 'lucide-react'
 import { artigos, categorias } from '@/lib/ajuda-conteudo'
+import { EnderecoSuporte, FalarComSuporte } from '@/components/Suporte'
 
 const MD = {
   h2: (p: any) => <h2 className="text-xl font-bold text-gray-900 mb-3" {...p} />,
@@ -41,10 +42,13 @@ export default function AjudaPage() {
         <h1 className="text-2xl font-bold text-gray-900">Central de Ajuda</h1>
       </div>
       <p className="text-sm text-gray-600 mb-2 ml-12">Guias rápidos para tirar o máximo do Clínica.ai.</p>
-      <p className="text-sm text-gray-600 mb-5 ml-12">
-        Dúvidas ou problema com pagamento? Escreva para{' '}
-        <a href="mailto:contato@clinicaai.net.br" className="text-indigo-600 font-medium hover:underline">contato@clinicaai.net.br</a>.
-      </p>
+      <div className="mb-5 ml-12 max-w-xl bg-white border border-gray-100 rounded-xl shadow-sm p-4">
+        <p className="text-sm text-gray-700 font-medium mb-3">Dúvidas ou problema com pagamento?</p>
+        <FalarComSuporte pagina="ajuda" />
+        <div className="mt-3 [&>p]:text-left">
+          <EnderecoSuporte texto="Ou escreva para" />
+        </div>
+      </div>
 
 
       {/* Tour Guiado */}

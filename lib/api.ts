@@ -333,6 +333,14 @@ export const assinaturaApi = {
   ),
 }
 
+// ── Suporte ───────────────────────────────────────────────────────────────────
+
+export const suporteApi = {
+  enviar: (mensagem: string, pagina: string) => request<{ ok: boolean }>(
+    '/api/v1/suporte/mensagem', { method: 'POST', body: JSON.stringify({ mensagem, pagina }) }
+  ),
+}
+
 
 // ── Admin (acesso restrito) ─────────────────────────────────────────────────
 
