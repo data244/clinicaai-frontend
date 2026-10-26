@@ -6,6 +6,7 @@ import { assinaturaApi, Bloqueio, CheckoutAssinatura } from '@/lib/api'
 import type { AcessoConta } from '@/types'
 import { Eye, Lock, Zap, Loader2, CreditCard, AlertCircle } from 'lucide-react'
 import { EnderecoSuporte, FalarComSuporte } from '@/components/Suporte'
+import { CobrancaPelaData } from '@/components/EmpresaResponsavel'
 
 function dataBr(iso: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
@@ -81,7 +82,8 @@ function JanelaAssinatura({ checkout, onFechar }: { checkout: CheckoutAssinatura
               ? `A primeira cobrança será em ${dataBr(primeira)}, quando o seu teste termina.`
               : 'A primeira cobrança é feita hoje, no Mercado Pago.'}
         </p>
-        <p className="text-sm text-gray-600 mb-6 leading-relaxed">Depois, uma cobrança por mês.</p>
+        <p className="text-sm text-gray-600 mb-3 leading-relaxed">Depois, uma cobrança por mês.</p>
+        <CobrancaPelaData className="mb-6" />
         <div className="flex flex-col items-center gap-3">
           <button
             onClick={() => { setIndo(true); window.location.href = checkout.init_point }}
