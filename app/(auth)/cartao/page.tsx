@@ -6,6 +6,7 @@ import { perfilApi, assinaturaApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import { CreditCard, Loader2, AlertCircle } from 'lucide-react'
 import { FalarComSuporte } from '@/components/Suporte'
+import { CobrancaPelaData } from '@/components/EmpresaResponsavel'
 
 // Cadastro, tela 2 (Rascunho v2, item 1.10): o cartão no Mercado Pago antes do teste.
 // Quem volta depois sem ter informado o cartão vê antes o "Falta o cartão".
@@ -101,13 +102,14 @@ function CartaoContent() {
         Seu teste de 14 dias começa agora. Nada é cobrado hoje. A primeira cobrança, de R$ 99, é em {data}.
         Você recebe um aviso 3 dias antes. Cancele antes, em &quot;Minha assinatura&quot;, e não paga nada.
       </p>
-      <label className="flex items-start gap-2 text-sm text-gray-700 mb-5 cursor-pointer">
+      <label className="flex items-start gap-2 text-sm text-gray-700 mb-3 cursor-pointer">
         <input
           type="checkbox" className="mt-0.5 w-4 h-4 accent-primary-600 shrink-0"
           checked={concordo} onChange={e => setConcordo(e.target.checked)}
         />
         <span>Li e concordo com a cobrança mensal de R$ 99 a partir de {data}.</span>
       </label>
+      <CobrancaPelaData className="mb-5" />
       {erro && (
         <div className="bg-red-50 text-red-700 text-sm px-3 py-2 rounded-lg border border-red-200 mb-4">{erro}</div>
       )}

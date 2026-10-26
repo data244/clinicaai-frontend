@@ -6,6 +6,7 @@ import { perfilApi, assinaturaApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import { CreditCard, Loader2, AlertCircle } from 'lucide-react'
 import { FalarComSuporte } from '@/components/Suporte'
+import { CobrancaPelaData } from '@/components/EmpresaResponsavel'
 
 // Tela de assinatura (Rascunho v2, item 1.11): para quem já tem conta e quer voltar
 // (cancelou ou está em modo leitura). Quem chega sem conta vai para o cadastro.
@@ -97,13 +98,14 @@ export default function AssinarPage() {
       <p className="text-sm text-gray-600 leading-relaxed mb-5">
         Para cancelar: em &quot;Minha assinatura&quot;, a qualquer momento.
       </p>
-      <label className="flex items-start gap-2 text-sm text-gray-700 mb-5 cursor-pointer">
+      <label className="flex items-start gap-2 text-sm text-gray-700 mb-3 cursor-pointer">
         <input
           type="checkbox" className="mt-0.5 w-4 h-4 accent-primary-600 shrink-0"
           checked={concordo} onChange={e => setConcordo(e.target.checked)}
         />
         <span>Li e concordo com a cobrança mensal de R$ 99 a partir de {data ?? 'hoje'}.</span>
       </label>
+      <CobrancaPelaData className="mb-5" />
       {erro && (
         <div className="flex items-start gap-2 bg-red-50 text-red-700 text-sm px-3 py-2 rounded-lg border border-red-200 mb-4">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
