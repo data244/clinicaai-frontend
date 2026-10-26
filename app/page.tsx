@@ -15,7 +15,7 @@ const ACESSO_ATE_NO_BANCO = false
 // SQL de segurança de 17/10 rodado e compartilhamento de dados desligado na OpenAI e na Groq
 const SIGILO_CONFERIDO = false
 // contato@clinicaai.net.br recebendo e-mail
-const CONTATO_RECEBE = false
+const CONTATO_RECEBE = true
 // Termos de Uso e Política de Privacidade no ar (Etapa 5)
 const TERMOS_NO_AR = false
 
