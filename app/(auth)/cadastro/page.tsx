@@ -8,6 +8,8 @@ import Link from 'next/link'
 import { authApi } from '@/lib/api'
 import { dadosDeMedicao } from '@/lib/origem'
 import ReenviarConfirmacao from '@/components/ReenviarConfirmacao'
+import AceiteTermos from '@/components/AceiteTermos'
+import { camposAceite, MSG_ACEITE } from '@/lib/termos'
 import { Loader2, MailCheck } from 'lucide-react'
 
 // Cadastro, tela 1 (Rascunho v2, item 1.10): nome, e-mail e senha; CRP opcional.
@@ -23,6 +25,7 @@ type FormData = z.infer<typeof schema>
 export default function CadastroPage() {
   const [error, setError] = useState('')
   const [enviadoPara, setEnviadoPara] = useState('')
+  const [aceite, setAceite] = useState(false)
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -30,11 +33,12 @@ export default function CadastroPage() {
 
   const onSubmit = async ({ crp, ...data }: FormData) => {
     setError('')
+    if (!aceite) { setError(MSG_ACEITE); return }
     try {
       // A conta só entra depois de confirmar o e-mail pelo link
       const numero = crp?.trim()
-      // Origem da visita (UTM) e, só com os cookies aceitos, os identificadores da Meta
-      const conta = { ...data, ...dadosDeMedicao() }
+      // Origem da visita (UTM), só com os cookies aceitos os identificadores da Meta, e o aceite dos Termos
+      const conta = { ...data, ...dadosDeMedicao(), ...camposAceite() }
       const res = await authApi.register(numero ? { ...conta, conselho: 'CRP', numero_conselho: numero } : conta)
       setEnviadoPara(res.email || data.email)
     } catch (e: unknown) {
@@ -86,6 +90,7 @@ export default function CadastroPage() {
           <label className="label">CRP (opcional)</label>
           <input className="input" placeholder="06/123456" {...register('crp')} />
         </div>
+        <AceiteTermos marcado={aceite} onChange={setAceite} />
         {error && (
           <div className="bg-red-50 text-red-700 text-sm px-3 py-2 rounded-lg border border-red-200">
             {error}
