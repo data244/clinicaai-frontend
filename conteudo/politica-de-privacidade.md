@@ -52,7 +52,7 @@ Para estes dados, você é o controlador e nós somos o operador (LGPD, art. 5º
 | Anthropic (Claude) | IA: resumo, Análise Longitudinal, mapa, Copiloto, supervisão, anamnese e importação | O texto clínico. Na Análise Longitudinal, na supervisão, na anamnese e no mapa, também o nome do paciente (e o sexo, no mapa). Na importação, o conteúdo das anotações importadas, inclusive fotos | EUA |
 | OpenAI | Busca por semelhança entre registros | O texto clínico de cada sessão salva, até 8.000 caracteres, e as perguntas ao Copiloto | EUA |
 | Groq | Transcrição de áudio | O áudio que você envia. O nosso servidor não guarda o áudio | EUA |
-| Mercado Pago | Assinatura e, se você usar, cobrança dos seus pacientes | E-mail e código da conta, plano e valor. O cartão é digitado na página do Mercado Pago. Na cobrança de paciente: descrição, valor e e-mail do paciente | Empresa no Brasil |
+| Mercado Pago | Assinatura e, se você usar, cobrança dos seus pacientes | E-mail e código da conta, plano e valor. O cartão e o CPF do titular são digitados num formulário do Mercado Pago dentro da nossa página (ou no site do Mercado Pago, se o formulário não carregar); nós recebemos só um código de uso único do cartão. Na cobrança de paciente: descrição, valor e e-mail do paciente | Empresa no Brasil |
 | Resend | Envio de e-mails | Seu nome, seu e-mail, o texto dos avisos e as mensagens que você manda ao suporte. Para a nossa equipe: os dados de cada cadastro novo, de cada inscrição pelos formulários e de cada falha no cadastro do cartão | Empresa nos EUA |
 | Meta | Medir anúncios, só se você aceitar os cookies | Os dados da linha de cookies da seção 2 | Empresa no exterior |
 | YouTube (Google) | Vídeos da Ajuda | Ao abrir a Ajuda, o seu navegador carrega os vídeos direto do YouTube, que recebe o seu endereço IP e pode gravar cookies dele | Empresa nos EUA |
@@ -120,6 +120,7 @@ Se você é paciente de um psicólogo que usa o Clínica.ai, fale com ele: é el
 - Essenciais: para manter você conectado, o navegador guarda o seu acesso, nome, e-mail, especialidade e código da conta (localStorage). Sem isso, o sistema não funciona.
 - O navegador também guarda: as suas últimas 50 conversas com o Copiloto (perguntas e respostas), para você ver o histórico na tela; de qual link você chegou ao site; a sua escolha no aviso de cookies; e se você já viu o tour de boas-vindas. Isso fica só no seu aparelho. As conversas do Copiloto ficam até você limpar os dados do navegador.
 - YouTube: os vídeos da Ajuda vêm do YouTube, que pode gravar cookies dele quando você abre a Ajuda.
+- Mercado Pago: na página do cartão, o formulário do Mercado Pago carrega código dele, que pode gravar cookies e ler dados do aparelho para prevenir fraude.
 - Meta: o Pixel da Meta só entra se você clicar em Aceitar no aviso de cookies. Se recusar, o site funciona do mesmo jeito. Para mudar a sua escolha, use o link "Preferências de cookies", no rodapé do site.
 
 ## 12. Menores de idade

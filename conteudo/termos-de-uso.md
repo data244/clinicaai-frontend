@@ -65,7 +65,7 @@ Nestes Termos, "nós" é essa empresa e "você" é a pessoa que cria a conta.
 ## 7. Teste grátis, preço e cobrança
 
 - O plano custa R$ 99 por mês, por conta.
-- O teste dura 14 dias e é grátis. Para começar, você cadastra um cartão na página do próprio Mercado Pago. Nós não vemos nem guardamos o número do cartão.
+- O teste dura 14 dias e é grátis. Para começar, você cadastra um cartão num formulário do Mercado Pago, dentro da página do Clínica.ai. Se o formulário não carregar, o cadastro é feito no site do Mercado Pago. Nós não vemos nem guardamos o número do cartão nem o CPF do titular.
 - No teste, você faz até 20 registros. A Raquel não conta.
 - Nada é cobrado no teste. Se você não cancelar, o Mercado Pago cobra R$ 99 no 15º dia, e depois todo mês no mesmo dia, até você cancelar.
 - Avisamos por e-mail 3 dias antes da primeira cobrança e na véspera.
