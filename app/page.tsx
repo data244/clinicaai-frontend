@@ -95,7 +95,7 @@ function FaqItem({ q, children }: { q: string; children: React.ReactNode }) {
 
 // O que a Análise Longitudinal monta para cada paciente (seção 1.3)
 const LEITURAS = [
-  { Icon: TrendingUp, titulo: 'Análise Longitudinal', texto: 'os temas que se repetem ao longo das sessões, com frequência e tendência.' },
+  { Icon: TrendingUp, titulo: 'Análise Longitudinal', texto: 'os temas que se repetem e o que mudou ao longo das sessões.' },
   { Icon: Clock, titulo: 'Linha do tempo', texto: 'o que aconteceu no caso, sessão a sessão.' },
   { Icon: Network, titulo: 'Mapa de conceitos', texto: 'como os temas do caso se ligam.' },
 ]

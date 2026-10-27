@@ -264,7 +264,7 @@ function ConceptMap({ analise, paciente }: { analise: Analise | null; paciente?:
               )}
               {selected.evolucao && <p className="text-xs text-gray-600 mb-1">Evolução: <span className="font-medium">{selected.evolucao}</span></p>}
               {selected.intensidade && <p className="text-xs text-gray-600 mb-1">Intensidade: <span className="font-medium">{selected.intensidade}</span></p>}
-              {selected.tendencia && <p className="text-xs text-gray-600 mb-1">Tendência: <span className="font-medium">{selected.tendencia}</span></p>}
+              {selected.tendencia && <p className="text-xs text-gray-600 mb-1">Evolução até aqui: <span className="font-medium">{selected.tendencia}</span></p>}
               {selected.detail && !selected.isCategory && (
                 <p className="text-xs text-gray-500 leading-relaxed mt-2 pt-2 border-t border-gray-50">{selected.detail}</p>
               )}
