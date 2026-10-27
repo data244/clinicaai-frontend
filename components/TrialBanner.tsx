@@ -45,7 +45,7 @@ export default function TrialBanner({ fimTeste, registrosUsados, registrosLimite
   const temLimite = registrosLimite != null && registrosUsados != null
   const urgente = diasRestantes <= 3 || (temLimite && registrosLimite! - registrosUsados! <= 3)
 
-  const { abrir, abrindo, janela } = useAssinar()
+  const { abrir, abrindo } = useAssinar()
 
   return (
     <div className="flex items-center justify-end gap-2 mb-3 md:mb-0 md:fixed md:top-4 md:right-4 md:z-30">
@@ -77,7 +77,6 @@ export default function TrialBanner({ fimTeste, registrosUsados, registrosLimite
         <Zap className="w-3 h-3" />
         {abrindo ? '...' : 'Assinar'}
       </button>}
-      {janela}
     </div>
   )
 }

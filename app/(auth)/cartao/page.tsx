@@ -1,15 +1,17 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { perfilApi, assinaturaApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 import { CreditCard, Loader2, AlertCircle } from 'lucide-react'
 import { FalarComSuporte } from '@/components/Suporte'
 import { CobrancaPelaData } from '@/components/EmpresaResponsavel'
+import CartaoMercadoPago, { CampoCartao, CARTAO_NA_PAGINA, CartaoIncompleto, erroDoCartao } from '@/components/CartaoMercadoPago'
 
-// Cadastro, tela 2 (Rascunho v2, item 1.10): o cartão no Mercado Pago antes do teste.
-// Quem volta depois sem ter informado o cartão vê antes o "Falta o cartão".
+// Cadastro, tela 2 (Rascunho v2, item 1.10): o cartão antes do teste, digitado aqui nos campos
+// seguros do Mercado Pago (opção B, 27/10). Se o formulário não carregar, o cartão vai no site do
+// Mercado Pago, como antes. Quem volta depois sem ter informado o cartão vê antes o "Falta o cartão".
 function dataBr(iso: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
 }
@@ -23,6 +25,11 @@ function CartaoContent() {
   const [concordo, setConcordo] = useState(false)
   const [indo, setIndo] = useState(false)
   const [erro, setErro] = useState('')
+  const [suporte, setSuporte] = useState(false)
+  const [email, setEmail] = useState<string | undefined>()
+  // Sem o formulário do cartão (sem chave pública ou não carregou): pagamento no site do Mercado Pago
+  const [noSiteDoMp, setNoSiteDoMp] = useState(!CARTAO_NA_PAGINA)
+  const cartao = useRef<CampoCartao>(null)
 
   useEffect(() => {
     if (isLoading) return
@@ -31,6 +38,7 @@ function CartaoContent() {
       .then(p => {
         // Só a conta que ainda espera o cartão fica aqui; as outras vão para o painel
         if (p.acesso?.situacao !== 'falta_cartao') { router.replace('/dashboard'); return }
+        setEmail(p.email)
         setDataCobranca(p.acesso.primeira_cobranca ?? null)
         setPasso(veioDoCadastro ? 'cartao' : 'falta')
       })
@@ -40,11 +48,25 @@ function CartaoContent() {
   const informarCartao = async () => {
     setIndo(true)
     setErro('')
+    setSuporte(false)
+    if (noSiteDoMp) {
+      try {
+        const checkout = await assinaturaApi.checkoutTrial()
+        if (checkout.init_point) { window.location.href = checkout.init_point; return }
+      } catch (e: unknown) {
+        if (e instanceof Error && e.message) { setErro(e.message); setSuporte(true); setIndo(false); return }
+      }
+      setErro('Não foi possível abrir o Mercado Pago agora. Tente de novo em instantes.')
+      setSuporte(true)
+      setIndo(false)
+      return
+    }
     try {
-      const checkout = await assinaturaApi.checkoutTrial()
-      window.location.href = checkout.init_point
+      const r = await assinaturaApi.checkoutTrial(await cartao.current!.token())
+      router.replace(r.preapproval_id ? `/bem-vindo?preapproval_id=${encodeURIComponent(r.preapproval_id)}` : '/bem-vindo')
     } catch (e: unknown) {
-      setErro(e instanceof Error && e.message ? e.message : 'Não foi possível abrir o Mercado Pago agora. Tente de novo em instantes.')
+      setErro(erroDoCartao(e))
+      setSuporte(!(e instanceof CartaoIncompleto))
       setIndo(false)
     }
   }
@@ -110,16 +132,29 @@ function CartaoContent() {
         <span>Li e concordo com a cobrança mensal de R$ 99 a partir de {data}.</span>
       </label>
       <CobrancaPelaData className="mb-5" />
+      {!noSiteDoMp && (
+        <div className="mb-4">
+          <p className="text-xs text-gray-500 leading-relaxed mb-2">
+            Digite o cartão nos campos seguros do Mercado Pago. O número do cartão fica com o Mercado Pago, não com o Clínica.ai.
+          </p>
+          <CartaoMercadoPago ref={cartao} email={email} valor={99} onFalha={() => setNoSiteDoMp(true)} />
+        </div>
+      )}
+      {noSiteDoMp && CARTAO_NA_PAGINA && (
+        <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+          O formulário do cartão não carregou. Você pode informar o cartão no site do Mercado Pago.
+        </p>
+      )}
       {erro && (
         <div className="bg-red-50 text-red-700 text-sm px-3 py-2 rounded-lg border border-red-200 mb-4">{erro}</div>
       )}
-      {erro && <div className="mb-4"><FalarComSuporte pagina="cartao" /></div>}
+      {suporte && <div className="mb-4"><FalarComSuporte pagina="cartao" /></div>}
       <button
         onClick={informarCartao} disabled={!concordo || indo}
         className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-60"
       >
         {indo && <Loader2 className="w-4 h-4 animate-spin" />}
-        Informar o cartão no Mercado Pago
+        {noSiteDoMp ? 'Informar o cartão no Mercado Pago' : 'Começar os 14 dias grátis'}
       </button>
       {sair}
     </div>

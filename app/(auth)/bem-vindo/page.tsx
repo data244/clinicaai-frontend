@@ -6,8 +6,8 @@ import { CheckCircle, Clock, ArrowRight, Loader2 } from 'lucide-react'
 import { assinaturaApi, pacientesApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
 
-// Volta do Mercado Pago. O endereço de retorno é o mesmo com ou sem pagamento,
-// então a situação vem do servidor, não da URL.
+// Depois do cartão: digitado na nossa página (opção B, 27/10) ou na volta do Mercado Pago.
+// O endereço é o mesmo com ou sem pagamento, então a situação vem do servidor, não da URL.
 // agora=1: assinatura com a primeira cobrança hoje. Só confirma quando ela virar a da
 // conta; até lá, "Pagamento em processamento" (o cartão antigo do teste ainda aparece).
 // Conta nova com o cartão aprovado: cadastro, tela 3 (Rascunho v2, item 1.10).
@@ -151,7 +151,7 @@ function BemVindoContent() {
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Assinatura confirmada</h1>
             {plano === 'base' && <p className="text-gray-500 mb-2">Plano Base, R$99/mês.</p>}
             {/* Primeira cobrança de hoje ainda em processamento: a próxima vem com o pagamento */}
-            {proxima && !(agora && diaBr(proxima) <= diaBr(new Date().toISOString())) && (
+            {proxima && diaBr(proxima) > diaBr(new Date().toISOString()) && (
               <p className="text-gray-500 mb-2">Próxima cobrança: {dataBr(proxima)}.</p>
             )}
             {botao('Ir para o painel', '/dashboard')}

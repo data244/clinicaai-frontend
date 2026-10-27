@@ -289,8 +289,19 @@ export const perfilApi = {
 
 // ── Assinaturas ───────────────────────────────────────────────────────────────
 
-// Assinatura criada no Mercado Pago, ainda sem pagamento: link e data da primeira cobrança
-export type CheckoutAssinatura = { init_point: string; plano: string; valor?: number; primeira_cobranca?: string; sandbox?: boolean }
+// Assinatura criada no Mercado Pago. Sem o cartão: link do pagamento e data da primeira cobrança.
+// Com o cartão digitado na nossa página (opção B): já aprovada, sem link (cartao_aprovado).
+export type CheckoutAssinatura = {
+  init_point: string | null; plano: string; valor?: number; primeira_cobranca?: string; sandbox?: boolean
+  cartao_aprovado?: boolean; aplicado?: boolean; preapproval_id?: string | null
+}
+
+// Cartão digitado na nossa página: só o token de uso único do Mercado Pago vai ao servidor
+function comCartao(cardTokenId?: string): RequestInit {
+  return cardTokenId
+    ? { method: 'POST', body: JSON.stringify({ card_token_id: cardTokenId }) }
+    : { method: 'POST' }
+}
 
 // Assinatura da conta logada (aba Minha assinatura)
 export type StatusAssinatura = {
@@ -319,14 +330,15 @@ export const assinaturaApi = {
     '/api/v1/assinatura/cancelar', { method: 'POST' }
   ),
 
-  retomar: () => request<CheckoutAssinatura>('/api/v1/assinatura/retomar', { method: 'POST' }),
+  retomar: (cardTokenId?: string) =>
+    request<CheckoutAssinatura>('/api/v1/assinatura/retomar', comCartao(cardTokenId)),
 
-  checkoutTrial: () =>
-    request<CheckoutAssinatura>('/api/v1/assinatura/checkout-trial', { method: 'POST' }),
+  checkoutTrial: (cardTokenId?: string) =>
+    request<CheckoutAssinatura>('/api/v1/assinatura/checkout-trial', comCartao(cardTokenId)),
 
   // Primeira cobrança hoje: limite do teste (E8) e cobrança recusada ("Concluir pagamento")
-  comecarAgora: () =>
-    request<CheckoutAssinatura>('/api/v1/assinatura/comecar-agora', { method: 'POST' }),
+  comecarAgora: (cardTokenId?: string) =>
+    request<CheckoutAssinatura>('/api/v1/assinatura/comecar-agora', comCartao(cardTokenId)),
 
   upgrade: (novo_plano: string) => request<{ init_point: string; novo_plano: string }>(
     '/api/v1/assinatura/upgrade', { method: 'POST', body: JSON.stringify({ novo_plano }) }

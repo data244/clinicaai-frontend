@@ -11,7 +11,7 @@ import ReenviarConfirmacao from '@/components/ReenviarConfirmacao'
 import { Loader2, MailCheck } from 'lucide-react'
 
 // Cadastro, tela 1 (Rascunho v2, item 1.10): nome, e-mail e senha; CRP opcional.
-// Depois vêm a confirmação do e-mail e o cartão no Mercado Pago (tela /cartao).
+// Depois vêm a confirmação do e-mail e o cartão (tela /cartao, nos campos do Mercado Pago).
 const schema = z.object({
   nome: z.string().min(3, 'Nome muito curto'),
   email: z.string().email('E-mail inválido'),
