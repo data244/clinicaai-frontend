@@ -81,3 +81,21 @@ export function dadosDeMedicao(): Origem & { meta_aceitou?: boolean; meta_fbp?: 
   if (!PIXEL_ID || lerDecisaoCookies() !== 'aceito') return origem
   return { ...origem, meta_aceitou: true, meta_fbp: lerCookie('_fbp'), meta_fbc: lerCookie('_fbc') }
 }
+
+// Link "Preferências de cookies" do rodapé: reabre o aviso em qualquer página
+export const EVENTO_PREFERENCIAS_COOKIES = 'clinicaai:preferencias-cookies'
+
+// Recusou depois de ter aceitado: tira os cookies que o Pixel gravou neste site
+export function apagarCookiesMeta(): void {
+  try {
+    const partes = window.location.hostname.split('.')
+    for (const nome of ['_fbp', '_fbc']) {
+      document.cookie = `${nome}=; Max-Age=0; path=/`
+      for (let i = 0; i < partes.length - 1; i++) {
+        document.cookie = `${nome}=; Max-Age=0; path=/; domain=.${partes.slice(i).join('.')}`
+      }
+    }
+  } catch {
+    // sem acesso aos cookies: nada a apagar
+  }
+}

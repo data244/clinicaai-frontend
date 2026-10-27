@@ -5,11 +5,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   PIXEL_ID, paginaMedida, guardarOrigem, lerDecisaoCookies, gravarDecisaoCookies, type DecisaoCookies,
+  EVENTO_PREFERENCIAS_COOKIES, apagarCookiesMeta,
 } from '@/lib/origem'
 
 // Medição do funil (item 6 do VENDAS.md). Guarda a origem da visita e, só com
 // NEXT_PUBLIC_META_PIXEL_ID preenchido e os cookies aceitos, carrega o Pixel da Meta
-// nas páginas abertas ao público. Sem a variável, não aparece aviso nem carrega nada.
+// nas páginas abertas ao público. Sem a variável, o aviso só aparece pelo link
+// "Preferências de cookies" do rodapé, e nada carrega.
 
 type Fbq = ((...args: unknown[]) => void) & {
   callMethod?: (...args: unknown[]) => void
@@ -52,8 +54,16 @@ export default function Medicao() {
   const caminho = usePathname()
   // undefined: decisão ainda não lida deste navegador
   const [decisao, setDecisao] = useState<DecisaoCookies | null | undefined>(undefined)
+  // Reaberto pelo link do rodapé, em qualquer página
+  const [reaberto, setReaberto] = useState(false)
 
   useEffect(() => { setDecisao(lerDecisaoCookies()) }, [])
+
+  useEffect(() => {
+    const reabrir = () => setReaberto(true)
+    window.addEventListener(EVENTO_PREFERENCIAS_COOKIES, reabrir)
+    return () => window.removeEventListener(EVENTO_PREFERENCIAS_COOKIES, reabrir)
+  }, [])
 
   useEffect(() => { guardarOrigem(window.location.search) }, [caminho])
 
@@ -63,11 +73,18 @@ export default function Medicao() {
     window.fbq?.('track', 'PageView')
   }, [caminho, decisao])
 
-  if (!PIXEL_ID || decisao !== null || !paginaMedida(caminho)) return null
+  if (!reaberto && (!PIXEL_ID || decisao !== null || !paginaMedida(caminho))) return null
 
   const decidir = (escolha: DecisaoCookies) => {
+    const tinhaAceitado = decisao === 'aceito'
     gravarDecisaoCookies(escolha)
     setDecisao(escolha)
+    setReaberto(false)
+    // Recusou depois de aceitar: sem os cookies da Meta, e a página volta sem o Pixel
+    if (escolha === 'recusado' && tinhaAceitado) {
+      apagarCookiesMeta()
+      if (window.fbq) window.location.reload()
+    }
   }
 
   return (
@@ -83,5 +100,14 @@ export default function Medicao() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Link do rodapé que reabre o aviso
+export function BotaoPreferenciasCookies({ className = '' }: { className?: string }) {
+  return (
+    <button type="button" onClick={() => window.dispatchEvent(new Event(EVENTO_PREFERENCIAS_COOKIES))} className={className}>
+      Preferências de cookies
+    </button>
   )
 }

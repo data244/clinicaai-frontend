@@ -10,6 +10,7 @@ import TrialBanner from '@/components/TrialBanner'
 import { AvisoModoLeitura, ModalBloqueio } from '@/components/AvisoConta'
 import OnboardingWizard from '@/components/OnboardingWizard'
 import MarinaHelper from '@/components/MarinaHelper'
+import { RodapeLegal } from '@/components/EmpresaResponsavel'
 import { Loader2, AlertCircle } from 'lucide-react'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -141,6 +142,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             )}
             {acesso && <AvisoModoLeitura acesso={acesso} />}
             {children}
+            <RodapeLegal className="mt-12" />
           </main>
         </div>
       </div>

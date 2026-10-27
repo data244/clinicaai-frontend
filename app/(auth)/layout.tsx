@@ -1,4 +1,5 @@
 import { EnderecoSuporte } from '@/components/Suporte'
+import { RodapeLegal } from '@/components/EmpresaResponsavel'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const Logo = (
@@ -64,6 +65,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
           {children}
           <div className="mt-6"><EnderecoSuporte /></div>
+          <RodapeLegal centro className="mt-6" />
         </div>
       </div>
     </div>

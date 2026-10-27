@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { TrendingUp, Clock, Network, Check, ShieldCheck, MicOff, UserCheck, Lock } from 'lucide-react'
 import DataCobranca from '@/components/DataCobranca'
+import { RodapeLegal } from '@/components/EmpresaResponsavel'
 
 // Página inicial (Rascunho_Pagina_e_Emails_v2.md, seção 1, aprovado pelo Leo em 20/10).
 // Cada chave abaixo liga um trecho que só pode aparecer quando for verdade no sistema.
@@ -17,7 +18,7 @@ const SIGILO_CONFERIDO = false
 // contato@clinicaai.net.br recebendo e-mail
 const CONTATO_RECEBE = true
 // Termos de Uso e Política de Privacidade no ar (Etapa 5)
-const TERMOS_NO_AR = false
+const TERMOS_NO_AR = true
 
 export const metadata: Metadata = {
   title: 'Clínica.ai · O prontuário que lê o caso inteiro para você',
@@ -375,17 +376,12 @@ export default function LandingPage() {
             <a href="https://instagram.com/clinicaai.app" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               Instagram (@clinicaai.app)
             </a>
-            {TERMOS_NO_AR && (
-              <>
-                <Link href="/termos" className="hover:text-white transition-colors">Termos de Uso</Link>
-                <Link href="/privacidade" className="hover:text-white transition-colors">Política de Privacidade</Link>
-              </>
-            )}
           </div>
           <p className="text-slate-500 text-xs leading-relaxed max-w-3xl">
             O Clínica.ai é um sistema de apoio à organização de registros clínicos. Não faz diagnóstico nem substitui o
             julgamento profissional do psicólogo.
           </p>
+          {TERMOS_NO_AR && <RodapeLegal escuro className="mt-4" />}
         </div>
       </footer>
     </div>
