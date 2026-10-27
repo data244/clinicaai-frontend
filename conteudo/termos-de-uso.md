@@ -6,7 +6,7 @@ Versão 1. Em vigor desde 28 de outubro de 2026.
 
 Leia o texto inteiro. O principal é isto:
 
-- O Clínica.ai é um sistema para psicólogas e psicólogos organizarem os registros clínicos. A IA ajuda a organizar o que você registrou. Ela não faz diagnóstico e não substitui o seu julgamento.
+- O Clínica.ai é um sistema para psicólogas e psicólogos organizarem os registros clínicos. A IA pode auxiliar na organização de informações e na exploração de hipóteses clínicas, mas não estabelece diagnósticos nem substitui a avaliação profissional.
 - São 14 dias grátis, com cartão cadastrado no Mercado Pago. Nada é cobrado no teste. No 15º dia, o Mercado Pago cobra R$ 99, e depois todo mês no mesmo dia, até você cancelar.
 - Você recebe um aviso por e-mail 3 dias antes da primeira cobrança e outro na véspera.
 - Cancele quando quiser em "Minha assinatura". Cancelou no teste, não paga nada.
@@ -46,7 +46,7 @@ Nestes Termos, "nós" é essa empresa e "você" é a pessoa que cria a conta.
 ## 5. A IA e a sua responsabilidade clínica
 
 - A IA pode errar, deixar algo de fora ou escrever algo que não está nos seus registros. Leia e confira tudo o que ela produz antes de usar ou guardar.
-- O Clínica.ai não faz diagnóstico, não indica tratamento e não substitui o seu julgamento profissional nem a supervisão. A decisão clínica é sempre sua.
+- A IA do Clínica.ai pode auxiliar na organização de informações e na exploração de hipóteses clínicas, mas não estabelece diagnósticos, não indica tratamento e não substitui a avaliação profissional nem a supervisão. A decisão clínica é sempre sua.
 - Não use o Clínica.ai em situação de urgência ou de risco imediato.
 - O Conselho Federal de Psicologia, na nota de posicionamento sobre IA de 3 de julho de 2025, diz que o uso de IA não tira a responsabilidade ética e técnica do psicólogo, e que tratar dados psicológicos com apoio de IA pede consentimento livre, informado e transparente. Cabe a você avaliar se o Clínica.ai serve para o seu trabalho e obter esse consentimento dos seus pacientes.
 - O áudio do Clínica.ai é para o seu próprio ditado. Se você gravar a voz de um paciente, o CFP orienta que o paciente saiba da gravação e concorde com ela e com a finalidade.
