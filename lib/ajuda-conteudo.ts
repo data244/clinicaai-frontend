@@ -27,12 +27,12 @@ O Clínica.ai parte de uma ideia simples: **o valor não está em cada sessão i
 Cada atendimento que você registra vira parte de um histórico que se constrói sozinho. A partir dele, a plataforma:
 
 - organiza a **evolução** do caso em ordem cronológica;
-- revela **padrões e tendências** que só aparecem quando se olha o conjunto;
-- ajuda a enxergar **para onde o caso parece caminhar**, não só o que já aconteceu.
+- revela **o que se repete e o que mudou ao longo das sessões**, algo que só aparece quando se olha o conjunto;
+- ajuda a enxergar **como o trabalho evoluiu até aqui**, não só a última sessão.
 
 É o que chamamos de **olhar longitudinal**: ver a trajetória, não o instante. Você cuida do paciente; o registro e a leitura se organizam ao seu redor.
 
-> A inteligência **organiza e destaca** a informação. A conduta clínica é sempre sua: a plataforma não propõe diagnóstico nem tratamento.
+> A inteligência **organiza e destaca** a informação. A conduta clínica é sempre sua. A IA pode auxiliar na organização de informações e na exploração de hipóteses clínicas, mas não estabelece diagnósticos nem substitui a avaliação profissional.
 `,
   },
   {
@@ -94,7 +94,7 @@ Você sempre revisa o conteúdo antes de salvar.
 
 É a leitura do caso por inteiro, a partir de todas as sessões registradas. Tem quatro visões:
 
-- **Análise**: padrões, o que se repete, o que mudou e para onde o caso parece caminhar.
+- **Análise**: o que se repete, o que mudou ao longo das sessões e como o trabalho evoluiu até aqui.
 - **Linha do Tempo**: a trajetória do paciente em ordem cronológica.
 - **Perguntas**: faça perguntas sobre o histórico; as perguntas feitas ficam no painel à direita.
 - **Mapa de Conceitos**: os temas centrais do tratamento conectados em uma teia, útil para ver o caso de relance. Abra em **tela cheia** para uma visão melhor.
@@ -113,10 +113,10 @@ Quanto mais sessões, mais consistente a análise.
 O Copiloto responde perguntas sobre o histórico do paciente, citando as sessões em que se baseou.
 
 - **Selecione o paciente** (obrigatório) antes de perguntar.
-- Pergunte em linguagem natural, por exemplo: *"Houve evolução na queixa principal?"*.
+- Pergunte em linguagem natural, por exemplo: *"Como a demanda evoluiu desde o início?"*.
 - As conversas ficam guardadas **por paciente**, no painel à direita.
 
-Importante: o Copiloto **organiza a informação**; ele não propõe diagnóstico nem conduta. Quem decide é você.
+Importante: o Copiloto **organiza a informação**. A IA pode auxiliar na organização de informações e na exploração de hipóteses clínicas, mas não estabelece diagnósticos nem substitui a avaliação profissional. Quem decide é você.
 `,
   },
   {

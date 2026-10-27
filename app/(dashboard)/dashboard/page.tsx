@@ -2,26 +2,44 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
-import { pacientesApi } from '@/lib/api'
+import { pacientesApi, agendaApi } from '@/lib/api'
 import { Paciente } from '@/types'
-import { Users, FileText, Calendar, TrendingUp } from 'lucide-react'
+import { Users, Calendar } from 'lucide-react'
 import Link from 'next/link'
 import SeloFicticia from '@/components/SeloFicticia'
+
+// Data local no formato aaaa-mm-dd (toISOString mudaria o dia à noite, por causa do fuso)
+function dataLocal(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+// Segunda a domingo da semana atual, como na Agenda
+function semanaAtual(): [string, string] {
+  const ini = new Date()
+  const dia = ini.getDay()
+  ini.setDate(ini.getDate() - dia + (dia === 0 ? -6 : 1))
+  const fim = new Date(ini)
+  fim.setDate(fim.getDate() + 6)
+  return [dataLocal(ini), dataLocal(fim)]
+}
 
 export default function DashboardPage() {
   const { nome } = useAuth()
   const [pacientes, setPacientes] = useState<Paciente[]>([])
+  const [sessoesSemana, setSessoesSemana] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     pacientesApi.list().then(setPacientes).catch(console.error).finally(() => setLoading(false))
+    const [ini, fim] = semanaAtual()
+    agendaApi.listar(ini, fim)
+      .then(r => setSessoesSemana(r.agendamentos.filter(a => a.status !== 'cancelado').length))
+      .catch(() => setSessoesSemana(null))
   }, [])
 
   const stats = [
-    { label: 'Pacientes ativos', value: pacientes.length, icon: Users, color: 'bg-blue-50 text-blue-600', href: '/pacientes' },
-    { label: 'Prontuários hoje', value: 0, icon: FileText, color: 'bg-green-50 text-green-600', href: '/prontuarios' },
-    { label: 'Consultas esta semana', value: 0, icon: Calendar, color: 'bg-purple-50 text-purple-600', href: '/agenda' },
-    { label: 'Análises longitudinais', value: pacientes.length, icon: TrendingUp, color: 'bg-orange-50 text-orange-600', href: '/pacientes' },
+    { label: 'Pacientes ativos', value: loading ? '...' : pacientes.length, icon: Users, color: 'bg-blue-50 text-blue-600', href: '/pacientes' },
+    { label: 'Sessões nesta semana', value: sessoesSemana ?? '...', icon: Calendar, color: 'bg-purple-50 text-purple-600', href: '/agenda' },
   ]
 
   return (
@@ -61,7 +79,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         {stats.map(({ label, value, icon: Icon, color, href }) => (
           <Link key={label} href={href} className="card hover:shadow-md transition-shadow">
             <div className="flex items-center gap-4">
@@ -70,7 +88,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
-                  {loading ? '...' : value}
+                  {value}
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">{label}</p>
               </div>

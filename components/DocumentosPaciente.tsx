@@ -22,6 +22,8 @@ function hojeISO(): string {
 }
 
 const TIPOS = ['exame', 'laudo', 'outro']
+const NOME_TIPO_DOC: Record<string, string> = { exame: 'Instrumento de avaliação', laudo: 'Documento emitido', outro: 'Outro' }
+const nomeTipoDoc = (t: string) => NOME_TIPO_DOC[t] || t
 
 export default function DocumentosPaciente({ pacienteId }: { pacienteId: string }) {
   const [docs, setDocs] = useState<DocumentoItem[]>([])
@@ -111,9 +113,9 @@ export default function DocumentosPaciente({ pacienteId }: { pacienteId: string 
           <select
             value={tipoDoc}
             onChange={e => setTipoDoc(e.target.value)}
-            className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm capitalize focus:outline-none focus:ring-2 focus:ring-primary-300"
+            className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300"
           >
-            {TIPOS.map(t => <option key={t} value={t} className="capitalize">{t}</option>)}
+            {TIPOS.map(t => <option key={t} value={t}>{nomeTipoDoc(t)}</option>)}
           </select>
         </div>
         <button
@@ -146,7 +148,7 @@ export default function DocumentosPaciente({ pacienteId }: { pacienteId: string 
                 <p className="text-sm text-gray-800 truncate">{d.nome}</p>
                 <p className="text-xs text-gray-400">
                   {d.data_documento ? `${fmtDataDoc(d.data_documento)} · ` : ''}
-                  {d.tipo ? `${d.tipo} · ` : ''}
+                  {d.tipo ? `${nomeTipoDoc(d.tipo)} · ` : ''}
                   {fmtTamanho(d.tamanho)}
                 </p>
               </div>
