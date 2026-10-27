@@ -39,6 +39,9 @@ export default function AssinarPage() {
   // Sem o formulário do cartão (sem chave pública ou não carregou): pagamento no site do Mercado Pago
   const [noSiteDoMp, setNoSiteDoMp] = useState(!CARTAO_NA_PAGINA)
   const cartao = useRef<CampoCartao>(null)
+  // O formulário não carregou: "Tentar de novo" e, abaixo, o site do Mercado Pago
+  const falhou = noSiteDoMp && CARTAO_NA_PAGINA
+  const tentarDeNovo = () => { setErro(''); setSuporte(false); setNoSiteDoMp(false) }
 
   useEffect(() => {
     if (isLoading) return
@@ -61,6 +64,15 @@ export default function AssinarPage() {
           if (!recusado && (a?.situacao === 'ativo' || a?.situacao === 'admin')) { router.replace('/configuracoes?aba=assinatura'); return }
           setRefazer(recusado)
           setComCartao(!recusado && !!a?.cartao)
+          setPronto(true)
+          return
+        }
+        // Assinatura paga em dia: nada a assinar (aqui a cobrança seria no mesmo dia, a segunda do mês).
+        // Com a cobrança do mês recusada, a tela é a do "Concluir pagamento".
+        if (a?.situacao === 'ativo' || a?.situacao === 'admin') {
+          if (!(await assinaturaApi.status()).pagamento_recusado) { router.replace('/configuracoes?aba=assinatura'); return }
+          setAgora(true)
+          setRefazer(true)
           setPronto(true)
           return
         }
@@ -146,7 +158,7 @@ export default function AssinarPage() {
       {!noSiteDoMp && (
         <div className="mb-4">
           <p className="text-xs text-gray-500 leading-relaxed mb-2">
-            Digite o cartão nos campos seguros do Mercado Pago. O número do cartão fica com o Mercado Pago, não com o Clínica.ai.
+            Digite o cartão nos campos do Mercado Pago. O número do cartão e o CPF ficam com o Mercado Pago, não com o Clínica.ai.
           </p>
           <CartaoMercadoPago ref={cartao} email={email} valor={99} onFalha={() => setNoSiteDoMp(true)} />
         </div>
@@ -163,13 +175,30 @@ export default function AssinarPage() {
         </div>
       )}
       {suporte && <div className="mb-4"><FalarComSuporte pagina="assinar" /></div>}
-      <button
-        onClick={assinar} disabled={!concordo || indo}
-        className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-60"
-      >
-        {indo && <Loader2 className="w-4 h-4 animate-spin" />}
-        {refazer ? 'Concluir pagamento' : 'Assinar por R$ 99 por mês'}
-      </button>
+      {falhou ? (
+        <button onClick={tentarDeNovo} disabled={indo} className="btn-primary w-full disabled:opacity-60">Tentar de novo</button>
+      ) : (
+        <button
+          onClick={assinar} disabled={!concordo || indo}
+          className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-60"
+        >
+          {indo && <Loader2 className="w-4 h-4 animate-spin" />}
+          {refazer ? 'Concluir pagamento' : 'Assinar por R$ 99 por mês'}
+        </button>
+      )}
+      {falhou && (
+        <div className="text-center mt-4">
+          <button
+            onClick={assinar} disabled={!concordo || indo}
+            className="text-sm font-medium text-primary-600 hover:text-primary-700 underline disabled:opacity-50 disabled:no-underline"
+          >
+            Informar o cartão no site do Mercado Pago
+          </button>
+          <p className="text-xs text-gray-500 leading-relaxed mt-1">
+            Lá, entre com a conta do Mercado Pago que usa o mesmo e-mail do seu cadastro no Clínica.ai.
+          </p>
+        </div>
+      )}
       <div className="flex justify-center gap-6 mt-6 text-sm">
         <button onClick={() => router.push('/dashboard')} className="text-gray-500 hover:text-gray-700 transition-colors">Voltar ao painel</button>
         <button onClick={logout} className="text-gray-500 hover:text-gray-700 transition-colors">Sair</button>

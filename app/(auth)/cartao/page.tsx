@@ -30,6 +30,9 @@ function CartaoContent() {
   // Sem o formulário do cartão (sem chave pública ou não carregou): pagamento no site do Mercado Pago
   const [noSiteDoMp, setNoSiteDoMp] = useState(!CARTAO_NA_PAGINA)
   const cartao = useRef<CampoCartao>(null)
+  // O formulário não carregou: "Tentar de novo" e, abaixo, o site do Mercado Pago
+  const falhou = noSiteDoMp && CARTAO_NA_PAGINA
+  const tentarDeNovo = () => { setErro(''); setSuporte(false); setNoSiteDoMp(false) }
 
   useEffect(() => {
     if (isLoading) return
@@ -135,7 +138,7 @@ function CartaoContent() {
       {!noSiteDoMp && (
         <div className="mb-4">
           <p className="text-xs text-gray-500 leading-relaxed mb-2">
-            Digite o cartão nos campos seguros do Mercado Pago. O número do cartão fica com o Mercado Pago, não com o Clínica.ai.
+            Digite o cartão nos campos do Mercado Pago. O número do cartão e o CPF ficam com o Mercado Pago, não com o Clínica.ai.
           </p>
           <CartaoMercadoPago ref={cartao} email={email} valor={99} onFalha={() => setNoSiteDoMp(true)} />
         </div>
@@ -149,13 +152,30 @@ function CartaoContent() {
         <div className="bg-red-50 text-red-700 text-sm px-3 py-2 rounded-lg border border-red-200 mb-4">{erro}</div>
       )}
       {suporte && <div className="mb-4"><FalarComSuporte pagina="cartao" /></div>}
-      <button
-        onClick={informarCartao} disabled={!concordo || indo}
-        className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-60"
-      >
-        {indo && <Loader2 className="w-4 h-4 animate-spin" />}
-        {noSiteDoMp ? 'Informar o cartão no Mercado Pago' : 'Começar os 14 dias grátis'}
-      </button>
+      {falhou ? (
+        <button onClick={tentarDeNovo} disabled={indo} className="btn-primary w-full disabled:opacity-60">Tentar de novo</button>
+      ) : (
+        <button
+          onClick={informarCartao} disabled={!concordo || indo}
+          className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-60"
+        >
+          {indo && <Loader2 className="w-4 h-4 animate-spin" />}
+          {noSiteDoMp ? 'Informar o cartão no Mercado Pago' : 'Começar os 14 dias grátis'}
+        </button>
+      )}
+      {falhou && (
+        <div className="text-center mt-4">
+          <button
+            onClick={informarCartao} disabled={!concordo || indo}
+            className="text-sm font-medium text-primary-600 hover:text-primary-700 underline disabled:opacity-50 disabled:no-underline"
+          >
+            Informar o cartão no site do Mercado Pago
+          </button>
+          <p className="text-xs text-gray-500 leading-relaxed mt-1">
+            Lá, entre com a conta do Mercado Pago que usa o mesmo e-mail do seu cadastro no Clínica.ai.
+          </p>
+        </div>
+      )}
       {sair}
     </div>
   )
