@@ -40,11 +40,13 @@ export default function PacientesPage() {
   }
 
   const excluirDefinitivo = async (p: Paciente) => {
-    if (!confirm(`Excluir PERMANENTEMENTE "${p.nome}"?\n\nTodos os dados no sistema serão apagados. O dossiê no GED será preservado (retenção 20 anos).\n\nEssa ação não pode ser desfeita.`)) return
+    if (!confirm(`Excluir PERMANENTEMENTE "${p.nome}"?\n\nTodos os dados e arquivos dele serão apagados, inclusive o dossiê em PDF. Se precisar guardar o registro, baixe o dossiê antes.\n\nEssa ação não pode ser desfeita.`)) return
     setProcessando(p.id)
     try {
       await pacientesApi.excluirDefinitivo(p.id)
       await carregar()
+    } catch (e) {
+      alert((e as Error).message || 'Não foi possível excluir agora. Tente de novo em alguns minutos.')
     } finally { setProcessando(null) }
   }
 
