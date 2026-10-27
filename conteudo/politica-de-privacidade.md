@@ -48,7 +48,7 @@ Para estes dados, você é o controlador e nós somos o operador (LGPD, art. 5º
 | Supabase | Banco de dados e login | Os dados da conta e dos pacientes, menos os arquivos | São Paulo, Brasil |
 | Railway | Servidor do sistema | Todo dado passa por ele. Guarda registros técnicos por 7 dias | EUA |
 | Vercel | Site | As páginas e os formulários, a caminho do servidor. Guarda registros técnicos por 1 hora | Entrada em São Paulo; funções nos EUA |
-| Alfresco, em servidor dedicado | Arquivos | Os arquivos anexados e o dossiê em PDF de cada paciente. O nome do paciente aparece no nome da pasta e do arquivo. Também guarda a cópia de segurança diária do banco de dados, por 7 dias | EUA |
+| Alfresco, em servidor dedicado | Arquivos | Os arquivos anexados e o dossiê em PDF de cada paciente. O nome do paciente aparece no nome da pasta e do arquivo. | EUA |
 | Anthropic (Claude) | IA: resumo, Análise Longitudinal, mapa, Copiloto, supervisão, anamnese e importação | O texto clínico. Na Análise Longitudinal, na supervisão, na anamnese e no mapa, também o nome do paciente (e o sexo, no mapa). Na importação, o conteúdo das anotações importadas, inclusive fotos | EUA |
 | OpenAI | Busca por semelhança entre registros | O texto clínico de cada sessão salva, até 8.000 caracteres, e as perguntas ao Copiloto | EUA |
 | Groq | Transcrição de áudio | O áudio que você envia. O nosso servidor não guarda o áudio | EUA |
@@ -82,8 +82,6 @@ Parte dos dados é tratada nos EUA, pelos fornecedores da seção 4, porque é l
 | Data, hora e IP de cada acesso | 6 meses (Marco Civil da Internet, art. 15) |
 | Registros técnicos | Servidor, 7 dias; banco, 1 dia; site, 1 hora. Podem conter e-mails. |
 | Dados de pagamento | Pelo prazo que a lei pedir |
-
-O banco de dados tem cópia de segurança diária, guardada por 7 dias no servidor dos arquivos, nos EUA. O que for apagado ainda fica nessa cópia por até 7 dias e depois some.
 
 ## 8. Exclusão
 

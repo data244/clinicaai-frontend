@@ -85,7 +85,6 @@ Nestes Termos, "nós" é essa empresa e "você" é a pessoa que cria a conta.
 ## 9. Guarda dos registros e saída
 
 - A Resolução CFP 001/2009 pede que o psicólogo guarde o registro documental por no mínimo 5 anos. Essa obrigação é sua. Baixe o dossiê em PDF de cada paciente e guarde uma cópia sua. O Clínica.ai não substitui essa guarda.
-- O banco de dados tem cópia de segurança diária, guardada por 7 dias.
 - Para receber uma cópia de todos os seus dados de uma vez, escreva para contato@clinicaai.net.br a partir do e-mail da conta. Entregamos em até 15 dias.
 - Para excluir a sua conta e tudo o que está nela, escreva para o mesmo endereço, também a partir do e-mail da conta. Antes, baixe o que precisa guardar. Excluímos em até 15 dias, inclusive os arquivos. A exclusão não tem volta.
 
