@@ -20,6 +20,10 @@ export interface Profissional {
   plano?: string
   onboarding_completo?: boolean
   acesso?: AcessoConta
+  // Versão dos Termos que a pessoa aceitou (null: nunca aceitou)
+  termos_versao?: string | null
+  // O servidor já recebe o aceite pelo painel (POST /auth/aceitar-termos)
+  aceite_no_painel?: boolean
   created_at: string
 }
 

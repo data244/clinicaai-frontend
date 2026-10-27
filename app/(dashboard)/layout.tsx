@@ -11,6 +11,8 @@ import { AvisoModoLeitura, ModalBloqueio } from '@/components/AvisoConta'
 import OnboardingWizard from '@/components/OnboardingWizard'
 import MarinaHelper from '@/components/MarinaHelper'
 import { RodapeLegal } from '@/components/EmpresaResponsavel'
+import AceiteNoPainel from '@/components/AceiteNoPainel'
+import { VERSAO_TERMOS } from '@/lib/termos'
 import { Loader2, AlertCircle } from 'lucide-react'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -25,6 +27,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [bloqueio, setBloqueio] = useState<Bloqueio | null>(null)
   const [mostrarOnboarding, setMostrarOnboarding] = useState(false)
   const [nomeUsuario, setNomeUsuario] = useState<string | undefined>()
+  // Conta que ainda não aceitou esta versão dos Termos
+  const [pedirAceite, setPedirAceite] = useState(false)
   const primeiraLeitura = useRef(true)
 
   useEffect(() => {
@@ -45,6 +49,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           // Antes do cartão aprovado a conta não entra no painel: vai para a tela "Falta o cartão"
           if (a.situacao === 'falta_cartao') { router.replace('/cartao'); return }
           setNomeUsuario(p.nome)
+          setPedirAceite(p.aceite_no_painel === true && p.termos_versao !== VERSAO_TERMOS)
           // Boas-vindas só na primeira leitura e só para quem pode criar
           if (primeiraLeitura.current && a.completo && !p.onboarding_completo) setMostrarOnboarding(true)
           primeiraLeitura.current = false
@@ -96,6 +101,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   if (!token) return null
+
+  if (pedirAceite) return <AceiteNoPainel onAceito={() => setPedirAceite(false)} onSair={logout} />
 
   const fecharOnboarding = async () => {
     setMostrarOnboarding(false)

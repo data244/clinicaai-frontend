@@ -100,6 +100,12 @@ export const authApi = {
     ),
 
   me: () => request<import('@/types').Profissional>('/api/v1/auth/me'),
+
+  // Quem já tinha conta aceita os Termos no painel
+  aceitarTermos: (termos_versao: string) =>
+    request<{ ok: boolean }>(
+      '/api/v1/auth/aceitar-termos', { method: 'POST', body: JSON.stringify({ aceite_termos: true, termos_versao }) }
+    ),
 }
 
 // ── Pacientes ─────────────────────────────────────────────────────────────────

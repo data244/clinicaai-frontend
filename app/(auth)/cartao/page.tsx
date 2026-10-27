@@ -102,6 +102,11 @@ function CartaoContent() {
         Seu teste de 14 dias começa agora. Nada é cobrado hoje. A primeira cobrança, de R$ 99, é em {data}.
         Você recebe um aviso 3 dias antes. Cancele antes, em &quot;Minha assinatura&quot;, e não paga nada.
       </p>
+      {/* Resumo do contrato antes de contratar (Decreto 7.962, art. 4º, I) */}
+      <div className="bg-primary-50 border border-primary-100 rounded-lg px-3 py-2.5 text-sm text-gray-800 leading-relaxed mb-4">
+        14 dias grátis. Se não cancelar, o Mercado Pago cobra R$ 99 em {data} e depois todo mês.
+        Cancele quando quiser em Minha assinatura.
+      </div>
       <label className="flex items-start gap-2 text-sm text-gray-700 mb-3 cursor-pointer">
         <input
           type="checkbox" className="mt-0.5 w-4 h-4 accent-primary-600 shrink-0"

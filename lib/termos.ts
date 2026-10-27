@@ -6,6 +6,7 @@
 export const VERSAO_TERMOS = '2026-10-28'
 
 export const MSG_ACEITE = 'Para criar a conta, aceite os Termos de Uso e a Política de Privacidade.'
+export const MSG_ACEITE_CONTA = 'Para continuar, aceite os Termos de Uso e a Política de Privacidade.'
 
 // Campos que o cadastro manda ao servidor quando a caixa está marcada
 export const camposAceite = () => ({ aceite_termos: true, termos_versao: VERSAO_TERMOS })
