@@ -11,6 +11,7 @@ import { formatDate } from '@/lib/utils'
 import InfoTip from '@/components/InfoTip'
 import SeloFicticia from '@/components/SeloFicticia'
 import SupervisaoTab from '@/components/SupervisaoTab'
+import { CAMPOS_REGISTRO as R, nomeTipo } from '@/lib/registro-rotulos'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -64,7 +65,7 @@ function TimelineCard({ p, index }: { p: Prontuario; index: number }) {
       <div className="flex-1 bg-white border border-gray-200 rounded-xl p-4 mb-4 shadow-sm">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full capitalize">{p.tipo}</span>
+            <span className="text-xs font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">{nomeTipo(p.tipo)}</span>
             <span className="text-sm text-gray-500 flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5" />{formatDate(p.data_atendimento)}
             </span>
@@ -82,10 +83,10 @@ function TimelineCard({ p, index }: { p: Prontuario; index: number }) {
         )}
         {open && (
           <div className="mt-3 pt-3 border-t border-gray-100 space-y-2 text-sm text-gray-700">
-            {p.anamnese && <div><p className="text-xs font-semibold text-gray-400 uppercase mb-0.5">Anamnese</p><p className="whitespace-pre-wrap">{p.anamnese}</p></div>}
-            {p.hipotese_diagnostica && <div><p className="text-xs font-semibold text-gray-400 uppercase mb-0.5">Hipótese</p><p>{p.hipotese_diagnostica}</p></div>}
-            {p.conduta && <div><p className="text-xs font-semibold text-gray-400 uppercase mb-0.5">Conduta</p><p>{p.conduta}</p></div>}
-            {p.prescricao && <div><p className="text-xs font-semibold text-gray-400 uppercase mb-0.5">Prescrição</p><p>{p.prescricao}</p></div>}
+            {p.anamnese && <div><p className="text-xs font-semibold text-gray-400 uppercase mb-0.5">{R.anamnese.rotulo}</p><p className="whitespace-pre-wrap">{p.anamnese}</p></div>}
+            {p.hipotese_diagnostica && <div><p className="text-xs font-semibold text-gray-400 uppercase mb-0.5">{R.hipotese_diagnostica.rotulo}</p><p>{p.hipotese_diagnostica}</p></div>}
+            {p.conduta && <div><p className="text-xs font-semibold text-gray-400 uppercase mb-0.5">{R.conduta.rotulo}</p><p>{p.conduta}</p></div>}
+            {p.prescricao && <div><p className="text-xs font-semibold text-gray-400 uppercase mb-0.5">{R.prescricao.rotulo}</p><p>{p.prescricao}</p></div>}
             {p.observacoes && <div><p className="text-xs font-semibold text-gray-400 uppercase mb-0.5">Observações</p><p>{p.observacoes}</p></div>}
           </div>
         )}
@@ -558,7 +559,7 @@ export default function MapaLongitudinalPage() {
           <div className="flex-1 w-full bg-white border border-gray-100 rounded-xl shadow-sm">
             <div className="px-5 py-4 border-b border-gray-50">
               <p className="text-sm font-semibold text-gray-800">Perguntas ao Histórico</p>
-              <p className="text-xs text-gray-400 mt-0.5">Ex: Quantas vezes ele citou a esposa? Houve evolução na queixa principal?</p>
+              <p className="text-xs text-gray-400 mt-0.5">Ex: Quantas vezes ele citou a esposa? Como a demanda evoluiu desde o início?</p>
             </div>
             {mapaMsg.length > 0 && (
               <div className="px-5 py-4 space-y-4 max-h-96 overflow-y-auto">

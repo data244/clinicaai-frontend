@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { X, Upload, FileText, Camera, HelpCircle, Loader2, ChevronDown, ChevronUp, AlertTriangle, Check, Trash2 } from 'lucide-react'
 import { erroDoServidor } from '@/lib/api'
+import { nomeTipo, opcoesTipo, rotuloFormulario } from '@/lib/registro-rotulos'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://clinicaai-backend-production.up.railway.app'
 const token = () => typeof window !== 'undefined' ? localStorage.getItem('clinicaai_token') ?? '' : ''
@@ -33,8 +34,6 @@ interface Props {
   onClose: () => void
   onConcluido: () => void
 }
-
-const TIPOS = ['consulta', 'retorno', 'anamnese', 'evolucao']
 
 const AJUDA = `Como preparar suas anotações para importação:
 
@@ -282,7 +281,7 @@ export default function ImportarHistorico({ pacienteId, pacienteNome, onClose, o
                   <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
                     <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 cursor-pointer" onClick={() => toggleExpandida(i)}>
                       <div className="flex-1 flex items-center gap-2 min-w-0">
-                        <span className="text-xs font-medium bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full capitalize shrink-0">{s.tipo}</span>
+                        <span className="text-xs font-medium bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full shrink-0">{nomeTipo(s.tipo)}</span>
                         <span className="text-sm text-gray-700 truncate">
                           {s.data_estimada
                             ? `${s.data_certeza === 'estimada' ? '~' : ''}${new Date(s.data_estimada + 'T12:00:00').toLocaleDateString('pt-BR')}`
@@ -312,13 +311,13 @@ export default function ImportarHistorico({ pacienteId, pacienteNome, onClose, o
                             <label className="text-xs text-gray-500 font-medium">Tipo</label>
                             <select value={s.tipo} onChange={e => editarSessao(i, 'tipo', e.target.value)}
                               className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                              {TIPOS.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+                              {opcoesTipo(s.tipo).map(t => <option key={t} value={t}>{nomeTipo(t)}</option>)}
                             </select>
                           </div>
                         </div>
                         {(['queixa_principal', 'anamnese', 'hipotese_diagnostica', 'conduta', 'observacoes'] as const).map(campo => (
                           <div key={campo}>
-                            <label className="text-xs text-gray-500 font-medium capitalize">{campo.replace(/_/g, ' ')}</label>
+                            <label className="text-xs text-gray-500 font-medium">{rotuloFormulario(campo)}</label>
                             <textarea rows={2} value={s[campo] ?? ''}
                               onChange={e => editarSessao(i, campo, e.target.value)}
                               className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300" />

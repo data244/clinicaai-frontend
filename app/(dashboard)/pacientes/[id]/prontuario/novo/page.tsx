@@ -6,10 +6,10 @@ import { Paciente } from '@/types'
 import { ArrowLeft, Mic, MicOff, Square, Save, Loader2, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import SeloFicticia from '@/components/SeloFicticia'
+import { CAMPOS_REGISTRO as R, TIPOS_REGISTRO, nomeTipo } from '@/lib/registro-rotulos'
 
 type Fase = 'idle' | 'gravando' | 'processando' | 'revisao' | 'salvo'
 
-const TIPOS = ['consulta', 'retorno', 'exame', 'evolucao', 'anamnese'] as const
 
 export default function NovoProntuarioAudioPage() {
   const { id } = useParams<{ id: string }>()
@@ -184,12 +184,12 @@ export default function NovoProntuarioAudioPage() {
                 onChange={e => setTipo(e.target.value)}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-300"
               >
-                {TIPOS.map(t => (<option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>))}
+                {TIPOS_REGISTRO.map(t => (<option key={t} value={t}>{nomeTipo(t)}</option>))}
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Transcrição completa</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{R.anamnese.rotulo}</label>
               <textarea
                 value={transcricao}
                 onChange={e => setTranscricao(e.target.value)}
@@ -200,24 +200,24 @@ export default function NovoProntuarioAudioPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Queixa principal (editável)</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{R.queixa_principal.rotulo}</label>
               <textarea
                 value={queixa}
                 onChange={e => setQueixa(e.target.value)}
                 rows={2}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-primary-300"
-                placeholder="Queixa principal do paciente..."
+                placeholder={R.queixa_principal.exemplo}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Conduta</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{R.conduta.rotulo}</label>
               <textarea
                 value={conduta}
                 onChange={e => setConduta(e.target.value)}
                 rows={2}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-primary-300"
-                placeholder="Intervenções, orientações..."
+                placeholder={R.conduta.exemplo}
               />
             </div>
 

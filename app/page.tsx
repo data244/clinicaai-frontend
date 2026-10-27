@@ -278,7 +278,7 @@ export default function LandingPage() {
             O áudio do Clínica.ai é o seu memo, gravado por você depois do atendimento, sobre a sessão.
           </Confianca>
           <Confianca icon={<UserCheck className="w-5 h-5" />} title="A IA apoia, você decide.">
-            O Clínica.ai não faz diagnóstico e não substitui o seu julgamento clínico. Ele organiza o que você registrou.
+            A IA pode auxiliar na organização de informações e na exploração de hipóteses clínicas, mas não estabelece diagnósticos nem substitui a avaliação profissional.
           </Confianca>
           {SIGILO_CONFERIDO && (
             <Confianca icon={<Lock className="w-5 h-5" />} title="Sigilo.">

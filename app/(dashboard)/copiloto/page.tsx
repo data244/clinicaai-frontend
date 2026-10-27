@@ -9,6 +9,7 @@ import { Paciente } from '@/types'
 import { Brain, Send, Loader2, Sparkles, FileText, User, Bot, ChevronDown, Plus, TrendingUp, MessageSquare } from 'lucide-react'
 import InfoTip from '@/components/InfoTip'
 import { rotuloPaciente } from '@/components/SeloFicticia'
+import { nomeTipo } from '@/lib/registro-rotulos'
 
 type Fonte = { id: string; data: string; tipo: string; queixa: string; similaridade: number }
 type Mensagem = { role: 'user' | 'assistant'; content: string; fontes?: Fonte[] }
@@ -134,7 +135,7 @@ export default function CopilotoPage() {
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <Brain className="w-6 h-6 text-purple-600" />
               Copiloto Clínico
-              <InfoTip title="Copiloto Clínico" text="Pergunte sobre o histórico do paciente em linguagem natural. Ele organiza a informação e cita as sessões. Não propõe diagnóstico nem conduta. Selecione um paciente antes de perguntar." />
+              <InfoTip title="Copiloto Clínico" text="Pergunte sobre o histórico do paciente em linguagem natural. Ele organiza a informação e cita as sessões. A IA pode auxiliar na organização de informações e na exploração de hipóteses clínicas, mas não estabelece diagnósticos nem substitui a avaliação profissional. Selecione um paciente antes de perguntar." />
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">
               Leitura inteligente do histórico do paciente: padrões, evolução e o que pode merecer atenção na próxima sessão
@@ -203,10 +204,10 @@ export default function CopilotoPage() {
                         {msg.fontes.map((f, fi) => (
                           <div key={fi} className="text-xs bg-purple-50 border border-purple-100 rounded-lg px-3 py-2">
                             <div className="flex items-center justify-between mb-0.5">
-                              <span className="font-medium text-purple-700 capitalize">{f.tipo} · {f.data}</span>
+                              <span className="font-medium text-purple-700">{nomeTipo(f.tipo)} · {f.data}</span>
                               {f.similaridade > 0 && <span className="text-purple-400">{(f.similaridade * 100).toFixed(0)}% similar</span>}
                             </div>
-                            <p className="text-gray-600 truncate">{f.queixa || 'Sem queixa registrada'}</p>
+                            <p className="text-gray-600 truncate">{f.queixa || 'Sem demanda registrada'}</p>
                           </div>
                         ))}
                       </div>
@@ -259,8 +260,8 @@ export default function CopilotoPage() {
           </button>
         </div>
 
-        <p className="text-center text-xs text-gray-300 mt-2 flex items-center justify-center gap-1">
-          <Sparkles className="w-3 h-3" /> Apoio ao raciocínio clínico com base no histórico do paciente. Não substitui o julgamento profissional
+        <p className="text-center text-xs text-gray-400 mt-2 flex items-center justify-center gap-1">
+          <Sparkles className="w-3 h-3 flex-shrink-0" /> A IA pode auxiliar na organização de informações e na exploração de hipóteses clínicas, mas não estabelece diagnósticos nem substitui a avaliação profissional.
         </p>
       </div>
 

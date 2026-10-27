@@ -25,9 +25,9 @@
   ],
   "shortcuts": [
     {
-      "name": "Nova Consulta",
-      "url": "/prontuarios/novo",
-      "description": "Registrar nova consulta"
+      "name": "Novo registro",
+      "url": "/prontuarios?novo=1",
+      "description": "Ditar o registro de uma sessão"
     },
     {
       "name": "Agenda",

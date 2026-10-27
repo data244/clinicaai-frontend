@@ -7,6 +7,7 @@ import { prontuariosApi, pacientesApi, iaApi } from '@/lib/api'
 import { Paciente, Prontuario } from '@/types'
 import AudioRecorder from '@/components/ia/AudioRecorder'
 import { rotuloPaciente } from '@/components/SeloFicticia'
+import { CAMPOS_REGISTRO as R, TIPOS_REGISTRO, rotuloFormulario, nomeTipo } from '@/lib/registro-rotulos'
 import { Loader2, Sparkles, FileText, ChevronDown, ChevronUp, Mic } from 'lucide-react'
 
 type FormData = {
@@ -32,7 +33,8 @@ export default function ProntuariosPage() {
   const [salvandoResumo, setSalvandoResumo] = useState(false)
   const [prontuarioAtual, setProntuarioAtual] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showForm, setShowForm] = useState(false)
+  // O atalho "Novo registro" do aplicativo instalado abre /prontuarios?novo=1
+  const [showForm, setShowForm] = useState(searchParams.get('novo') === '1')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -137,18 +139,14 @@ export default function ProntuariosPage() {
               <div>
                 <label className="label">Tipo de atendimento</label>
                 <select className="input" {...register('tipo')}>
-                  <option value="consulta">Consulta</option>
-                  <option value="retorno">Retorno</option>
-                  <option value="avaliacao">Avaliação</option>
-                  <option value="anamnese">Anamnese</option>
-                  <option value="evolucao">Evolução</option>
+                  {TIPOS_REGISTRO.map(t => (<option key={t} value={t}>{nomeTipo(t)}</option>))}
                 </select>
               </div>
             </div>
 
             <div>
-              <label className="label">Queixa principal</label>
-              <input className="input" placeholder="Motivo da consulta..." {...register('queixa_principal')} />
+              <label className="label">{R.queixa_principal.rotulo}</label>
+              <input className="input" placeholder={R.queixa_principal.exemplo} {...register('queixa_principal')} />
             </div>
 
             {/* Gravação / Transcrição */}
@@ -162,7 +160,7 @@ export default function ProntuariosPage() {
               <AudioRecorder onTranscricao={handleTranscricao} />
               {anamneseValue && (
                 <div className="mt-3">
-                  <label className="label">Texto transcrito (editável)</label>
+                  <label className="label">{R.anamnese.rotulo} (editável)</label>
                   <textarea
                     className="input min-h-[100px] resize-y"
                     {...register('anamnese')}
@@ -174,31 +172,31 @@ export default function ProntuariosPage() {
                 <textarea
                   className="input mt-2 min-h-[80px] resize-y"
                   {...register('anamnese')}
-                  placeholder="Ou digite a anamnese manualmente..."
+                  placeholder="Ou digite o registro da sessão..."
                 />
               )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Exame físico</label>
-                <textarea className="input resize-y" {...register('exame_fisico')} rows={2} />
+                <label className="label">{R.exame_fisico.rotulo}</label>
+                <textarea className="input resize-y" {...register('exame_fisico')} rows={2} placeholder={R.exame_fisico.exemplo} />
               </div>
               <div>
-                <label className="label">Hipótese diagnóstica</label>
-                <textarea className="input resize-y" {...register('hipotese_diagnostica')} rows={2} />
+                <label className="label">{rotuloFormulario('hipotese_diagnostica')}</label>
+                <textarea className="input resize-y" {...register('hipotese_diagnostica')} rows={2} placeholder={R.hipotese_diagnostica.exemplo} />
               </div>
             </div>
 
             <div>
-              <label className="label">Conduta / Plano terapêutico</label>
-              <textarea className="input resize-y" {...register('conduta')} rows={3} />
+              <label className="label">{R.conduta.rotulo}</label>
+              <textarea className="input resize-y" {...register('conduta')} rows={3} placeholder={R.conduta.exemplo} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="label">Prescrição</label>
-                <textarea className="input resize-y" {...register('prescricao')} rows={2} />
+                <label className="label">{R.prescricao.rotulo}</label>
+                <textarea className="input resize-y" {...register('prescricao')} rows={2} placeholder={R.prescricao.exemplo} />
               </div>
               <div>
                 <label className="label">Observações</label>
@@ -268,11 +266,11 @@ export default function ProntuariosPage() {
               onClick={() => setExpandedId(expandedId === pr.id ? null : pr.id)}
             >
               <div className="flex items-center gap-3">
-                <span className="text-xs font-medium bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full capitalize">
-                  {pr.tipo}
+                <span className="text-xs font-medium bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full">
+                  {nomeTipo(pr.tipo)}
                 </span>
                 <p className="text-sm font-medium text-gray-800">
-                  {pr.queixa_principal || 'Sem queixa registrada'}
+                  {pr.queixa_principal || 'Sem demanda registrada'}
                 </p>
                 {pr.resumo_ia && (
                   <span className="text-xs bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -290,25 +288,25 @@ export default function ProntuariosPage() {
               <div className="mt-4 pt-4 border-t border-gray-100 space-y-3 text-sm">
                 {pr.anamnese && (
                   <div>
-                    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">Anamnese / Transcrição</p>
+                    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">{R.anamnese.rotulo}</p>
                     <p className="text-gray-700 whitespace-pre-wrap">{pr.anamnese}</p>
                   </div>
                 )}
                 {pr.exame_fisico && (
                   <div>
-                    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">Exame Físico</p>
+                    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">{R.exame_fisico.rotulo}</p>
                     <p className="text-gray-700">{pr.exame_fisico}</p>
                   </div>
                 )}
                 {pr.hipotese_diagnostica && (
                   <div>
-                    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">Hipótese Diagnóstica</p>
+                    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">{R.hipotese_diagnostica.rotulo}</p>
                     <p className="text-gray-700">{pr.hipotese_diagnostica}</p>
                   </div>
                 )}
                 {pr.conduta && (
                   <div>
-                    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">Conduta</p>
+                    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">{R.conduta.rotulo}</p>
                     <p className="text-gray-700">{pr.conduta}</p>
                   </div>
                 )}

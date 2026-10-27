@@ -9,8 +9,8 @@ import { formatDate } from '@/lib/utils'
 import DocumentosPaciente from '@/components/DocumentosPaciente'
 import ImportarHistorico from '@/components/ImportarHistorico'
 import SeloFicticia from '@/components/SeloFicticia'
+import { CAMPOS_REGISTRO as R, rotuloFormulario, nomeTipo, opcoesTipo } from '@/lib/registro-rotulos'
 
-const TIPOS = ['consulta', 'retorno', 'exame', 'evolucao', 'anamnese'] as const
 
 interface ProntuarioForm {
   tipo: string
@@ -301,8 +301,8 @@ export default function PacienteDetailPage() {
                     <div key={pr.id} className="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full capitalize">
-                            {pr.tipo}
+                          <span className="text-xs font-medium bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full">
+                            {nomeTipo(pr.tipo)}
                           </span>
                           <span className="text-xs text-gray-400 flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
@@ -361,16 +361,16 @@ export default function PacienteDetailPage() {
                   onChange={e => setForm(prev => ({ ...prev, tipo: e.target.value }))}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-300"
                 >
-                  {TIPOS.map(t => (<option key={t} value={t} className="capitalize">{t.charAt(0).toUpperCase() + t.slice(1)}</option>))}
+                  {opcoesTipo(form.tipo).map(t => (<option key={t} value={t}>{nomeTipo(t)}</option>))}
                 </select>
               </div>
-              {campo('Queixa principal', 'queixa_principal', 2, 'Motivo da consulta...', false)}
-              {campo('Anamnese', 'anamnese', 3, 'História clínica, contexto...', false)}
-              {campo('Exame físico / observações clínicas', 'exame_fisico', 2, '', false)}
-              {campo('Hipótese diagnóstica', 'hipotese_diagnostica', 2, '', false)}
-              {campo('Conduta', 'conduta', 3, 'Intervenções, orientações, encaminhamentos...', false)}
-              {campo('Prescrição', 'prescricao', 2, '', false)}
-              {campo('Observações gerais', 'observacoes', 2, '', false)}
+              {campo(R.queixa_principal.rotulo, 'queixa_principal', 2, R.queixa_principal.exemplo, false)}
+              {campo(R.anamnese.rotulo, 'anamnese', 3, R.anamnese.exemplo, false)}
+              {campo(R.exame_fisico.rotulo, 'exame_fisico', 2, R.exame_fisico.exemplo, false)}
+              {campo(rotuloFormulario('hipotese_diagnostica'), 'hipotese_diagnostica', 2, R.hipotese_diagnostica.exemplo, false)}
+              {campo(R.conduta.rotulo, 'conduta', 3, R.conduta.exemplo, false)}
+              {campo(R.prescricao.rotulo, 'prescricao', 2, R.prescricao.exemplo, false)}
+              {campo(R.observacoes.rotulo, 'observacoes', 2, R.observacoes.exemplo, false)}
               {erro && (<p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{erro}</p>)}
             </div>
             <div className="px-5 pb-5 flex gap-3 justify-end border-t border-gray-100 pt-4">
@@ -421,16 +421,16 @@ export default function PacienteDetailPage() {
                   onChange={e => setFormEdit(prev => ({ ...prev, tipo: e.target.value }))}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-300"
                 >
-                  {TIPOS.map(t => (<option key={t} value={t} className="capitalize">{t.charAt(0).toUpperCase() + t.slice(1)}</option>))}
+                  {opcoesTipo(formEdit.tipo).map(t => (<option key={t} value={t}>{nomeTipo(t)}</option>))}
                 </select>
               </div>
-              {campo('Queixa principal', 'queixa_principal', 2, 'Motivo da consulta...', true)}
-              {campo('Anamnese', 'anamnese', 3, 'História clínica, contexto...', true)}
-              {campo('Exame físico / observações clínicas', 'exame_fisico', 2, '', true)}
-              {campo('Hipótese diagnóstica', 'hipotese_diagnostica', 2, '', true)}
-              {campo('Conduta', 'conduta', 3, 'Intervenções, orientações, encaminhamentos...', true)}
-              {campo('Prescrição', 'prescricao', 2, '', true)}
-              {campo('Observações gerais', 'observacoes', 2, '', true)}
+              {campo(R.queixa_principal.rotulo, 'queixa_principal', 2, R.queixa_principal.exemplo, true)}
+              {campo(R.anamnese.rotulo, 'anamnese', 3, R.anamnese.exemplo, true)}
+              {campo(R.exame_fisico.rotulo, 'exame_fisico', 2, R.exame_fisico.exemplo, true)}
+              {campo(rotuloFormulario('hipotese_diagnostica'), 'hipotese_diagnostica', 2, R.hipotese_diagnostica.exemplo, true)}
+              {campo(R.conduta.rotulo, 'conduta', 3, R.conduta.exemplo, true)}
+              {campo(R.prescricao.rotulo, 'prescricao', 2, R.prescricao.exemplo, true)}
+              {campo(R.observacoes.rotulo, 'observacoes', 2, R.observacoes.exemplo, true)}
               {erroEdit && (<p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{erroEdit}</p>)}
             </div>
             <div className="px-5 pb-5 flex gap-3 justify-end border-t border-gray-100 pt-4">
