@@ -133,7 +133,7 @@ function ModalNovaCobranca({
             <label className="text-xs font-medium text-gray-600 block mb-1">Descrição *</label>
             <input
               type="text"
-              placeholder="Ex: Consulta junho, Mensalidade"
+              placeholder="Ex: Sessões de junho, Mensalidade"
               value={form.descricao}
               onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
               className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-400"

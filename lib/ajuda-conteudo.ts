@@ -64,7 +64,7 @@ Em **Pacientes** você cadastra e acompanha cada pessoa atendida.
 
 - **Novo paciente**: clique em *Novo paciente* e preencha os dados básicos.
 - **Ficha do paciente**: abra um paciente para ver os dados, o histórico de sessões e os atalhos para a Análise Longitudinal e os Documentos.
-- **Documentos**: anexe exames e laudos na ficha; eles passam a fazer parte do prontuário consolidado.
+- **Documentos**: anexe laudos, relatórios e outros documentos do paciente na ficha; eles passam a fazer parte do prontuário consolidado.
 `,
   },
   {
