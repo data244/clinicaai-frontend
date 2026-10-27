@@ -145,7 +145,7 @@ export default function MinhaAssinatura({ acesso }: { acesso?: AcessoConta }) {
       {botao === 'concluir' && <BotaoAssinar texto="Concluir pagamento" />}
       {botao === 'recusado' && (
         <div className="flex flex-wrap items-center gap-3">
-          <BotaoAssinar texto="Concluir pagamento" agora refazer />
+          <BotaoAssinar texto="Concluir pagamento" agora />
           {status.pode_cancelar && botaoCancelar}
         </div>
       )}

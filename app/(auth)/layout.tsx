@@ -26,29 +26,26 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <div className="relative z-10 max-w-md">
-          <h2 className="text-3xl font-bold leading-tight">Do registro ao que vem a seguir.</h2>
+          <h2 className="text-3xl font-bold leading-tight">Do registro ao caso inteiro.</h2>
           <p className="mt-4 text-white/80 leading-relaxed">
-            Cada atendimento vira dado. A inteligência longitudinal revela padrões e antecipa
-            tendências, para você cuidar da causa, não só do sintoma.
+            Cada atendimento fica registrado. A leitura longitudinal junta as sessões e mostra o que
+            se repete no caso, para você decidir com o histórico inteiro à mão.
           </p>
 
-          {/* Gráfico: passado (sólido) -> hoje -> predição (tracejado, subindo) */}
+          {/* Gráfico: as sessões do caso até hoje (sem predição) */}
           <svg viewBox="0 0 400 130" className="w-full mt-8" fill="none">
-            <line x1="200" y1="10" x2="200" y2="120" stroke="white" strokeOpacity="0.35" strokeWidth="1.5" strokeDasharray="4 4" />
-            <text x="200" y="128" fill="white" fillOpacity="0.6" fontSize="10" textAnchor="middle">hoje</text>
-            <polyline points="0,80 35,80 50,55 65,95 80,80 130,80 150,60 170,80 200,72"
+            <line x1="392" y1="10" x2="392" y2="120" stroke="white" strokeOpacity="0.35" strokeWidth="1.5" strokeDasharray="4 4" />
+            <text x="392" y="128" fill="white" fillOpacity="0.6" fontSize="10" textAnchor="end">hoje</text>
+            <polyline points="0,80 69,80 98,55 127,95 157,80 255,80 294,60 333,80 392,72"
               stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            {[35,80,130,170].map((x,i)=>(<circle key={i} cx={x} cy={80} r="3.5" fill="white" />))}
-            <polyline points="200,72 250,60 300,44 350,30 392,18"
-              stroke="white" strokeOpacity="0.85" strokeWidth="2.5" strokeDasharray="6 6" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="392" cy="18" r="5" fill="white" />
-            <circle cx="392" cy="18" r="11" fill="white" fillOpacity="0.18" />
+            {[69,157,255,333].map((x,i)=>(<circle key={i} cx={x} cy={80} r="3.5" fill="white" />))}
+            <circle cx="392" cy="72" r="5" fill="white" />
           </svg>
 
           <ul className="mt-8 space-y-2 text-sm text-white/85">
             <li className="flex gap-2"><span className="text-white/50">›</span> Histórico que se constrói sozinho a cada sessão</li>
-            <li className="flex gap-2"><span className="text-white/50">›</span> Padrões e alertas que emergem do conjunto</li>
-            <li className="flex gap-2"><span className="text-white/50">›</span> Uma leitura que aponta para frente, não só para trás</li>
+            <li className="flex gap-2"><span className="text-white/50">›</span> O que se repete, visto no conjunto das sessões</li>
+            <li className="flex gap-2"><span className="text-white/50">›</span> Uma leitura do caso inteiro, não só da última sessão</li>
           </ul>
         </div>
 

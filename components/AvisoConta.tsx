@@ -1,127 +1,40 @@
 'use client'
 
 import { useState } from 'react'
-import { createPortal } from 'react-dom'
-import { ApiError, assinaturaApi, Bloqueio, CheckoutAssinatura } from '@/lib/api'
+import { useRouter } from 'next/navigation'
+import { Bloqueio } from '@/lib/api'
 import type { AcessoConta } from '@/types'
-import { Eye, Lock, Zap, Loader2, CreditCard, AlertCircle } from 'lucide-react'
-import { EnderecoSuporte, FalarComSuporte } from '@/components/Suporte'
-import { CobrancaPelaData } from '@/components/EmpresaResponsavel'
+import { Eye, Lock, Zap, Loader2 } from 'lucide-react'
 
 function dataBr(iso: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
 }
 
-// Botão Assinar: prepara a assinatura no Mercado Pago e mostra plano, valor e
-// data da primeira cobrança antes de abrir o pagamento.
+// Botão Assinar: leva à tela /assinar, que mostra plano, valor e data da primeira cobrança
+// e recebe o cartão na própria página (opção B, 27/10). A assinatura só é criada lá.
 // agora: primeira cobrança hoje ("Começar a assinatura agora" e "Concluir pagamento").
-// refazer: pagamento recusado de quem já assina; a cobrança de hoje é a do mês.
-export function useAssinar(agora = false, refazer = false) {
+export function useAssinar(agora = false) {
+  const router = useRouter()
   const [abrindo, setAbrindo] = useState(false)
-  const [checkout, setCheckout] = useState<CheckoutAssinatura | null>(null)
-  const [falhou, setFalhou] = useState(false)
 
-  const abrir = async () => {
+  const abrir = () => {
     setAbrindo(true)
-    try {
-      setCheckout(await (agora ? assinaturaApi.comecarAgora() : assinaturaApi.checkoutTrial()))
-    } catch (e) {
-      if (agora && e instanceof ApiError && e.status === 400 && e.message) alert(e.message)
-      else setFalhou(true)
-    }
-    setAbrindo(false)
+    router.push(agora ? '/assinar?agora=1' : '/assinar')
   }
-
-  const janela = checkout
-    ? <JanelaAssinatura checkout={checkout} agora={agora} refazer={refazer} onFechar={() => setCheckout(null)} />
-    : falhou && <JanelaFalhaPagamento onFechar={() => setFalhou(false)} />
-  return { abrir, abrindo, janela }
+  return { abrir, abrindo }
 }
 
-// Suporte (Leo, 23/10): se o pagamento não abre, a pessoa já fala com o suporte dali
-function JanelaFalhaPagamento({ onFechar }: { onFechar: () => void }) {
-  return createPortal(
-    <div className="fixed inset-0 bg-black/40 z-[70] flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 bg-red-100 rounded-2xl mb-4">
-          <AlertCircle className="w-6 h-6 text-red-600" />
-        </div>
-        <h2 className="text-lg font-bold text-gray-900 mb-2">O pagamento não abriu</h2>
-        <p className="text-sm text-gray-600 mb-5 leading-relaxed">
-          Não foi possível abrir o pagamento agora. Tente de novo em instantes. Se continuar, fale com o suporte.
-        </p>
-        <div className="flex flex-col items-center gap-4">
-          <FalarComSuporte pagina="painel" />
-          <EnderecoSuporte texto="Ou escreva para" />
-          <button onClick={onFechar} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
-            Fechar
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
-  )
-}
-
-function JanelaAssinatura({ checkout, agora, refazer, onFechar }: { checkout: CheckoutAssinatura; agora: boolean; refazer: boolean; onFechar: () => void }) {
-  const [indo, setIndo] = useState(false)
-  const valor = (checkout.valor ?? 99).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-  const primeira = agora ? new Date().toISOString() : checkout.primeira_cobranca
-  // Mais de 1 hora à frente: a cobrança fica para o fim do teste
-  const depois = !!primeira && new Date(primeira).getTime() - Date.now() > 60 * 60 * 1000
-
-  return createPortal(
-    <div className="fixed inset-0 bg-black/40 z-[70] flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-2xl mb-4">
-          <CreditCard className="w-6 h-6 text-indigo-600" />
-        </div>
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Assinar o plano Base</h2>
-        <p className="text-2xl font-bold text-indigo-700 mb-4">{valor}<span className="text-sm font-normal text-gray-500">/mês</span></p>
-        <p className="text-sm text-gray-600 mb-1 leading-relaxed">
-          {refazer
-            ? 'A cobrança deste mês é feita hoje, no Mercado Pago.'
-            : !primeira
-            ? 'O pagamento é feito no Mercado Pago.'
-            : depois
-              ? `A primeira cobrança será em ${dataBr(primeira)}, quando o seu teste termina.`
-              : 'A primeira cobrança é feita hoje, no Mercado Pago.'}
-        </p>
-        <p className="text-sm text-gray-600 mb-3 leading-relaxed">Depois, uma cobrança por mês.</p>
-        <CobrancaPelaData className="mb-6" />
-        <div className="flex flex-col items-center gap-3">
-          <button
-            onClick={() => { setIndo(true); window.location.href = checkout.init_point }}
-            disabled={indo}
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60"
-          >
-            {indo && <Loader2 className="w-4 h-4 animate-spin" />}
-            Ir para o pagamento
-          </button>
-          <button onClick={onFechar} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
-            Agora não
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
-  )
-}
-
-export function BotaoAssinar({ texto = 'Assinar', agora = false, refazer = false }: { texto?: string; agora?: boolean; refazer?: boolean }) {
-  const { abrir, abrindo, janela } = useAssinar(agora, refazer)
+export function BotaoAssinar({ texto = 'Assinar', agora = false }: { texto?: string; agora?: boolean }) {
+  const { abrir, abrindo } = useAssinar(agora)
   return (
-    <>
-      <button
-        onClick={abrir}
-        disabled={abrindo}
-        className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60"
-      >
-        {abrindo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-        {texto}
-      </button>
-      {janela}
-    </>
+    <button
+      onClick={abrir}
+      disabled={abrindo}
+      className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60"
+    >
+      {abrindo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+      {texto}
+    </button>
   )
 }
 

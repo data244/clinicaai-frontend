@@ -320,7 +320,7 @@ export default function LandingPage() {
             (art. 11) exige o consentimento livre, prévio, informado e por escrito do paciente.
           </FaqItem>
           <FaqItem q="A IA faz diagnóstico?">
-            Não. Ela organiza o que você registrou: temas, linha do tempo e mudanças ao longo do caso. A leitura clínica é sua.
+            A IA pode auxiliar na organização de informações e na exploração de hipóteses clínicas, mas não estabelece diagnósticos nem substitui a avaliação profissional.
           </FaqItem>
           <FaqItem q="Posso trazer minhas anotações antigas?">
             Sim: por texto, arquivo .txt ou .pdf, ou foto de anotações à mão.
@@ -378,8 +378,9 @@ export default function LandingPage() {
             </a>
           </div>
           <p className="text-slate-500 text-xs leading-relaxed max-w-3xl">
-            O Clínica.ai é um sistema de apoio à organização de registros clínicos. Não faz diagnóstico nem substitui o
-            julgamento profissional do psicólogo.
+            O Clínica.ai é um sistema de apoio à organização de registros clínicos. A IA pode auxiliar na organização de
+            informações e na exploração de hipóteses clínicas, mas não estabelece diagnósticos nem substitui a avaliação
+            profissional.
           </p>
           {TERMOS_NO_AR && <RodapeLegal escuro className="mt-4" />}
         </div>
