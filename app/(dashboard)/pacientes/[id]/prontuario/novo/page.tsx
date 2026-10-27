@@ -56,12 +56,12 @@ export default function NovoProntuarioAudioPage() {
   }
 
   const pararGravacao = () => {
-    if (!mediaRef.current) return
-    mediaRef.current.stop()
-    mediaRef.current.stream.getTracks().forEach(t => t.stop())
+    const mr = mediaRef.current
+    if (!mr) return
     if (timerRef.current) clearInterval(timerRef.current)
     setFase('processando')
-    mediaRef.current.onstop = async () => {
+    // onstop antes do stop(): o áudio só vai para a transcrição depois do último pedaço
+    mr.onstop = async () => {
       try {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
         const formData = new FormData()
@@ -83,15 +83,18 @@ export default function NovoProntuarioAudioPage() {
         setFase('idle')
       }
     }
+    mr.stop()
+    mr.stream.getTracks().forEach(t => t.stop())
   }
 
   const handleSalvar = async () => {
     setSalvando(true); setErro('')
     try {
+      // O texto ditado vai para a anamnese, como no menu Prontuários (o servidor não tem campo "transcricao")
       const payload: Record<string, string> = {
         paciente_id: id,
         tipo,
-        transcricao,
+        anamnese: transcricao,
       }
       if (queixa) payload.queixa_principal = queixa
       if (conduta) payload.conduta = conduta
@@ -139,12 +142,12 @@ export default function NovoProntuarioAudioPage() {
             )}
             <p className="text-sm text-gray-500 mb-5">
               {fase === 'idle'
-                ? 'Clique para iniciar a gravação da consulta'
+                ? 'Clique e dite o registro do atendimento'
                 : 'Gravando... clique para parar'}
             </p>
             {fase === 'idle' ? (
               <button onClick={iniciarGravacao} className="btn-primary px-6 py-3 flex items-center gap-2 mx-auto">
-                <Mic className="w-4 h-4" /> Iniciar gravação
+                <Mic className="w-4 h-4" /> Ditar o registro
               </button>
             ) : (
               <button onClick={pararGravacao} className="flex items-center gap-2 mx-auto px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium">
@@ -236,7 +239,7 @@ export default function NovoProntuarioAudioPage() {
                 onClick={() => { setFase('idle'); setTranscricao('') }}
                 className="text-sm px-3 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
               >
-                Nova gravação
+                Ditar de novo
               </button>
               <button
                 onClick={handleSalvar}

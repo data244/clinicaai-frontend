@@ -81,7 +81,7 @@ export default function AudioRecorder({ onTranscricao, disabled }: AudioRecorder
     <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center space-y-3">
       {estado === 'idle' && (
         <>
-          <p className="text-sm text-gray-500 font-medium">Gravar ou fazer upload de áudio da consulta</p>
+          <p className="text-sm text-gray-500 font-medium">Dite o registro ou envie o áudio do seu resumo</p>
           <div className="flex items-center justify-center gap-3">
             <button
               type="button"
@@ -89,7 +89,7 @@ export default function AudioRecorder({ onTranscricao, disabled }: AudioRecorder
               disabled={disabled}
               className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-5 rounded-lg transition-colors disabled:opacity-50"
             >
-              <Mic className="w-4 h-4" /> Gravar consulta
+              <Mic className="w-4 h-4" /> Ditar o registro
             </button>
             <button
               type="button"
@@ -144,7 +144,7 @@ export default function AudioRecorder({ onTranscricao, disabled }: AudioRecorder
             onClick={() => setEstado('idle')}
             className="ml-2 text-xs text-gray-400 hover:text-gray-600 underline"
           >
-            Gravar novamente
+            Ditar de novo
           </button>
         </div>
       )}

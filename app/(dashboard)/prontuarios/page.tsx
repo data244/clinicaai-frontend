@@ -154,7 +154,7 @@ export default function ProntuariosPage() {
             {/* Gravação / Transcrição */}
             <div>
               <label className="label flex items-center gap-2">
-                Transcrição da consulta
+                Ditado do registro
                 <span className="text-xs text-primary-500 font-normal bg-primary-50 px-2 py-0.5 rounded-full">
                   Groq Whisper
                 </span>

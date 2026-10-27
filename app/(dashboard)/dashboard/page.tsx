@@ -33,13 +33,13 @@ export default function DashboardPage() {
         <p className="text-gray-500 mt-1">Aqui está o resumo da sua clínica</p>
       </div>
 
-      {/* Destaque: inteligência longitudinal preditiva */}
+      {/* Destaque: inteligência longitudinal */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 to-indigo-700 text-white p-6 mb-8">
         <div className="relative z-10 max-w-2xl">
           <p className="text-[11px] uppercase tracking-widest text-white/70 mb-1">Inteligência longitudinal</p>
           <h2 className="text-xl font-bold leading-snug">Do histórico ao padrão: enxergue o que se repete no caso.</h2>
           <p className="text-sm text-white/80 mt-2 leading-relaxed">
-            Cada atendimento alimenta uma leitura que revela padrões e antecipa tendências. Abra a
+            Cada atendimento alimenta uma leitura que mostra o que se repete no caso. Abra a
             <span className="font-semibold"> Análise Longitudinal</span> de um paciente para ver a análise, ou converse com o
             <span className="font-semibold"> Copiloto Clínico</span>.
           </p>
@@ -52,13 +52,11 @@ export default function DashboardPage() {
             </Link>
           </div>
         </div>
-        {/* motivo: registro -> predição */}
+        {/* motivo: as sessões do caso (sem predição) */}
         <svg viewBox="0 0 300 120" className="absolute right-0 bottom-0 h-full w-1/2 opacity-30 hidden sm:block" fill="none" preserveAspectRatio="xMaxYMax meet">
-          <polyline points="0,80 40,80 60,58 80,98 100,80 150,80 170,64 190,80 210,74"
+          <polyline points="0,80 57,80 85,58 114,98 142,80 213,80 241,64 270,80 298,74"
             stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          <polyline points="210,74 245,58 275,40 298,26"
-            stroke="white" strokeWidth="2.5" strokeDasharray="6 6" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="298" cy="26" r="5" fill="white" />
+          <circle cx="298" cy="74" r="5" fill="white" />
         </svg>
       </div>
 
