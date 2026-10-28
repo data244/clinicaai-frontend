@@ -326,4 +326,30 @@ Escreva para contato@clinicaai.net.br, a partir do e-mail da conta, pedindo a c�
 Pela Resolução CFP 001/2009, os registros devem ser guardados por pelo menos 5 anos. Essa guarda é responsabilidade de quem atende. Mesmo depois de cancelar, no modo leitura, você continua podendo baixar os prontuários.
 `,
   },
+  {
+    slug: 'falar-com-suporte',
+    titulo: 'Falar com o suporte',
+    categoria: 'Conta & Assinatura',
+    resumo: 'Marina na hora, Telegram para conversar com uma pessoa, e-mail para pedidos formais.',
+    conteudo: `
+## Falar com o suporte
+
+Aqui na **Ajuda**, você escolhe como pedir ajuda:
+
+- **Marina**: a assistente da Ajuda responde na hora, com os artigos e a situação da sua assinatura. Ela não vê os seus pacientes.
+- **Telegram**: para conversar com uma pessoa do suporte. Em *Prefere falar com uma pessoa?*, clique em **Falar pelo Telegram** e depois em **Abrir o Telegram**. A resposta chega no próprio Telegram, em dias úteis.
+- **E-mail**: para pedidos formais e para acompanhar por escrito. Clique em **Enviar por e-mail** ou escreva para contato@clinicaai.net.br, a partir do e-mail da conta. Respondemos no e-mail da sua conta, em dias úteis.
+
+### Pelo Telegram
+
+- O link de **Abrir o Telegram** vale por 30 minutos e liga o chat à sua conta. Não repasse a outra pessoa.
+- Mande só texto. Fotos, áudios e arquivos não são aceitos.
+- Para desligar o chat da sua conta, mande /desvincular no Telegram.
+- Pedidos sobre os seus dados pela LGPD (acesso, cópia ou exclusão) vão pelo e-mail. Veja *Sigilo e proteção dos dados*.
+
+### Sem dados de pacientes
+
+Em nenhum canal envie nomes de pacientes, trechos de prontuário, transcrições de sessão ou prints com dados de pacientes. O suporte resolve dúvidas técnicas e de assinatura sem precisar deles.
+`,
+  },
 ]

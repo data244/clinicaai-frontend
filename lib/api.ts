@@ -367,6 +367,8 @@ export const suporteApi = {
   avaliar: (id: string, avaliacao: AvaliacaoMarina) => request<{ ok: boolean }>(
     '/api/v1/suporte/perguntar/avaliacao', { method: 'POST', body: JSON.stringify({ id, avaliacao }) }
   ),
+  telegram: () => request<{ disponivel: boolean }>('/api/v1/suporte/telegram'),
+  linkTelegram: () => request<{ link: string }>('/api/v1/suporte/telegram/link', { method: 'POST' }),
 }
 
 

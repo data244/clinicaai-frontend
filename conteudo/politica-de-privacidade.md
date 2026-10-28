@@ -26,7 +26,7 @@ Para estes dados, nós somos o controlador (LGPD, art. 5º, VI).
 | Plano, valor, situação e datas da assinatura; e-mail e código da conta enviados ao Mercado Pago | Cobrar a assinatura | Execução do contrato (V) |
 | Token de acesso da sua conta do Mercado Pago, se você usar a cobrança de pacientes | Criar os links de pagamento na sua conta | Execução do contrato (V) |
 | Data, hora e endereço IP de cada acesso | Segurança e guarda exigida pelo Marco Civil da Internet (Lei 12.965/2014, art. 15) | Obrigação legal (II) |
-| Mensagens enviadas ao suporte | Responder você | Execução do contrato (V) |
+| Mensagens enviadas ao suporte, por e-mail ou pelo Telegram; no Telegram, também o seu nome e nome de usuário de lá e o código do chat | Responder você | Execução do contrato (V) |
 | De qual post, anúncio ou link você chegou ao site | Saber quais canais trazem cadastros | Legítimo interesse (IX) |
 | Cookies da Meta, endereço IP, navegador e página; e-mail e código da conta embaralhados (SHA-256) | Medir se os anúncios trazem cadastros | Consentimento (I), só se você aceitar no aviso de cookies |
 | Nome, e-mail, WhatsApp, CRP, número de pacientes e origem, se você se inscreveu por um formulário da página | Responder a inscrição | Consentimento (I) |
@@ -54,6 +54,7 @@ Para estes dados, você é o controlador e nós somos o operador (LGPD, art. 5º
 | Groq | Transcrição de áudio | O áudio que você envia. O nosso servidor não guarda o áudio | EUA |
 | Mercado Pago | Assinatura e, se você usar, cobrança dos seus pacientes | E-mail e código da conta, plano e valor. O cartão e o CPF do titular são digitados num formulário do Mercado Pago dentro da nossa página (ou no site do Mercado Pago, se o formulário não carregar); nós recebemos só um código de uso único do cartão. Na cobrança de paciente: descrição, valor e e-mail do paciente | Empresa no Brasil |
 | Resend | Envio de e-mails | Seu nome, seu e-mail, o texto dos avisos e as mensagens que você manda ao suporte. Para a nossa equipe: os dados de cada cadastro novo, de cada inscrição pelos formulários e de cada falha no cadastro do cartão | Empresa nos EUA |
+| Telegram | Suporte pelo Telegram, só se você escolher esse canal | As mensagens que você troca com o suporte pelo Telegram, com o seu nome e nome de usuário de lá. A nossa equipe vê no Telegram o nome, o e-mail e a situação da conta ligada ao chat. Nos avisos de pedidos feitos por e-mail, só a tela de onde o pedido veio e a situação da conta, sem o texto, o nome e o e-mail | Empresa no exterior |
 | Meta | Medir anúncios, só se você aceitar os cookies | Os dados da linha de cookies da seção 2 | Empresa no exterior |
 | YouTube (Google) | Vídeos da Ajuda | Ao abrir a Ajuda, o seu navegador carrega os vídeos direto do YouTube, que recebe o seu endereço IP e pode gravar cookies dele | Empresa nos EUA |
 
@@ -66,7 +67,7 @@ Para estes dados, você é o controlador e nós somos o operador (LGPD, art. 5º
 
 ## 5. Dados fora do Brasil
 
-Parte dos dados é tratada nos EUA, pelos fornecedores da seção 4, porque é lá que esses serviços funcionam (LGPD, art. 33).
+Parte dos dados é tratada fora do Brasil, principalmente nos EUA, pelos fornecedores da seção 4, porque é lá que esses serviços funcionam (LGPD, art. 33).
 
 ## 6. Quem da nossa equipe acessa
 
@@ -82,6 +83,7 @@ Parte dos dados é tratada nos EUA, pelos fornecedores da seção 4, porque é l
 | Data, hora e IP de cada acesso | 6 meses (Marco Civil da Internet, art. 15) |
 | Registros técnicos | Servidor, 7 dias; banco, 1 dia; site, 1 hora. Podem conter e-mails. |
 | Dados de pagamento | Pelo prazo que a lei pedir |
+| Suporte pelo Telegram | As conversas ficam no Telegram até serem apagadas lá. O nosso banco guarda só o código do chat, a conta ligada e a situação do atendimento, sem o texto. |
 
 ## 8. Exclusão
 

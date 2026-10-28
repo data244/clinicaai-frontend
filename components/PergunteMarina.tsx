@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import { Loader2, BookOpen, UserRound } from 'lucide-react'
 import { suporteApi, ApiError, type RespostaMarina, type AvaliacaoMarina } from '@/lib/api'
 import { artigos } from '@/lib/ajuda-conteudo'
-import { EnderecoSuporte, FalarComSuporte } from '@/components/Suporte'
+import { EnderecoSuporte, FalarComSuporte, FalarPeloTelegram } from '@/components/Suporte'
 
 // Marina na Central de Ajuda (Leo, 28/10): responde com os artigos da Ajuda e a situação da
 // conta, sem ver pacientes. Não resolveu: "Falar com uma pessoa" abre o formulário do suporte
@@ -154,10 +154,13 @@ export default function PergunteMarina({ onAbrirArtigo }: { onAbrirArtigo: (slug
 
       <div ref={suporteRef} className="mt-4 pt-4 border-t border-gray-100">
         <p className="text-sm text-gray-700 font-medium mb-3">Prefere falar com uma pessoa?</p>
-        <FalarComSuporte
-          key={formulario.chave} pagina="ajuda"
-          abertoDeInicio={formulario.chave > 0} mensagemInicial={formulario.texto}
-        />
+        <div className="flex flex-wrap items-start gap-2">
+          <FalarComSuporte
+            key={formulario.chave} pagina={formulario.chave > 0 ? 'ajuda/marina' : 'ajuda'} rotulo="Enviar por e-mail"
+            abertoDeInicio={formulario.chave > 0} mensagemInicial={formulario.texto}
+          />
+          <FalarPeloTelegram />
+        </div>
         <div className="mt-3 [&>p]:text-left">
           <EnderecoSuporte texto="Ou escreva para" />
         </div>
