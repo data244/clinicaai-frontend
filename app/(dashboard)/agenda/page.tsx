@@ -62,9 +62,9 @@ const HORAS = Array.from({ length: 14 }, (_, i) => i + 7) // 07h às 20h
 // ── Cores por tipo ─────────────────────────────────────────────────────────────
 
 const TIPO_CONFIG: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  consulta: { label: 'Consulta',  color: 'text-indigo-700', bg: 'bg-indigo-100', border: 'border-indigo-400' },
-  retorno:  { label: 'Retorno',   color: 'text-emerald-700', bg: 'bg-emerald-100', border: 'border-emerald-400' },
-  exame:    { label: 'Exame',     color: 'text-amber-700', bg: 'bg-amber-100', border: 'border-amber-400' },
+  consulta: { label: 'Sessão',    color: 'text-indigo-700', bg: 'bg-indigo-100', border: 'border-indigo-400' },
+  retorno:  { label: 'Devolutiva', color: 'text-emerald-700', bg: 'bg-emerald-100', border: 'border-emerald-400' },
+  exame:    { label: 'Avaliação', color: 'text-amber-700', bg: 'bg-amber-100', border: 'border-amber-400' },
   bloqueio: { label: 'Bloqueio',  color: 'text-gray-600', bg: 'bg-gray-100', border: 'border-gray-400' },
 }
 
@@ -199,7 +199,7 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onSaveSerie, onD
             <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
             <input
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Ex: Consulta Inicial"
+              placeholder="Ex: Sessão inicial"
               value={form.titulo}
               onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
             />
@@ -301,7 +301,7 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onSaveSerie, onD
                     />
                   </div>
                   <p className="col-span-2 text-[11px] text-gray-500">
-                    Cria {sessoesMes || '0'} consultas ({repetir}) e 1 cobrança adiantada de{' '}
+                    Cria {sessoesMes || '0'} sessões ({repetir}) e 1 cobrança adiantada de{' '}
                     <strong>{totalRecorrente}</strong> por mês, vencendo todo dia {diaVencimento || '5'}, até você encerrar o tratamento.
                   </p>
                 </div>
@@ -366,7 +366,7 @@ function ModalAgendamento({ evento, pacientes, onClose, onSave, onSaveSerie, onD
                 disabled={loading}
                 className="text-sm text-red-500 hover:text-red-700 px-3 py-2"
               >
-                Cancelar consulta
+                Cancelar sessão
               </button>
             ) : <span />}
             <div className="flex gap-2">
@@ -615,7 +615,7 @@ export default function AgendaPage() {
   }
 
   const handleEncerrarSerie = async (serieId: string) => {
-    if (!confirm('Encerrar o tratamento? As consultas e cobranças deixam de ser geradas para os próximos meses (as já criadas permanecem).')) return
+    if (!confirm('Encerrar o tratamento? As sessões e cobranças deixam de ser geradas para os próximos meses (as já criadas permanecem).')) return
     await seriesApi.encerrar(serieId)
     await carregarAgendamentos()
     setEventoClick(null)
@@ -866,7 +866,7 @@ export default function AgendaPage() {
                   <X size={15} /> Encerrar tratamento
                 </button>
                 <p className="text-[11px] text-gray-400 mt-1">
-                  Para de gerar novas consultas e cobranças nos próximos meses.
+                  Para de gerar novas sessões e cobranças nos próximos meses.
                 </p>
               </div>
             )}
