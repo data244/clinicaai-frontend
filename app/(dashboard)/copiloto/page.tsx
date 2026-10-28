@@ -160,7 +160,7 @@ export default function CopilotoPage() {
               </div>
               <h2 className="text-lg font-semibold text-gray-700 mb-2">Como posso ajudar na leitura do caso?</h2>
               <p className="text-sm text-gray-400 mb-6 max-w-md">
-                Pergunte sobre padrões, evolução e tendências do paciente. Selecione um paciente acima para respostas baseadas no histórico dele.
+                Pergunte sobre o que se repete e o que mudou ao longo das sessões do paciente. Selecione um paciente acima para respostas baseadas no histórico dele.
               </p>
               <div className="grid grid-cols-2 gap-2 w-full max-w-lg">
                 {sugestoes.map((s, i) => (
@@ -279,7 +279,7 @@ export default function CopilotoPage() {
             <div className="relative z-10">
               <p className="text-[10px] uppercase tracking-wide text-white/70">Mesma inteligência</p>
               <p className="text-sm font-semibold flex items-center gap-1.5"><TrendingUp className="w-4 h-4" /> Análise Longitudinal</p>
-              <p className="text-[11px] text-white/80 mt-0.5">Padrões, conceitos e tendências de {nomePaciente(selectedPaciente)} →</p>
+              <p className="text-[11px] text-white/80 mt-0.5">O que se repete e o que mudou nas sessões de {nomePaciente(selectedPaciente)} →</p>
             </div>
             <svg viewBox="0 0 120 50" className="absolute right-0 bottom-0 w-24 opacity-30" fill="none">
               <polyline points="0,38 20,38 30,26 40,44 50,38 70,30 90,18 118,10" stroke="white" strokeWidth="2" strokeDasharray="0" strokeLinecap="round" />

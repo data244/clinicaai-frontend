@@ -64,7 +64,7 @@ Em **Pacientes** você cadastra e acompanha cada pessoa atendida.
 
 - **Novo paciente**: clique em *Novo paciente* e preencha os dados básicos.
 - **Ficha do paciente**: abra um paciente para ver os dados, o histórico de sessões e os atalhos para a Análise Longitudinal e os Documentos.
-- **Documentos**: anexe exames e laudos na ficha; eles passam a fazer parte do prontuário consolidado.
+- **Documentos**: anexe laudos, relatórios e outros documentos do paciente na ficha; eles passam a fazer parte do prontuário consolidado.
 `,
   },
   {
@@ -79,7 +79,7 @@ Cada atendimento vira um registro no prontuário do paciente.
 
 - **Por texto**: abra o paciente e crie um novo prontuário preenchendo os campos da sessão.
 - **Por áudio**: use o *Registro por áudio* para gravar o seu resumo, depois do atendimento: a fala é transcrita e vira o ponto de partida do registro, que você revisa antes de salvar.
-- **Prontuário consolidado**: o histórico se acumula em um documento único, cronológico e versionado, com os exames anexados como páginas.
+- **Prontuário consolidado**: o histórico se acumula em um documento único, cronológico e versionado, com os documentos anexados como páginas.
 
 Você sempre revisa o conteúdo antes de salvar.
 `,
