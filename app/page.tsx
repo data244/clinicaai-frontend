@@ -4,13 +4,19 @@ import { TrendingUp, Clock, Network, Check, ShieldCheck, MicOff, UserCheck, Lock
 import DataCobranca from '@/components/DataCobranca'
 import { RodapeLegal } from '@/components/EmpresaResponsavel'
 
-// Página inicial (Rascunho_Pagina_e_Emails_v2.md, seção 1, aprovado pelo Leo em 20/10).
+// Página inicial v3 (Landing_v3_2026-10-28.md, pedido do vendas de 28/10, sobre a v2 aprovada pelo Leo em 20/10).
 // Cada chave abaixo liga um trecho que só pode aparecer quando for verdade no sistema.
 
-// A Raquel, paciente fictícia, pronta em toda conta nova (item 3 do prompt de 20/10)
-const RAQUEL_NA_CONTA = false
+// A Raquel, paciente fictícia, pronta em toda conta nova (no ar desde 26/10, com 20 sessões)
+const RAQUEL_NA_CONTA = true
 // As três telas da Raquel, com "Paciente fictícia" escrito na imagem, em /public/home
-const TELAS_RAQUEL: { src: string; legenda: string }[] = []
+const TELAS_RAQUEL: { src: string; legenda: string }[] = [
+  { src: '/home/raquel-analise.png', legenda: 'Análise Longitudinal: os temas que se repetem ao longo das sessões.' },
+  { src: '/home/raquel-linha-do-tempo.png', legenda: 'Linha do tempo: o caso sessão a sessão.' },
+  { src: '/home/raquel-registro.png', legenda: 'Registro de sessão, pronto para você revisar.' },
+]
+// Correção do financeiro no ar: volta a linha da cobrança por link de pagamento
+const FINANCEIRO_OK = false
 // Coluna acesso_ate no banco de produção: quem cancela depois de pagar usa até o fim do mês pago
 const ACESSO_ATE_NO_BANCO = false
 // SQL de segurança de 17/10 rodado e compartilhamento de dados desligado na OpenAI e na Groq
@@ -21,7 +27,7 @@ const CONTATO_RECEBE = true
 const TERMOS_NO_AR = true
 
 export const metadata: Metadata = {
-  title: 'Clínica.ai · O prontuário que lê o caso inteiro para você',
+  title: 'Clínica.ai · Prontuário e agenda com IA para psicólogos',
   description:
     'O Clínica.ai relê todas as sessões do paciente e mostra o que se repete, o que mudou e onde o caso está, antes do próximo atendimento. 14 dias grátis, depois R$ 99 por mês.',
 }
@@ -94,6 +100,48 @@ function FaqItem({ q, children }: { q: string; children: React.ReactNode }) {
   )
 }
 
+// Abertura de cada anúncio (seção 1 da v3): só o título e o subtítulo mudam.
+// Vem de utm_content ou angulo na URL; outro valor, ou nenhum, fica no padrão.
+const ABERTURAS = {
+  padrao: {
+    titulo: 'Seu consultório organizado em um só lugar.',
+    subtitulo: 'Fale sobre a sessão e o registro fica pronto no prontuário. Agenda, pacientes e prontuários juntos. E, antes do próximo atendimento, o caso inteiro lido para você.',
+  },
+  tempo: {
+    titulo: 'Seu último paciente foi embora. Seu expediente acabou?',
+    subtitulo: 'Fale sobre a sessão por alguns minutos. O Clínica.ai escreve o registro no prontuário do paciente. Você revisa, salva e encerra o dia.',
+  },
+  organizacao: {
+    titulo: 'Seu consultório precisa funcionar para você. Não o contrário.',
+    subtitulo: 'Agenda, pacientes, anamnese e prontuários no mesmo lugar, no computador ou no celular. Chega de caderno, planilha e pasta espalhada.',
+  },
+  historico: {
+    titulo: 'Você se lembra do que seu paciente disse há 15 sessões?',
+    subtitulo: 'O Clínica.ai relê todas as sessões e mostra o que se repete, o que mudou e onde o caso está, antes do próximo atendimento. A interpretação continua sua.',
+  },
+}
+type Angulo = keyof typeof ABERTURAS
+
+function anguloDaUrl(params: Record<string, string | string[] | undefined>): Angulo {
+  for (const chave of ['utm_content', 'angulo']) {
+    const bruto = params[chave]
+    const valor = (Array.isArray(bruto) ? bruto[0] : bruto ?? '')
+      .trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    if (valor === 'tempo' || valor === 'organizacao' || valor === 'historico') return valor
+  }
+  return 'padrao'
+}
+
+// As três dores (seção 2 da v3)
+const DORES = [
+  { rotulo: 'Depois da última sessão', titulo: 'O paciente saiu. O registro ficou.',
+    texto: 'Fale sobre a sessão e o Clínica.ai escreve o registro no prontuário. Você revisa e vai para casa.' },
+  { rotulo: 'Antes do próximo atendimento', titulo: 'O que ele disse lá na quinta sessão?',
+    texto: 'Abra o caso e veja o que se repete e o que mudou ao longo das sessões, sem reler tudo.' },
+  { rotulo: 'No dia a dia', titulo: 'Agenda no celular, anotação no caderno, prontuário no computador?',
+    texto: 'Agenda, pacientes, anamnese e prontuários no mesmo lugar.' },
+]
+
 // O que a Análise Longitudinal monta para cada paciente (seção 1.3)
 const LEITURAS = [
   { Icon: TrendingUp, titulo: 'Análise Longitudinal', texto: 'os temas que se repetem e o que mudou ao longo das sessões.' },
@@ -105,8 +153,9 @@ const LEITURAS = [
 // Página
 // ---------------------------------------------------------------------------
 
-export default function LandingPage() {
+export default function LandingPage({ searchParams }: { searchParams: Record<string, string | string[] | undefined> }) {
   const telaAbertura = TELAS_RAQUEL[0]
+  const abertura = ABERTURAS[anguloDaUrl(searchParams)]
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -136,12 +185,14 @@ export default function LandingPage() {
       <div className="bg-slate-900 text-white pt-28 pb-20 px-4">
         <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div>
+            <p className="inline-block text-primary-300 bg-primary-500/15 ring-1 ring-primary-400/30 rounded-full px-3 py-1 text-sm font-semibold mb-5">
+              Para psicólogos clínicos
+            </p>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-6">
-              O prontuário que lê o caso inteiro para você.
+              {abertura.titulo}
             </h1>
             <p className="text-slate-300 text-lg sm:text-xl leading-relaxed mb-10">
-              Um prontuário comum guarda o que você escreveu. O Clínica.ai relê todas as sessões do paciente e mostra
-              o que se repete, o que mudou e onde o caso está, antes do próximo atendimento.
+              {abertura.subtitulo}
             </p>
             <Comecar />
             <p className="text-slate-400 text-sm mt-4">14 dias grátis. Depois, R$ 99 por mês. Cancele no teste e não paga nada.</p>
@@ -172,10 +223,26 @@ export default function LandingPage() {
         </div>
       </div>
 
+      {/* As três dores */}
+      <Section className="bg-slate-50">
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-10 max-w-3xl">
+          Cuidar dos pacientes já pede toda a sua atenção. O resto do consultório não precisa pedir.
+        </h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {DORES.map(d => (
+            <div key={d.rotulo} className="bg-white rounded-2xl border border-slate-200 p-6">
+              <p className="text-primary-600 text-xs font-semibold uppercase tracking-wide mb-3">{d.rotulo}</p>
+              <h3 className="font-semibold text-slate-900 text-lg leading-snug mb-2">{d.titulo}</h3>
+              <p className="text-slate-600 leading-relaxed">{d.texto}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
       {/* 1.2 O problema */}
       <Section>
         <div className="max-w-3xl">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6">O caso está todo anotado. Falta alguém ler.</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6">Cada registro mostra uma sessão. Juntos, eles contam o caso.</h2>
           <p className="text-slate-600 text-lg leading-relaxed mb-4">
             Depois de 20 sessões, tudo o que importa está no prontuário, espalhado em 20 registros. Para lembrar o que
             mudou desde o terceiro mês, você teria que reler tudo. E ninguém tem esse tempo entre um atendimento e outro.
@@ -189,14 +256,12 @@ export default function LandingPage() {
       {/* 1.3 O caso da Raquel */}
       {RAQUEL_NA_CONTA && (
         <Section id="raquel" className="bg-slate-50">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4">Veja o que o Clínica.ai faz com um caso inteiro.</h2>
-          <p className="text-slate-600 text-lg leading-relaxed mb-6 max-w-3xl">
-            A Raquel é uma paciente fictícia, criada para mostrar o sistema. Nenhum dado real. A partir das sessões dela,
-            o Clínica.ai monta:
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4">Veja o Clínica.ai funcionando antes do seu primeiro paciente.</h2>
+          <p className="text-slate-600 text-lg leading-relaxed mb-10 max-w-3xl">
+            Sua conta já vem com a Raquel, uma paciente fictícia com 20 sessões registradas e o caso lido pelo
+            Clínica.ai. Abra a Análise Longitudinal, a linha do tempo e o mapa de conceitos, e pergunte ao Copiloto
+            sobre o histórico dela. Nenhum dado real.
           </p>
-          <ul className="space-y-3 mb-10 max-w-3xl">
-            {LEITURAS.map(({ titulo, texto }) => <Item key={titulo} title={`${titulo}:`}>{texto}</Item>)}
-          </ul>
           {TELAS_RAQUEL.length > 0 && (
             <div className="grid md:grid-cols-3 gap-6 mb-10">
               {TELAS_RAQUEL.map(t => (
@@ -217,18 +282,18 @@ export default function LandingPage() {
 
       {/* 1.4 Como funciona */}
       <Section className={RAQUEL_NA_CONTA ? '' : 'bg-slate-50'}>
-        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-10">Como funciona</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-10">Três passos, do fim da sessão ao próximo atendimento.</h2>
         <div className="space-y-8 max-w-3xl">
-          <Step n={1} title="Registre do seu jeito.">
-            Digite, cole suas anotações, mande a foto do caderno ou fale por 3 minutos depois do atendimento.
-            O áudio é o seu resumo, sobre a sessão.
+          <Step n={1} title="Fale ou escreva depois da sessão.">
+            Dite um memo de voz, digite, cole ou fotografe o caderno. O Clínica.ai monta o registro no prontuário.
+            O áudio é o seu resumo; a sessão não é gravada.
           </Step>
-          <Step n={2} title="Traga o histórico.">
-            Anotações antigas entram por texto, arquivo .txt ou .pdf, ou foto. O caso já começa com o que você tem.
+          <Step n={2} title="Traga o que você já tem.">
+            Anotações antigas entram por texto, arquivo .txt ou .pdf, ou foto. O caso já começa com o seu histórico.
           </Step>
           <Step n={3} title="Abra o caso antes do atendimento.">
             A cada registro, a Análise Longitudinal relê o caso inteiro. Veja os temas que se repetem, a linha do tempo
-            e o que mudou. Se quiser, pergunte ao Copiloto sobre o histórico do paciente.
+            e o que mudou. Se quiser, pergunte ao Copiloto.
           </Step>
         </div>
       </Section>
@@ -245,7 +310,7 @@ export default function LandingPage() {
             <Item title="Anamnese">preenchida com o que já foi dito nas sessões, para você revisar.</Item>
             <Item title="Importação de histórico:">texto, arquivo .txt ou .pdf, ou foto de anotações à mão.</Item>
             <Item title="Agenda">dos seus atendimentos.</Item>
-            <Item title="Cobrança por link de pagamento">do Mercado Pago, na sua própria conta.</Item>
+            {FINANCEIRO_OK && <Item title="Cobrança por link de pagamento">do Mercado Pago, na sua própria conta.</Item>}
           </ul>
           <div className="lg:col-span-2 bg-slate-900 text-white rounded-2xl p-7 shadow-xl">
             <p className="text-4xl font-bold mb-1">R$ 99<span className="text-lg font-medium text-slate-400"> por mês</span></p>
