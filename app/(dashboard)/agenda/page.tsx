@@ -648,7 +648,7 @@ export default function AgendaPage() {
       <div className="flex items-center justify-between px-6 py-4 bg-white border-b">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Agenda</h1>
-          <p className="text-sm text-gray-500 capitalize">{formatMonthYear(modo === 'mes' ? mesRef : semanaAtual)}</p>
+          <p className="text-sm text-gray-500">{formatMonthYear(modo === 'mes' ? mesRef : semanaAtual)}</p>
         </div>
 
         <div className="flex items-center gap-3">

@@ -16,8 +16,8 @@ function diaBr(iso: string | number) {
   return new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
 }
 
-// No teste com cartão, o último dia é a véspera da primeira cobrança, como nos e-mails.
-// No próprio dia da cobrança, o acesso segue até a hora dela: "hoje".
+// No teste, o último dia é a véspera do fim (com cartão, da primeira cobrança), como nos e-mails
+// e na faixa do teste. No próprio dia do fim, o acesso segue até a hora dela: "hoje".
 function ultimoDiaDoTeste(cobranca: string) {
   const t = new Date(cobranca).getTime()
   return diaBr(t) <= diaBr(Date.now()) ? 'hoje' : dataBr(t - 86_400_000)
@@ -92,7 +92,7 @@ export default function MinhaAssinatura({ acesso }: { acesso?: AcessoConta }) {
     texto = 'Sua conta está liberada, sem cobrança no momento.'
   } else if (situacao === 'teste') {
     texto = acesso?.fim_teste
-      ? `Você está no teste grátis até ${dataBr(acesso.fim_teste)}.`
+      ? `Você está no teste grátis até ${ultimoDiaDoTeste(acesso.fim_teste)}.`
       : 'Você está no teste grátis.'
     if (acesso?.registros_limite) {
       texto += ` Registros usados: ${acesso.registros_usados ?? 0} de ${acesso.registros_limite}.`
