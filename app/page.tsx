@@ -9,11 +9,14 @@ import { RodapeLegal } from '@/components/EmpresaResponsavel'
 
 // A Raquel, paciente fictícia, pronta em toda conta nova (no ar desde 26/10, com 20 sessões)
 const RAQUEL_NA_CONTA = true
-// As três telas da Raquel, com "Paciente fictícia" escrito na imagem, em /public/home
-const TELAS_RAQUEL: { src: string; legenda: string }[] = [
-  { src: '/home/raquel-analise.png', legenda: 'Análise Longitudinal: os temas que se repetem ao longo das sessões.' },
-  { src: '/home/raquel-linha-do-tempo.png', legenda: 'Linha do tempo: o caso sessão a sessão.' },
-  { src: '/home/raquel-registro.png', legenda: 'Registro de sessão, pronto para você revisar.' },
+// Telas reais com dados fictícios e o selo escrito na imagem, em /public/home.
+// src é a tela do computador; cel, um recorte ampliado da parte que importa, legível no celular sem zoom.
+type Tela = { src: string; cel: string; legenda: string }
+// As três telas da Raquel, com "Paciente fictícia" escrito na imagem
+const TELAS_RAQUEL: Tela[] = [
+  { src: '/home/raquel-analise.png', cel: '/home/raquel-analise-cel.png', legenda: 'Análise Longitudinal: os temas que se repetem ao longo das sessões.' },
+  { src: '/home/raquel-linha-do-tempo.png', cel: '/home/raquel-linha-do-tempo-cel.png', legenda: 'Linha do tempo: o caso sessão a sessão.' },
+  { src: '/home/raquel-registro.png', cel: '/home/raquel-registro-cel.png', legenda: 'Registro de sessão, pronto para você revisar.' },
 ]
 // Correção do financeiro no ar: volta a linha da cobrança por link de pagamento
 const FINANCEIRO_OK = false
@@ -41,6 +44,16 @@ function Section({ children, className = '', id }: { children: React.ReactNode; 
     <section id={id} className={`py-16 sm:py-20 px-4 scroll-mt-16 ${className}`}>
       <div className="max-w-5xl mx-auto">{children}</div>
     </section>
+  )
+}
+
+function Imagem({ tela, className }: { tela: Tela; className: string }) {
+  return (
+    <picture className="block">
+      <source media="(max-width: 767px)" srcSet={tela.cel} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={tela.src} alt={tela.legenda} className={className} />
+    </picture>
   )
 }
 
@@ -100,24 +113,28 @@ function FaqItem({ q, children }: { q: string; children: React.ReactNode }) {
   )
 }
 
-// Abertura de cada anúncio (seção 1 da v3): só o título e o subtítulo mudam.
+// Abertura de cada anúncio (seção 1 da v3): mudam o título, o subtítulo e a tela ao lado.
 // Vem de utm_content ou angulo na URL; outro valor, ou nenhum, fica no padrão.
-const ABERTURAS = {
+const ABERTURAS: Record<'padrao' | 'tempo' | 'organizacao' | 'historico', { titulo: string; subtitulo: string; tela: Tela }> = {
   padrao: {
     titulo: 'Seu consultório organizado em um só lugar.',
-    subtitulo: 'Fale sobre a sessão e o registro fica pronto no prontuário. Agenda, pacientes e prontuários juntos. E, antes do próximo atendimento, o caso inteiro lido para você.',
+    subtitulo: 'Transforme seus apontamentos pós-sessão em registros organizados, acompanhe seus pacientes e tenha o histórico de cada caso ao alcance de poucos cliques.',
+    tela: { src: '/home/painel.png', cel: '/home/painel-cel.png', legenda: 'Painel do Clínica.ai depois do login, com dados fictícios.' },
   },
   tempo: {
     titulo: 'Seu último paciente foi embora. Seu expediente acabou?',
-    subtitulo: 'Fale sobre a sessão por alguns minutos. O Clínica.ai escreve o registro no prontuário do paciente. Você revisa, salva e encerra o dia.',
+    subtitulo: 'Em vez de passar o fim do dia escrevendo registros, fale sobre a sessão e deixe o Clínica.ai preparar o texto para sua revisão. Porque seu tempo também importa.',
+    tela: { src: '/home/ditado.png', cel: '/home/ditado-cel.png', legenda: 'Registro da sessão da Raquel, paciente fictícia, escrito a partir do ditado e pronto para revisar.' },
   },
   organizacao: {
     titulo: 'Seu consultório precisa funcionar para você. Não o contrário.',
     subtitulo: 'Agenda, pacientes, anamnese e prontuários no mesmo lugar, no computador ou no celular. Chega de caderno, planilha e pasta espalhada.',
+    tela: { src: '/home/agenda.png', cel: '/home/agenda-cel.png', legenda: 'Agenda da semana com consultas fictícias.' },
   },
   historico: {
     titulo: 'Você se lembra do que seu paciente disse há 15 sessões?',
     subtitulo: 'O Clínica.ai relê todas as sessões e mostra o que se repete, o que mudou e onde o caso está, antes do próximo atendimento. A interpretação continua sua.',
+    tela: TELAS_RAQUEL[0],
   },
 }
 type Angulo = keyof typeof ABERTURAS
@@ -154,8 +171,8 @@ const LEITURAS = [
 // ---------------------------------------------------------------------------
 
 export default function LandingPage({ searchParams }: { searchParams: Record<string, string | string[] | undefined> }) {
-  const telaAbertura = TELAS_RAQUEL[0]
   const abertura = ABERTURAS[anguloDaUrl(searchParams)]
+  const telaAbertura = abertura.tela
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -203,8 +220,7 @@ export default function LandingPage({ searchParams }: { searchParams: Record<str
             )}
           </div>
           {telaAbertura ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={telaAbertura.src} alt={telaAbertura.legenda} className="w-full rounded-2xl shadow-2xl ring-1 ring-white/10" />
+            <Imagem tela={telaAbertura} className="w-full rounded-2xl shadow-2xl ring-1 ring-white/10" />
           ) : (
             <div className="space-y-4">
               {LEITURAS.map(({ Icon, titulo, texto }) => (
@@ -266,8 +282,7 @@ export default function LandingPage({ searchParams }: { searchParams: Record<str
             <div className="grid md:grid-cols-3 gap-6 mb-10">
               {TELAS_RAQUEL.map(t => (
                 <figure key={t.src}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={t.src} alt={t.legenda} className="w-full rounded-xl shadow-lg ring-1 ring-slate-200" />
+                  <Imagem tela={t} className="w-full rounded-xl shadow-lg ring-1 ring-slate-200" />
                   <figcaption className="text-sm text-slate-500 mt-2">{t.legenda}</figcaption>
                 </figure>
               ))}
