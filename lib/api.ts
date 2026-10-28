@@ -354,9 +354,18 @@ export const assinaturaApi = {
 
 // ── Suporte ───────────────────────────────────────────────────────────────────
 
+export type AvaliacaoMarina = 'resolveu' | 'nao_resolveu' | 'pediu_pessoa'
+export interface RespostaMarina { id: string; resposta: string; artigos: string[]; tema: string; encaminhar: boolean }
+
 export const suporteApi = {
   enviar: (mensagem: string, pagina: string) => request<{ ok: boolean }>(
     '/api/v1/suporte/mensagem', { method: 'POST', body: JSON.stringify({ mensagem, pagina }) }
+  ),
+  perguntar: (pergunta: string, pagina: string) => request<RespostaMarina>(
+    '/api/v1/suporte/perguntar', { method: 'POST', body: JSON.stringify({ pergunta, pagina }) }
+  ),
+  avaliar: (id: string, avaliacao: AvaliacaoMarina) => request<{ ok: boolean }>(
+    '/api/v1/suporte/perguntar/avaliacao', { method: 'POST', body: JSON.stringify({ id, avaliacao }) }
   ),
 }
 

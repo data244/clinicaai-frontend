@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Search, LifeBuoy } from 'lucide-react'
 import { artigos, categorias } from '@/lib/ajuda-conteudo'
-import { EnderecoSuporte, FalarComSuporte } from '@/components/Suporte'
+import PergunteMarina from '@/components/PergunteMarina'
 
 const MD = {
   h2: (p: any) => <h2 className="text-xl font-bold text-gray-900 mb-3" {...p} />,
@@ -25,6 +25,13 @@ const MD = {
 export default function AjudaPage() {
   const [q, setQ] = useState('')
   const [slug, setSlug] = useState(artigos[0].slug)
+  const artigoRef = useRef<HTMLElement>(null)
+
+  const abrirArtigo = (s: string) => {
+    setQ('')
+    setSlug(s)
+    setTimeout(() => artigoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+  }
 
   const termo = q.trim().toLowerCase()
   const filtrados = termo
@@ -34,21 +41,15 @@ export default function AjudaPage() {
   const selecionado = artigos.find(a => a.slug === slug) ?? artigos[0]
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6">
       <div className="flex items-center gap-3 mb-1">
         <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
           <LifeBuoy className="w-5 h-5 text-white" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Central de Ajuda</h1>
       </div>
-      <p className="text-sm text-gray-600 mb-2 ml-12">Guias rápidos para tirar o máximo do Clínica.ai.</p>
-      <div className="mb-5 ml-12 max-w-xl bg-white border border-gray-100 rounded-xl shadow-sm p-4">
-        <p className="text-sm text-gray-700 font-medium mb-3">Dúvidas ou problema com pagamento?</p>
-        <FalarComSuporte pagina="ajuda" />
-        <div className="mt-3 [&>p]:text-left">
-          <EnderecoSuporte texto="Ou escreva para" />
-        </div>
-      </div>
+      <p className="text-sm text-gray-600 mb-4 sm:ml-12">Guias rápidos para tirar o máximo do Clínica.ai.</p>
+      <PergunteMarina onAbrirArtigo={abrirArtigo} />
 
 
       {/* Tour Guiado */}
@@ -126,7 +127,7 @@ export default function AjudaPage() {
         </nav>
 
         {/* Artigo */}
-        <article className="flex-1 w-full bg-white border border-gray-100 rounded-xl shadow-sm p-6 lg:p-8">
+        <article ref={artigoRef} className="flex-1 scroll-mt-4 w-full bg-white border border-gray-100 rounded-xl shadow-sm p-6 lg:p-8">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={MD}>
             {selecionado.conteudo}
           </ReactMarkdown>

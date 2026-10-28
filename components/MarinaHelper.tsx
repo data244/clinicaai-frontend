@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { X } from 'lucide-react'
 
 type MensagemMarina = { titulo: string; texto: string }
@@ -119,12 +120,21 @@ export default function MarinaHelper({ pathname }: Props) {
           <div className="text-gray-600 text-sm leading-relaxed">
             {renderTexto(mensagem.texto)}
           </div>
-          <button
-            onClick={dispensar}
-            className="mt-3 text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
-          >
-            Entendi ✓
-          </button>
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <button
+              onClick={dispensar}
+              className="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+            >
+              Entendi ✓
+            </button>
+            {/* Leva à Marina da Central de Ajuda; a tela de origem entra na contagem das dúvidas */}
+            <Link
+              href={`/ajuda?de=${encodeURIComponent(normKey(pathname).replace(/:/g, ''))}`}
+              className="text-xs text-gray-500 hover:text-indigo-700 hover:underline"
+            >
+              Tenho uma dúvida
+            </Link>
+          </div>
         </div>
       )}
 

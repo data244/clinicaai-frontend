@@ -43,9 +43,11 @@ export function EnderecoSuporte({ texto = 'Precisa de ajuda? Escreva para' }: { 
   )
 }
 
-export function FalarComSuporte({ pagina, abertoDeInicio = false }: { pagina: string; abertoDeInicio?: boolean }) {
+export function FalarComSuporte({ pagina, abertoDeInicio = false, mensagemInicial = '' }: {
+  pagina: string; abertoDeInicio?: boolean; mensagemInicial?: string
+}) {
   const [aberto, setAberto] = useState(abertoDeInicio)
-  const [mensagem, setMensagem] = useState('')
+  const [mensagem, setMensagem] = useState(mensagemInicial)
   const [enviando, setEnviando] = useState(false)
   const [enviado, setEnviado] = useState(false)
   const [erro, setErro] = useState('')
