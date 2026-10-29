@@ -417,7 +417,7 @@ export default function LandingPage({ searchParams }: { searchParams: Record<str
           {CONTATO_RECEBE && (
             <FaqItem q="Preciso de ajuda. Onde encontro?">
               Dentro do sistema, a Ajuda tem vídeos curtos de cada parte. Se precisar, escreva para
-              contato@clinicaai.net.br. Respondemos em dias úteis.
+              contato@clinicaai.net.br. Respondemos assim que possível.
             </FaqItem>
           )}
         </div>

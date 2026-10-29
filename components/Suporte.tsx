@@ -68,7 +68,7 @@ export function FalarComSuporte({ pagina, abertoDeInicio = false, mensagemInicia
   if (enviado) {
     return (
       <div className="bg-green-50 text-green-800 text-sm px-3 py-2.5 rounded-lg border border-green-200 text-left">
-        Mensagem enviada. Respondemos por e-mail em dias úteis, no e-mail da sua conta.
+        Mensagem enviada. Respondemos assim que possível, no e-mail da sua conta.
       </div>
     )
   }
@@ -96,7 +96,7 @@ export function FalarComSuporte({ pagina, abertoDeInicio = false, mensagemInicia
         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
       />
       <p className="text-xs text-gray-500 mt-1 mb-3">
-        Não escreva dados de pacientes. Respondemos por e-mail em dias úteis, no e-mail da sua conta.
+        Não escreva dados de pacientes. Respondemos assim que possível, no e-mail da sua conta.
       </p>
       {erro && (
         <div className="bg-red-50 text-red-700 text-sm px-3 py-2 rounded-lg border border-red-200 mb-3">{erro}</div>
@@ -143,7 +143,7 @@ export function FalarPeloTelegram() {
     return (
       <div className="text-left w-full bg-sky-50 border border-sky-200 rounded-lg px-3 py-3">
         <p className="text-sm text-gray-700 leading-relaxed mb-1">
-          Pelo Telegram, atendemos dúvidas técnicas e de assinatura. Mande só texto. Respondemos por lá, em dias úteis.
+          Pelo Telegram, atendemos dúvidas técnicas e de assinatura. Mande só texto. Respondemos por lá, assim que possível.
         </p>
         <p className="text-sm text-gray-700 leading-relaxed mb-3">
           Não envie nomes de pacientes, trechos de prontuário nem prints com dados de pacientes.

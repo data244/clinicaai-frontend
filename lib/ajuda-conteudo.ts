@@ -337,8 +337,8 @@ Pela Resolução CFP 001/2009, os registros devem ser guardados por pelo menos 5
 Aqui na **Ajuda**, você escolhe como pedir ajuda:
 
 - **Marina**: a assistente da Ajuda responde na hora, com os artigos e a situação da sua assinatura. Ela não vê os seus pacientes.
-- **Telegram**: para conversar com uma pessoa do suporte. Em *Prefere falar com uma pessoa?*, clique em **Falar pelo Telegram** e depois em **Abrir o Telegram**. A resposta chega no próprio Telegram, em dias úteis.
-- **E-mail**: para pedidos formais e para acompanhar por escrito. Clique em **Enviar por e-mail** ou escreva para contato@clinicaai.net.br, a partir do e-mail da conta. Respondemos no e-mail da sua conta, em dias úteis.
+- **Telegram**: para conversar com uma pessoa do suporte. Em *Prefere falar com uma pessoa?*, clique em **Falar pelo Telegram** e depois em **Abrir o Telegram**. A resposta chega no próprio Telegram, assim que possível.
+- **E-mail**: para pedidos formais e para acompanhar por escrito. Clique em **Enviar por e-mail** ou escreva para contato@clinicaai.net.br, a partir do e-mail da conta. Respondemos no e-mail da sua conta, assim que possível.
 
 ### Pelo Telegram
 
