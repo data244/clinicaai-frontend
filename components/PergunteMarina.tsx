@@ -65,11 +65,11 @@ export default function PergunteMarina({ onAbrirArtigo }: { onAbrirArtigo: (slug
     .filter((a): a is (typeof artigos)[number] => !!a)
 
   return (
-    <div className="mb-6 sm:ml-12 max-w-2xl bg-white border border-gray-100 rounded-xl shadow-sm p-4 sm:p-5">
+    <div className="mb-6 sm:ml-12 max-w-2xl bg-white border border-indigo-100 rounded-xl shadow-sm p-4 sm:p-5">
       <div className="flex items-center gap-3 mb-3">
-        <img src="/marina.png" alt="" className="w-10 h-10 rounded-full object-cover object-top border-2 border-indigo-500 shrink-0" />
+        <img src="/marina.png" alt="" className="w-12 h-12 rounded-full object-cover object-top border-2 border-indigo-500 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-gray-900">Pergunte à Marina</p>
+          <p className="text-base font-semibold text-gray-900">Pergunte à Marina</p>
           <p className="text-xs text-gray-500">Assistente virtual. Tira dúvidas sobre o uso do sistema e a sua assinatura. Não vê os seus pacientes.</p>
         </div>
       </div>
@@ -152,16 +152,15 @@ export default function PergunteMarina({ onAbrirArtigo }: { onAbrirArtigo: (slug
         )}
       </div>
 
-      <div ref={suporteRef} className="mt-4 pt-4 border-t border-gray-100">
-        <p className="text-sm text-gray-700 font-medium mb-3">Prefere falar com uma pessoa?</p>
-        <div className="flex flex-wrap items-start gap-2">
-          <FalarComSuporte
-            key={formulario.chave} pagina={formulario.chave > 0 ? 'ajuda/marina' : 'ajuda'} rotulo="Enviar por e-mail"
-            abertoDeInicio={formulario.chave > 0} mensagemInicial={formulario.texto}
-          />
-          <FalarPeloTelegram />
-        </div>
-        <div className="mt-3 [&>p]:text-left">
+      {/* Pessoa como alternativa: uma linha pequena, a Marina em destaque (Leo, 29/10) */}
+      <div ref={suporteRef} className="mt-4 pt-2 border-t border-gray-100 flex flex-wrap items-center gap-x-1 gap-y-1">
+        <p className="text-xs text-gray-500 mr-1">Prefere falar com uma pessoa?</p>
+        <FalarComSuporte
+          key={formulario.chave} pagina={formulario.chave > 0 ? 'ajuda/marina' : 'ajuda'} rotulo="Enviar por e-mail"
+          abertoDeInicio={formulario.chave > 0} mensagemInicial={formulario.texto} discreto
+        />
+        <FalarPeloTelegram />
+        <div className="w-full [&>p]:text-left [&>p]:text-xs">
           <EnderecoSuporte texto="Ou escreva para" />
         </div>
       </div>

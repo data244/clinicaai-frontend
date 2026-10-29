@@ -124,11 +124,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     )}
     {bloqueio && <ModalBloqueio bloqueio={bloqueio} onFechar={() => setBloqueio(null)} />}
     <div className="flex min-h-screen">
-      {/* Fundo da aplicação: foto sutil + overlay claro */}
-      <div className="fixed inset-0 -z-10" aria-hidden>
-        <img src="/login-bg.jpg" alt="" className="w-full h-full object-cover opacity-30" />
-        <div className="absolute inset-0 bg-gray-50/94 backdrop-blur-[3px]" />
-      </div>
+      {/* Fundo da aplicação: foto sutil + overlay claro. Na Ajuda, fundo liso para ler os artigos (Leo, 29/10) */}
+      {pathname?.startsWith('/ajuda') ? (
+        <div className="fixed inset-0 -z-10 bg-gray-50" aria-hidden />
+      ) : (
+        <div className="fixed inset-0 -z-10" aria-hidden>
+          <img src="/login-bg.jpg" alt="" className="w-full h-full object-cover opacity-30" />
+          <div className="absolute inset-0 bg-gray-50/94 backdrop-blur-[3px]" />
+        </div>
+      )}
 
       <div className="flex flex-col flex-1 min-w-0">
         <div className="flex flex-1">
